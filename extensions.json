@@ -1,0 +1,1226 @@
+{
+  "extensions": [
+    {
+      "name": "ConSpace",
+      "author": "Eric Eve and Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension to enhance modelling of spatial relations and to allow several rooms to act as one large subdivided location. Version 2.1, by Eric Eve and Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+      "makefile-entries": [
+        "ConSpace2/ConSpace.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-07-08 17:03",
+      "version": "2.1",
+      "tags": []
+    },
+    {
+      "name": "ContWithLid",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that adds containers that can be closed by a specific object, such as a separate lid. Version 1, by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ContWithLid.t",
+      "makefile-entries": [
+        "ContWithLid.t"
+      ],
+      "ext": "t",
+      "last-modified": "2004-09-19 04:14",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "Dstrucs",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that implements a number of low-level data structures: nodes, single- and double-linked lists, circular single- and double-linked lists, stacks, and queues. Version 2.0.1, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/Dstrucs.zip",
+      "makefile-entries": [
+        "dstrucs/lib/dstruc.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2008-08-04 18:59",
+      "version": "2.0.1",
+      "tags": []
+    },
+    {
+      "name": "DupDobj",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension to allow author control over the handling of duplicate direct objects in the same command (e.g. EXAMINE LEAVES, TWIGS AND BRANCHES). Version 1.2, by Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/DupDobj.t",
+      "makefile-entries": [
+        "DupDobj.t"
+      ],
+      "ext": "t",
+      "last-modified": "2008-08-04 18:59",
+      "version": "1.2",
+      "tags": []
+    },
+    {
+      "name": "LookDir",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that implements >LOOK [direction] commands (e.g. \"LOOK NORTH\"). Version 4, by Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/LookDir.zip",
+      "makefile-entries": [
+        "lookDir.t"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-10-16 09:32",
+      "version": "4",
+      "tags": []
+    },
+    {
+      "name": "MazeGenerator",
+      "author": "Jeffrey W. Bowyer",
+      "type": [
+        "adv3"
+      ],
+      "desc": "Virtual Maze Generator, version 1, by Jeffrey W. Bowyer. Archive contains a Java component to produces a perfect maze, and a TADS 3 class for crawling that maze.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MazeGenerator.zip",
+      "makefile-entries": [
+        "TADS 3 Component/MazeClass.t"
+      ],
+      "ext": "zip",
+      "last-modified": "2010-04-29 14:50",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "MultiMorphic",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An implementation of a class which allows an author to simulate changing an object's superclass dynamically at runtime. Version 1.0, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MultiMorphic.zip",
+      "makefile-entries": [
+        "MultiMorphic/multi_morphic.t"
+      ],
+      "ext": "zip",
+      "last-modified": "2003-05-15 05:59",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "OccludingConnector",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that enables a sense connector to disallow an object to be sensed through it. Version 1, by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/OccludingConnector.t",
+      "makefile-entries": [
+        "OccludingConnector.t"
+      ],
+      "ext": "t",
+      "last-modified": "2004-09-19 04:12",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "Pathfinders",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A collection of the following pathfinding algorithms, for searching any kind of graph or tree: breadth-first, double-breadth (bi-directional), Floyd, Dijkstra and `A*`. Written by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/Pathfinders.zip",
+      "ext": "zip",
+      "last-modified": "2004-12-29 05:26",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "SayQuery",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension implementing SayTopic and QueryTopic and allowing suggested topics to be selected by number or by clicking on hyperlinks. Version 1.0, by Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SayQuery.zip",
+      "makefile-entries": [
+        "SayQuery/SayQuery.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-07-08 16:50",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "SpellingCorrector",
+      "author": "Steve Breslin in collaboration with Andreas Sewe",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A context-sensitive typo and spelling corrector. Version 1.1, by Steve Breslin in collaboration with Andreas Sewe.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SpellingCorrector.t",
+      "makefile-entries": [
+        "SpellingCorrector.t"
+      ],
+      "ext": "t",
+      "last-modified": "2006-03-22 20:32",
+      "version": "1.1",
+      "tags": []
+    },
+    {
+      "name": "SunTracker",
+      "author": "Zachary Hutchinson",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module to provide tracking of the sun, using the TimeSys module. Written by Zachary Hutchinson.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SunTracker.t",
+      "ext": "t",
+      "last-modified": "2003-08-03 20:19",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "T3checks",
+      "author": "Stephen Granade",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module which keeps track of what capabilities a given interpreter has, such as the ability to display images. Version 1.0, by Stephen Granade.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/T3checks.t",
+      "ext": "t",
+      "last-modified": "2003-01-07 03:56",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "TCommand",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "TCommand version 3, by Eric Eve. An extension of the CommandTopic class (For example, to allow matches on the direct or indirect object of the command as well as the command action).",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/TCommand.zip",
+      "makefile-entries": [
+        "TCommand/TCommand.t"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-07-08 16:16",
+      "version": "3",
+      "tags": []
+    },
+    {
+      "name": "achievement",
+      "author": "Greg Boettcher",
+      "type": [
+        "adv3"
+      ],
+      "desc": "For implementing and locally storing Steam-style achievements. Also for storing information that needs to persist across multiple playthroughs. Version 1.0, by Greg Boettcher.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/achievement.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2019-08-13 00:57",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "adv3Lite",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "Version 1.6.1 of adv3Lite, an alternative library for use with TADS 3, by Eric Eve. Freeware.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/adv3Lite.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2023-03-17 11:51",
+      "version": "1.6.1",
+      "tags": []
+    },
+    {
+      "name": "asto",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "Adds an integer property to each non-class object, and sets it to a value giving the \"absolute\" order of the object definition in the program source. Version 2.0, written by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/asto.t",
+      "ext": "t",
+      "last-modified": "2009-01-04 08:00",
+      "version": "2.0",
+      "tags": []
+    },
+    {
+      "name": "autosave",
+      "author": "Michel Nizette",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that allows the player to restore the game to an earlier state determined by the game itself, like \"undo\", except that the story is brought back to a specific point rather than one turn backwards. Version November 23, 2008, by Michel Nizette.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/autosave.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2008-11-23 21:16",
+      "version": "November 23, 2008",
+      "tags": []
+    },
+    {
+      "name": "combine",
+      "author": "Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that combines consecutive action reports. Version 4, by Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/combine.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-06-06 19:18",
+      "version": "4",
+      "tags": []
+    },
+    {
+      "name": "compass",
+      "author": "Steve Breslin and Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module to make a banner displaying a compass, version 3, by Steve Breslin and Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/compass.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-11-24 17:53",
+      "version": "3",
+      "tags": []
+    },
+    {
+      "name": "contaction",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "ContAction, a library extension that provides an abstract mechanism for implementing continuous actions. Version 2.6, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/contaction.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-01-29 04:51",
+      "version": "2.6",
+      "tags": []
+    },
+    {
+      "name": "cquotes",
+      "author": "Stephen Granade",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that converts single straight quotes (') to curly ones (‘). Will either change just the ones which appear in standard English contractions such as \"won't,\" or will change every single quote it finds that is preceeded by a letter or punctuation. Version 0.2, by Stephen Granade.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/cquotes.t",
+      "ext": "t",
+      "last-modified": "2004-02-03 04:05",
+      "version": "0.2",
+      "tags": []
+    },
+    {
+      "name": "csc",
+      "author": "M.D. Dollahite and Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "The TADS 3 Complex Sense Connector library, an extension to provide a more versatile approach to sense connectors. Version 1.2, by M.D. Dollahite and Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/csc.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2004-12-29 18:39",
+      "version": "1.2",
+      "tags": []
+    },
+    {
+      "name": "diff",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A small library extension that allows you to perform an operation or action silently and without consequences, just to observe the potential results upon the state of the game.  Version 1.0, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/diff.t",
+      "ext": "t",
+      "last-modified": "2006-10-17 05:01",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "easyListing",
+      "author": "Emily Boegheim",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension making it quicker and easier to print simple lists, including offering message parameter substitutions for lists (e.g. \"{the/list yourList}\"). Version 0.3, by Emily Boegheim.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/easyListing.t",
+      "ext": "t",
+      "last-modified": "2016-04-04 11:44",
+      "version": "0.3",
+      "tags": []
+    },
+    {
+      "name": "flags",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that supports bit flags and bitwise operators that are larger than those supported by the internal 32-bit infrastructure of TADS 3. Version 2.0, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/flags.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-05-02 22:08",
+      "version": "2.0",
+      "tags": []
+    },
+    {
+      "name": "hypoTester",
+      "author": "Steve Breslin and Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that allows the game to forsee whether an action will pass the canonical verify and check routines. Version 4, by Steve Breslin and Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/hypoTester.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-11-14 07:55",
+      "version": "4",
+      "tags": []
+    },
+    {
+      "name": "imm",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An implementation of an \"inherited\" multi-method mechanism for TADS 3 multi-methods, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/imm.t",
+      "ext": "t",
+      "last-modified": "2009-02-04 05:13",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "kfDebug",
+      "author": "Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A debugging suite, including an in-game expression evaluator. Version 1, by Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/kfDebug.t",
+      "ext": "t",
+      "last-modified": "2010-01-27 14:51",
+      "version": "1",
+      "tags": ["debug"]
+    },
+    {
+      "name": "lastTyped",
+      "author": "jbg",
+      "type": [
+        "adv3"
+      ],
+      "desc": "lastTyped, version 1.0, by jbg. A library for keeping track of the specific nouns and verbs used in a typed command, and for coverting them into a form suitable for output.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/lastTyped.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2022-06-10 21:49",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "listControl",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension to allow short pieces of variable text. Version 0.2, by Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/listControl.t",
+      "ext": "t",
+      "last-modified": "2009-07-12 12:38",
+      "version": "0.2",
+      "tags": []
+    },
+    {
+      "name": "londoncabs",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "London Cabs, a module to simulate the cabbie system used by Infocom's Sherlock: The Riddle of the Crown Jewels. Version 1.0.2, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/londoncabs.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-01-11 08:04",
+      "version": "1.0.2",
+      "tags": []
+    },
+    {
+      "name": "match",
+      "author": "Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that provides complex object matching techniques and reduces the need for object loops. Version 3, by Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/match.zip",
+      "makefile-entries": [
+        "match/match.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-10-10 12:25",
+      "version": "3",
+      "tags": []
+    },
+    {
+      "name": "megatads",
+      "author": "Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A collection of extensions and patches for the standard TADS 3 library. Version 1, by Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/megatads.zip",
+      "makefile-entries": [
+        "megatads/megatads.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-04-28 19:22",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "memory",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module that records Actor memory of object locations, and provides an >OBJECTS verb that players can use to refresh their memory as to the PC's memory of object locations. Version 1, by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/memory.t",
+      "makefile-entries": [
+        "memory.t"
+      ],
+      "ext": "t",
+      "last-modified": "2004-09-19 04:09",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "msg_custom",
+      "author": "Greg Boettcher",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that allows authors to customize the standard TADS 3 messages, changing them with regard to smart/curly quotes, contractions, formal versus casual language, etc. Version 2.2, by Greg Boettcher.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/msg_custom.t",
+      "makefile-entries": [
+        "msg_custom.t"
+      ],
+      "ext": "t",
+      "last-modified": "2019-05-18 16:38",
+      "version": "2.2",
+      "tags": []
+    },
+    {
+      "name": "ncDebugActions",
+      "author": "Nikos Chantziaras",
+      "type": [
+        "adv3"
+      ],
+      "desc": "Debugging verbs for testing a game. The verbs are modelled after those in the TADS 2 module wizard.t. Version 1.1, by Nikos Chantziaras.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ncDebugActions.t",
+      "makefile-entries": [
+        "ncDebugActions.t"
+      ],
+      "ext": "t",
+      "last-modified": "2004-07-10 21:40",
+      "version": "1.1",
+      "tags": ["debug"]
+    },
+    {
+      "name": "nobreak",
+      "author": "Brendan Barnwell",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension to allow switch statements to be written without having to include explicit breaks between cases, by Brendan Barnwell.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/nobreak.h",
+      "ext": "h",
+      "last-modified": "2004-09-29 18:43",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "optimizations",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "Two proof-of-concept tests for optimizing some computation-heavy code in the standard adv3 library. Version 1, by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/optimizations.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2004-09-19 04:16",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "padlock",
+      "author": "Greg Boettcher",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A TADS 3 implementation of padlocks and padlockable things. Version 1.0, by Greg Boettcher.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/padlock.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2016-12-08 19:20",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "proteus",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A collection of inter-related modules that provide information on TADS 3 metadata, as well as implementing some object-oriented design patterns. Version 1.1.5, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/proteus.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2004-11-14 00:27",
+      "version": "1.1.5",
+      "tags": []
+    },
+    {
+      "name": "qtalk",
+      "author": "Greg Boettcher",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library for Photopia style menu-based conversations, allowing for submenus, and looping and repeating conversations. Version 2, by Greg Boettcher.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/qtalk.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2007-10-29 15:58",
+      "version": "2",
+      "tags": []
+    },
+    {
+      "name": "reaction",
+      "author": "Emily Boegheim",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension offering rules-based handling of beforeAction and afterAction code. Version 0.2, by Emily Boegheim.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/reaction.t",
+      "ext": "t",
+      "last-modified": "2016-04-04 11:44",
+      "version": "0.2",
+      "tags": []
+    },
+    {
+      "name": "relation",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library that adds relations to TADS 3. It allows you to define arbitrary relations between objects and search through those relations. Version 3.0, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/relation.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-10-11 19:34",
+      "version": "3.0",
+      "tags": []
+    },
+    {
+      "name": "rextok",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library that extends regular expression searches from strings to token lists and vectors. Version 2.0, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rextok.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-04-24 01:15",
+      "version": "2.0",
+      "tags": []
+    },
+    {
+      "name": "rulebooks",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library extension that refactors the definitions of rules and rulebooks making it easier to work with these datatypes. Version 1.1, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rulebooks.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2008-02-05 18:32",
+      "version": "1.1",
+      "tags": []
+    },
+    {
+      "name": "scenes",
+      "author": "Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension that provides a means of defining and manipulating scenes in a way similar to the scenes mechanism available in Inform 7. Version 1.0, by Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/scenes.t",
+      "ext": "t",
+      "last-modified": "2009-07-12 11:22",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "splitgame",
+      "author": "Chris Odhner",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library to implement two-column, two-player games. Included are the library module and a sample game. Version 0.9, by Chris Odhner.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/splitgame.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-03-07 16:04",
+      "version": "0.9",
+      "tags": []
+    },
+    {
+      "name": "t3knowledge",
+      "author": "Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A module to make knowledge tracking more intuitive by adding extra support for NPC knowledge. Version 1.1, by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/t3knowledge.t",
+      "ext": "t",
+      "last-modified": "2004-09-22 06:32",
+      "version": "1.1",
+      "tags": []
+    },
+    {
+      "name": "t3RAP",
+      "author": "Nate Cull. Updated TADS 3 version 1.2 by Steve Breslin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "The TADS 3 Reactive Agent Planner, which automates complex NPC behavior. Original TADS 2 module by Nate Cull. Updated TADS 3 version 1.2 by Steve Breslin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/t3RAP.zip",
+      "makefile-entries": [
+        "t3RAP/t3rapKer",
+        "t3RAP/t3rapPlan",
+        "t3RAP/t3rapTest",
+        "t3RAP/t3rapOrder",
+        "t3RAP/t3rapGoto",
+        "t3RAP/t3knowledge"
+      ],
+      "ext": "zip",
+      "last-modified": "2004-09-19 04:05",
+      "version": "1.2",
+      "tags": []
+    },
+    {
+      "name": "tests",
+      "author": "Ben Cressey and Eric Eve",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An implementation of easy-to-use Inform-7-style \"test me\" script playback, where test scripts defined in the source can be invoked during play-testing. Written by Ben Cressey and Eric Eve.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests.t",
+      "ext": "t",
+      "makefile-entries": [
+        "tests.t"
+      ],
+      "last-modified": "2012-01-02 20:36",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "tests2",
+      "author": "Ben Cressey and Eric Eve, and updated by NR Turner",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An implementation of easy-to-use Inform-7-style \"test me\" script playback, where test scripts defined in the source can be invoked during play-testing. Originally written by Ben Cressey and Eric Eve, and updated by NR Turner.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests2.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2013-01-08 17:25",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "timepasses",
+      "author": "Soren Lovborg",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library to replace the default \"Time passess...\" message, by Soren Lovborg.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/timepasses.t",
+      "ext": "t",
+      "last-modified": "2003-07-05 00:15",
+      "version": null,
+      "tags": []
+    },
+    {
+      "name": "timesys",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A time-oriented library for TADS 3, providing support for input and output of times and dates. Version 3.0.3, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/timesys.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-10-23 03:59",
+      "version": "3.0.3",
+      "tags": []
+    },
+    {
+      "name": "tips",
+      "author": "Krister Fundin",
+      "type": [
+        "adv3"
+      ],
+      "desc": "An extension for displaying tips directed at inexperienced players. Version 1, by Krister Fundin.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tips.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-11-14 04:54",
+      "version": "1",
+      "tags": []
+    },
+    {
+      "name": "toksync",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library that allows a new token to be added to the command tokenizer. Version 1.1, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/toksync.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2004-11-14 00:50",
+      "version": "1.1",
+      "tags": []
+    },
+    {
+      "name": "tsp",
+      "author": "Kevin Forchione",
+      "type": [
+        "adv3"
+      ],
+      "desc": "TSP version 1.0.2, a TADS 3 Services Pack library extension. A collection of mechanisms supporting a wide variety of extended services for the TADS 3 language, by Kevin Forchione.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tsp.zip",
+      "makefile-entries": [
+        "tsp/lib/tsp.tl"
+      ],
+      "ext": "zip",
+      "last-modified": "2005-10-11 18:00",
+      "version": "1.0.2",
+      "tags": []
+    },
+    {
+      "name": "xactor",
+      "author": "Choices",
+      "type": [
+        "adv3"
+      ],
+      "desc": "A library to help write adult-themed games. Version 1.05, by Choices.",
+      "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/xactor.zip",
+      "makefile-entries": [
+        "TODO"
+      ],
+      "ext": "zip",
+      "last-modified": "2006-10-14 07:39",
+      "version": "1.05",
+      "tags": []
+    },
+    {
+      "name": "textMenu",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module for text-based menus",
+      "makefile-entries": [
+        "textMenu/textMenu.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/textMenu.git",
+      "last-modified": "2022-10-25",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "notReallyRandom",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module providing instanceable PRNGs",
+      "makefile-entries": [
+        "notReallyRandom/notReallyRandom.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/notReallyRandom.git",
+      "last-modified": "2023-04-05",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "intMath",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module for mathematical tools using integer approximations.",
+      "makefile-entries": [
+        "intMath/intMath.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/intMath.git",
+      "last-modified": "2023-04-22",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "routeTable",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 that implements simple routing tables for pathfinding. Requires the simpleGraph module.",
+      "makefile-entries": [
+        "routeTable/routeTable.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/routeTable.git",
+      "last-modified": "2023-04-10",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "simpleGraph",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module for handling simple undirected graphs",
+      "makefile-entries": [
+        "simpleGraph/simpleGraph.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/simpleGraph.git",
+      "last-modified": "2023-04-07",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "statTest",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module designed to make it easier to implement simple statistical tests",
+      "makefile-entries": [
+        "statTest/statTest.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/statTest.git",
+      "last-modified": "2023-04-05",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "autoTest",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module that assists implementing automated testing without the use of a command file,",
+      "makefile-entries": [
+        "autoTest/autoTest.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/autoTest.git",
+      "last-modified": "2023-03-18",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "remoteView",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module implementing a remote viewing sense connector enabled by looking through it",
+      "makefile-entries": [
+        "remoteView/remoteView.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/remoteView.git",
+      "last-modified": "2023-03-11",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "debugTool",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module providing runtime debugging tools, including stack traces and a rudimentary interactive debugger",
+      "makefile-entries": [
+        "debugTool/debugTool.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/debugTool.git",
+      "last-modified": "2023-03-16",
+      "version": "1.0",
+      "tags": ["debug"]
+    },
+    {
+      "name": "nounAsVerb",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module for implementing actions that are invoked by bare noun phrases typed on the command line",
+      "makefile-entries": [
+        "nounAsVerb/nounAsVerb.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/nounAsVerb.git",
+      "last-modified": "2023-04-25",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "debugToolLite",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A port of the debugTool interactive(-ish) debugger to work with adv3lite",
+      "makefile-entries": [
+        "debugToolLite/debugToolLite.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/debugToolLite.git",
+      "last-modified": "2023-02-28",
+      "version": "1.0",
+      "tags": ["debug"]
+    },
+    {
+      "name": "bufferedOutputFilter",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module implementing simple buffered output filters for purely typographic formatting using HTML/XML-ish tags",
+      "makefile-entries": [
+        "bufferedOutputFilter/bufferedOutputFilter.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/bufferedOutputFilter.git",
+      "last-modified": "2023-02-28",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "dynamicWord",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "DEPRECATED, use dynamicThing instead",
+      "makefile-entries": [
+        "dynamicWord/dynamicWord.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/dynamicWord.git",
+      "last-modified": "2023-02-01",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "patchLoader",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "This module implements a mechanism for post-release patching of TADS3 games",
+      "makefile-entries": [
+        "patchLoader/patchLoader.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/patchLoader.git",
+      "last-modified": "2023-01-31",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "eventHandler",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module implementing a simple event handler model allowing objects to subscribe to notifications from other objects",
+      "makefile-entries": [
+        "eventHandler/eventHandler.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/eventHandler.git",
+      "last-modified": "2023-01-21",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "dynamicThing",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module that extends Thing to make it easier to dynamically change the vocabulary associated with an object based on player knowledge and game state",
+      "makefile-entries": [
+        "dynamicThing/dynamicThing.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/dynamicThing.git",
+      "last-modified": "2023-01-21",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "newActorCommand",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module that implements a global function similar to newActorAction() but which takes a text string instead of an action instance",
+      "makefile-entries": [
+        "newActorCommand/newActorCommand.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/newActorCommand.git",
+      "last-modified": "2023-01-18",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "absentActor",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module that allows actors to remember when and where they saw other actors",
+      "makefile-entries": [
+        "absentActor/absentActor.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/absentActor.git",
+      "last-modified": "2023-01-05",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "lastTyped",
+      "type": [
+        "adv3"
+      ],
+      "author": "Diegesis & Mimesis",
+      "desc": "A TADS3 module for keeping track of the specific nouns and verbs in a typed command",
+      "makefile-entries": [
+        "lastTyped/lastTyped.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/diegesisandmimesis/lastTyped.git",
+      "last-modified": "2022-01-30",
+      "version": "1.0",
+      "tags": []
+    },
+    {
+      "name": "t3cartographer",
+      "type": [
+        "adv3",
+        "adv3lite"
+      ],
+      "author": "Tomas Öberg",
+      "desc": "The Tads3 Cartographer library is tool that generates a map from your Tads3 source code that can be used either as an aid when developing your game or as an in-game map for the player. It supports various output formats. Depending on your solution and framework it can be a map in svg, html, dot-graphics or plain old ascii.",
+      "makefile-entries": [
+        "t3cartographer/cartographer.tl"
+      ],
+      "ext": "zip",
+      "url": "https://github.com/toerob/t3cartographer.git",
+      "last-modified": "2022-08-14",
+      "version": "0.7",
+      "tags": []
+    },
+    {
+      "name": "AdventEX",
+      "type": [
+        "adv3"
+      ],
+      "author": "Th3OneAndOnly",
+      "desc": "AdventEX(tension) - The versatile extension to Adv3 that we all need!",
+      "ext": "zip",
+      "url": "https://github.com/Th3OneAndOnly/AdventEX.git",
+      "last-modified": "2020-08-14",
+      "version": "1.0.1",
+      "tags": []
+    }
+  ]
+}

@@ -1,17 +1,21 @@
 [package]
 name = "tads3-extensions"
 version = "0.1.0"
-edition = "2021"
+authors = ["Tomas Öberg"]
+description = "A CLI interface for handling package for the interactive fiction language Tads3"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.2.7", features = ["derive"] }
 
 http = "0.2.9"
 hyper = "0.14.26"
 json = "0.12.4"
 reqwest = { version = "0.11.17", features = ["blocking"] }
 
-serde = { version = "1.0.160", features = ["derive"] }
+serde = { version = "1.0.115", features = ["derive"] }
+serde_json = "1.0.57"
 
-serde_json = "1.0.68"
+#tui = { version = "0.19.0" }
