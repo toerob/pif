@@ -1,54 +1,38 @@
-use clap::{
-  Args,
-  ArgMatches,
-  Parser,
-  Subcommand,
-
-   ValueEnum
-};
+use clap::{Args, Parser, Subcommand, ValueEnum};
 
 #[derive(Debug, Parser)]
 #[clap(author, version, about)]
 pub struct InteractiveFictionToolArgs {
+    #[clap(subcommand)]
+    pub menu: MenuSubCommand,
 
-  #[clap(subcommand)]
-  pub menu: MenuSubCommand,
- 
-  #[clap(flatten)]
-  pub global_options: GlobalOptions,
-
+    #[clap(flatten)]
+    pub global_options: GlobalOptions,
 }
-
 
 #[derive(Debug, Subcommand)]
 pub enum MenuSubCommand {
-  /// Install an extension
-  Install(InstallCommand),
-  
-  /// Lists available extensions
-  List(ListCommand)
+    /// Install an extension
+    Install(InstallCommand),
+
+    /// Lists available extensions
+    List(ListCommand),
 }
 
 #[derive(Debug, Args)]
 pub struct InstallCommand {
-  pub name: String
+    pub name: Vec<String>,
 }
-
-
-
-
 
 #[derive(Debug, Subcommand)]
 pub enum ListSubCommand {
-  List(ListCommand)
+    List(ListCommand),
 }
-
 
 #[derive(Debug, Args)]
 pub struct ListCommand {
-  #[clap(flatten)]
-  pub list_options: ListOptions,
-
+    #[clap(flatten)]
+    pub list_options: ListOptions,
 }
 
 #[derive(Debug, Args)]
@@ -60,24 +44,32 @@ pub struct ListOptions {
     /// Filter by keyword (fuzzy search)
     #[clap(long, short, global = false)]
     pub keyword: Option<String>,
+
+    /// Presentation
+    #[clap(long, value_enum, global = true, default_value_t = ListPresentation::Comma)]
+    pub presentation: ListPresentation,
 }
-
-
 
 #[derive(Debug, Args)]
 pub struct GlobalOptions {
     /// Color
-     #[clap(long, value_enum, global = true, default_value_t = Color::Auto)]
-     color: Color,
+    #[clap(long, value_enum, global = true, default_value_t = Color::Auto)]
+    color: Color,
 
     /// Verbosity level 1-3 (TODO)
-     #[clap(short, long, global = true, default_value = "1" )]
-     verbose: Option<usize>,     
+    #[clap(short, long, global = true, default_value = "1")]
+    verbose: Option<usize>,
 }
 
 #[derive(Clone, Debug, ValueEnum)]
-enum Color {
+pub enum Color {
     Always,
     Auto,
     Never,
+}
+
+#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
+pub enum ListPresentation {
+    Newline,
+    Comma,
 }
