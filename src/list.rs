@@ -30,6 +30,8 @@ pub fn list_extensions(list_options: &ListOptions) -> () {
             .collect();
     }
 
+    // TODO: sort
+    // extensions = extensions.sort();
     let delimiter = if list_options.presentation == ListPresentation::Comma {","} else {"\n"};
 
     let na: Vec<_> = extensions

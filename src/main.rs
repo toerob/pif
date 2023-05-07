@@ -7,6 +7,7 @@ mod args;
 mod install;
 mod list;
 mod model;
+//mod download;
 
 use args::{InteractiveFictionToolArgs, MenuSubCommand};
 use clap::Parser;

@@ -46,7 +46,7 @@ pub struct ListOptions {
     pub keyword: Option<String>,
 
     /// Presentation
-    #[clap(long, value_enum, global = true, default_value_t = ListPresentation::Comma)]
+    #[clap(long, value_enum, global = true, default_value_t = ListPresentation::Newline)]
     pub presentation: ListPresentation,
 }
 
@@ -57,7 +57,7 @@ pub struct GlobalOptions {
     color: Color,
 
     /// Verbosity level 1-3 (TODO)
-    #[clap(short, long, global = true, default_value = "1")]
+    #[clap(short, long, global = true, default_value = "3")]
     verbose: Option<usize>,
 }
 
