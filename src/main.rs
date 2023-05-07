@@ -1,6 +1,7 @@
 extern crate ansi_term;
 extern crate clap;
 extern crate serde;
+extern crate git2;
 
 mod args;
 mod install;
