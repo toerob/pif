@@ -10,9 +10,10 @@ use std::{
     time::Duration,
 };
 
+use crate::args::{GlobalOptions, Color};
 use crate::model::{Extension, Extensions};
 
-pub fn install_extensions(name: &Vec<String>) -> () {
+pub fn install_extensions(name: &Vec<String>, global_options: &GlobalOptions) -> () {
     let extension_data_str = fs::read_to_string("./extensions.json").unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
     let installable_extensions: Vec<Extension> = data
@@ -47,6 +48,9 @@ pub fn install_extensions(name: &Vec<String>) -> () {
         let result: Vec<&str> = url.matches(".git").collect();
         let is_git_repo = !result.is_empty();
 
+        let use_colors = if Color::Never == global_options.color {false} else {true};
+
+
         if !is_git_repo {
             // Regular ifarchive procedure
             let response = reqwest::blocking::get(url).expect("Request did fail");
@@ -64,7 +68,11 @@ pub fn install_extensions(name: &Vec<String>) -> () {
 
             }
             let text = format!(" ==> {} INSTALLED", &extension.name);
-            println!("{}", Green.paint(text));
+            if use_colors {
+                println!("{}", Green.paint(text));
+            }else {
+                println!("{}", text);
+            }
             return;
         }
 
@@ -124,7 +132,11 @@ pub fn install_extensions(name: &Vec<String>) -> () {
                 //println!(" DONE!");
                 //let text = format!("Installing \"{}\" in folder: {}", &extension.name, &path);
                 let text = format!(" ==> {} INSTALLED", &extension.name);
-                println!("{}", Green.paint(text));
+                if use_colors {
+                    println!("{}", Green.paint(text));
+                }else {
+                    println!("{}", text);
+                }
             }
             Err(e) => {
                 /*

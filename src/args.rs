@@ -54,14 +54,14 @@ pub struct ListOptions {
 pub struct GlobalOptions {
     /// Color
     #[clap(long, value_enum, global = true, default_value_t = Color::Auto)]
-    color: Color,
+    pub color: Color,
 
     /// Verbosity level 1-3 (TODO)
     #[clap(short, long, global = true, default_value = "3")]
-    verbose: Option<usize>,
+    pub verbose: Option<usize>,
 }
 
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
 pub enum Color {
     Always,
     Auto,

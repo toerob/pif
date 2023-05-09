@@ -15,8 +15,10 @@ use install::install_extensions;
 use list::list_extensions;
 
 fn main() -> () {
-    match InteractiveFictionToolArgs::parse().menu {
-        MenuSubCommand::List(cmd_args) => list_extensions(&cmd_args.list_options),
-        MenuSubCommand::Install(cmd_args) => install_extensions(&cmd_args.name),
+    let choice = InteractiveFictionToolArgs::parse();
+    
+    match choice.menu {
+        MenuSubCommand::List(cmd_args) => list_extensions(&cmd_args.list_options, &choice.global_options),
+        MenuSubCommand::Install(cmd_args) => install_extensions(&cmd_args.name, &choice.global_options),
     }
 }

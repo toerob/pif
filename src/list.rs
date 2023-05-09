@@ -6,11 +6,13 @@ use args::{ListOptions, ListPresentation};
 use model::Extensions;
 use std::fs;
 
+use crate::args::{GlobalOptions, Color};
+
 // TODO: modules
 // TODO: fuzzy search
 
 #[warn(unused_attributes)]
-pub fn list_extensions(list_options: &ListOptions) -> () {
+pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOptions) -> () {
     let extension_data_str = fs::read_to_string("./extensions.json").unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
     let mut extensions = data.extensions;
@@ -36,11 +38,31 @@ pub fn list_extensions(list_options: &ListOptions) -> () {
 
     let na: Vec<_> = extensions
         .iter()
-        .map(|e| e.name.as_str().to_owned())
+        .map(|e| create_presentation(e, global_options))
         .collect();
     let str = na.join(delimiter);
+    println!("{}",  str);
+}
 
-    println!("{}", Green.paint(format!("{}", &str)));
+fn create_presentation(e: &crate::model::Extension, global_options:&GlobalOptions) -> String {
+    let use_colors = if Color::Never == global_options.color {false} else {true};
+    let verbosity_level = global_options.verbose.unwrap();
+    let name = if use_colors {
+         Green.paint(format!("{}", e.name.as_str().to_owned())).to_string()
+    } else { 
+        e.name.as_str().to_owned()
+    };
+    
+    return match verbosity_level {
+        1 => name,
+        2 => name 
+        + " (" + e.last_modified.as_ref().unwrap().to_owned().as_str() + ") "
+        + " by " + e.author.as_ref().unwrap().to_owned().as_str(),
+        _ => name 
+            + " (" + e.last_modified.as_ref().unwrap().to_owned().as_str() + ") "
+            + " by " + e.author.as_ref().unwrap().to_owned().as_str() 
+            + " " + e.desc.as_ref().unwrap().to_owned().as_str()
+    };
 }
 
 
