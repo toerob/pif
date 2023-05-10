@@ -12,12 +12,20 @@ pub struct InteractiveFictionToolArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum MenuSubCommand {
+    /// Get an update of all extensions
+    Update(UpdateCommand),
+
     /// Install an extension
     Install(InstallCommand),
 
     /// Lists available extensions
     List(ListCommand),
 }
+
+#[derive(Debug, Args)]
+pub struct UpdateCommand {
+}
+
 
 #[derive(Debug, Args)]
 pub struct InstallCommand {
