@@ -1,6 +1,8 @@
 use ansi_term::Colour::*;
 use git2::{ErrorCode, Repository};
+use sublime_fuzzy::FuzzySearch;
 use std::io::stdout;
+use std::ptr::copy;
 use std::{
     fs::{self, File},
     io::{self, Cursor, Write},
@@ -13,23 +15,40 @@ use std::{
 use crate::args::{GlobalOptions, Color};
 use crate::model::{Extension, Extensions};
 
-pub fn install_extensions(name: &Vec<String>, global_options: &GlobalOptions) -> () {
+pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
+    let lower_case_names: Vec<String> = names.iter().map(|n|n.to_lowercase()).collect();
     let extension_data_str = fs::read_to_string("./extensions.json").unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
-    let installable_extensions: Vec<Extension> = data
-        .extensions
-        .into_iter()
-        .filter(|e| name.contains(&e.name))
+    
+    let installable_extensions: Vec<Extension> = data.extensions.clone().into_iter()
+        .filter(|e| lower_case_names.contains(&e.name.to_lowercase()))
         .collect();
+
 
     if installable_extensions.is_empty() {
         println!(
             "{}",
             Red.paint(format!(
                 "No extension(s) found by the name: \"{}\"",
-                &name.join(", ")
+                &names.join(", ")
             ))
         );
+
+        let mut all_results: Vec<String> = Vec::new();
+        for name in names.iter() {
+            data.extensions.clone().into_iter()
+                .filter(|e| 
+                    FuzzySearch::new(&name, &e.name.to_lowercase())
+                    .case_insensitive()
+                    .best_match()
+                    .is_some())
+                .map(|e|e.name)
+                .for_each(|local_result| all_results.push(local_result));
+        };
+        if !all_results.is_empty() {
+            print!("You may have meant to type: ");
+            println!("{}", Yellow.paint(format!("{} ", all_results.join(", "))));
+        }
         return;
     }
 

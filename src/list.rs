@@ -1,15 +1,13 @@
 extern crate ansi_term;
 extern crate clap;
 extern crate serde;
+
+use crate::args::{Color, GlobalOptions};
 use ansi_term::Colour::*;
 use args::{ListOptions, ListPresentation};
 use model::Extensions;
 use std::fs;
-
-use crate::args::{GlobalOptions, Color};
-
-// TODO: modules
-// TODO: fuzzy search
+use sublime_fuzzy::FuzzySearch;
 
 #[warn(unused_attributes)]
 pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOptions) -> () {
@@ -18,55 +16,91 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     let mut extensions = data.extensions;
 
     if list_options.author.is_some() {
-        let author = list_options.author.as_ref().unwrap().to_owned().to_lowercase();
+        let author = list_options
+            .author
+            .as_ref()
+            .unwrap()
+            .to_owned()
+            .to_lowercase();
         extensions = extensions
             .into_iter()
-            .filter(|e| e.author.as_ref().unwrap().to_lowercase().starts_with(&author))
+            .filter(|e| {
+                FuzzySearch::new(&author, &e.author.as_ref().unwrap().to_lowercase())
+                    .case_insensitive()
+                    .best_match()
+                    .is_some()
+            })
             .collect();
     }
     if list_options.keyword.is_some() {
-        let keyword = list_options.keyword.as_ref().unwrap().to_owned().to_lowercase();
+        let keyword = list_options
+            .keyword
+            .as_ref()
+            .unwrap()
+            .to_owned()
+            .to_lowercase();
         extensions = extensions
             .into_iter()
-            .filter(|e| e.name.to_lowercase().starts_with(&keyword))
+            .filter(|e| {
+                FuzzySearch::new(&keyword, &e.name.to_lowercase())
+                    .case_insensitive()
+                    .best_match()
+                    .is_some()
+            })
             .collect();
     }
 
-    // TODO: sort
+    // TODO: more sorting options
     // extensions = extensions.sort();
-    let delimiter = if list_options.presentation == ListPresentation::Comma {","} else {"\n"};
+    let delimiter = if list_options.presentation == ListPresentation::Comma {
+        ","
+    } else {
+        "\n"
+    };
 
     let na: Vec<_> = extensions
         .iter()
         .map(|e| create_presentation(e, global_options))
         .collect();
     let str = na.join(delimiter);
-    println!("{}",  str);
+    println!("{}", str);
 }
 
-fn create_presentation(e: &crate::model::Extension, global_options:&GlobalOptions) -> String {
-    let use_colors = if Color::Never == global_options.color {false} else {true};
+fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptions) -> String {
+    let use_colors = if Color::Never == global_options.color {
+        false
+    } else {
+        true
+    };
     let verbosity_level = global_options.verbose.unwrap();
     let name = if use_colors {
-         Green.paint(format!("{}", e.name.as_str().to_owned())).to_string()
-    } else { 
+        Green
+            .paint(format!("{}", e.name.as_str().to_owned()))
+            .to_string()
+    } else {
         e.name.as_str().to_owned()
     };
-    
+
     return match verbosity_level {
         1 => name,
-        2 => name 
-        + " (" + e.last_modified.as_ref().unwrap().to_owned().as_str() + ") "
-        + " by " + e.author.as_ref().unwrap().to_owned().as_str(),
-        _ => name 
-            + " (" + e.last_modified.as_ref().unwrap().to_owned().as_str() + ") "
-            + " by " + e.author.as_ref().unwrap().to_owned().as_str() 
-            + " " + e.desc.as_ref().unwrap().to_owned().as_str()
+        2 => {
+            name + " ("
+                + e.last_modified.as_ref().unwrap().to_owned().as_str()
+                + ") "
+                + " by "
+                + e.author.as_ref().unwrap().to_owned().as_str()
+        }
+        _ => {
+            name + " ("
+                + e.last_modified.as_ref().unwrap().to_owned().as_str()
+                + ") "
+                + " by "
+                + e.author.as_ref().unwrap().to_owned().as_str()
+                + " "
+                + e.desc.as_ref().unwrap().to_owned().as_str()
+        }
     };
 }
-
-
-
 
 /*
 //let filteredData = filter_by_author(listOptions.author.as_ref().unwrap().to_owned(), &extensions);
