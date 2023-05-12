@@ -4,14 +4,13 @@ extern crate serde;
 extern crate git2;
 extern crate sublime_fuzzy;
 
-
 mod args;
 mod model;
 
 mod update;
 mod install;
 mod list;
-//mod download;
+mod makefile;
 
 use args::{InteractiveFictionToolArgs, MenuSubCommand};
 use clap::Parser;

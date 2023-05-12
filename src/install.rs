@@ -1,18 +1,13 @@
 use ansi_term::Colour::*;
 use git2::{ErrorCode, Repository};
-use sublime_fuzzy::FuzzySearch;
-use std::io::stdout;
-use std::ptr::copy;
+use sublime_fuzzy::{FuzzySearch, Scoring};
 use std::{
     fs::{self, File},
-    io::{self, Cursor, Write},
-    path::{Path, PathBuf},
-    sync::{Arc, Mutex},
-    thread::{sleep, spawn},
-    time::Duration,
+    io::{Cursor, Write},
+    path::{Path},
 };
 
-use crate::args::{GlobalOptions, Color};
+use crate::{args::{GlobalOptions, Color}, makefile::add_make_file_entry};
 use crate::model::{Extension, Extensions};
 
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
@@ -33,7 +28,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 &names.join(", ")
             ))
         );
-
+        
         let mut all_results: Vec<String> = Vec::new();
         for name in names.iter() {
             data.extensions.clone().into_iter()
@@ -84,7 +79,6 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 let mut file = File::create(file_name).expect("failed to create file. ");
                 file.write_all(&file_data)
                     .expect("Failed to write to binary file. ");
-
             }
             let text = format!(" ==> {} INSTALLED", &extension.name);
             if use_colors {
@@ -92,6 +86,9 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
             }else {
                 println!("{}", text);
             }
+
+            // TODO: add_make_file_entry();
+            
             return;
         }
 

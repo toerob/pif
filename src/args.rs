@@ -53,6 +53,15 @@ pub struct ListOptions {
     #[clap(long, short, global = false)]
     pub keyword: Option<String>,
 
+    /// List order direction
+    #[clap(long, value_enum, global = true, default_value_t = OrderingDirection::Descending)]
+    pub ordering_direction: OrderingDirection,
+
+    /// Sort 
+    #[clap(long, value_enum, global = true, default_value_t = SortProperty::Name)]
+    pub sort_property: SortProperty,
+
+
     /// Presentation
     #[clap(long, value_enum, global = true, default_value_t = ListPresentation::Newline)]
     pub presentation: ListPresentation,
@@ -65,7 +74,7 @@ pub struct GlobalOptions {
     pub color: Color,
 
     /// Verbosity level 1-3 (TODO)
-    #[clap(short, long, global = true, default_value = "3")]
+    #[clap(short, long, global = true, default_value = "2")]
     pub verbose: Option<usize>,
 }
 
@@ -80,4 +89,19 @@ pub enum Color {
 pub enum ListPresentation {
     Newline,
     Comma,
+}
+
+
+#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
+pub enum OrderingDirection {
+    Ascending,
+    Descending
+}
+
+
+#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
+pub enum SortProperty {
+    Name,
+    Author,
+    Date
 }

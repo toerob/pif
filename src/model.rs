@@ -1,10 +1,12 @@
-use serde::Deserialize;
 
-#[derive(Deserialize, Debug, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize,PartialOrd,Ord, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Extension {
     #[serde(rename = "type")]
     pub extension_type: Option<Vec<String>>,
+
     pub name: String,
     pub author: Option<String>,
     pub desc: Option<String>,
@@ -19,7 +21,7 @@ pub struct Extension {
     pub last_modified: Option<String>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize,PartialOrd,Ord, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Extensions {
     pub extensions: Vec<Extension>,
