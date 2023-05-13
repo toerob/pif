@@ -26,6 +26,8 @@ use update::update_extensions;
 // TODO: An update command that pulls from a git repo on "rift/ifp update" and updates extensions.json with new entries, 
 // TODO: stores it locally, in a workplace folder or close by within a .folder?
 
+// TODO: an info option that scans the folder and displays installed extensions along with their descriptions?
+
 fn main() -> () {
     
     let choice = InteractiveFictionToolArgs::parse();

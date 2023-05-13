@@ -11,10 +11,17 @@ use crate::model::{Extension, Extensions};
 use crate::{
     args::{Color, GlobalOptions},
     detect::{detect_system, get_extension_path},
-    makefile::{self, add_make_file_entry},
+    makefile::add_make_file_entry,
 };
 
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
+    if names.len() == 0 {
+        println!(
+            "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""))
+        );
+        return;
+    }
+
     let (system_type, makefile) = detect_system();
     println!(
         "{}",
