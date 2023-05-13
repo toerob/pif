@@ -1,8 +1,8 @@
 [package]
-name = "tads3-extensions"
+name = "ifp"
 version = "0.1.0"
 authors = ["Tomas Öberg"]
-description = "A CLI interface for handling package for the interactive fiction language Tads3"
+description = "IFP - A CLI package manager for interactive fiction languages"
 
 #edition = "2021"
 
@@ -22,5 +22,7 @@ serde_json = "1.0.57"
 git2 = "0.17.1"
 zip-extract = "0.1.2"
 sublime_fuzzy = "0.7.0"
+glob = "0.3.1"
+globwalk = "0.8.1"
 
 #tui = { version = "0.19.0" }

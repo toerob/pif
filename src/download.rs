@@ -11,7 +11,6 @@ use indicatif::{ProgressBar, ProgressStyle};
 use futures_util::StreamExt;
 
 pub async fn download_file(client: &Client, url: &str, path: &str) -> Result<(), String> {
-    // Reqwest setup
     let res = client
         .get(url)
         .send()

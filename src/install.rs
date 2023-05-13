@@ -1,24 +1,39 @@
 use ansi_term::Colour::*;
 use git2::{ErrorCode, Repository};
-use sublime_fuzzy::{FuzzySearch, Scoring};
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
-    path::{Path},
+    path::Path,
+};
+use sublime_fuzzy::FuzzySearch;
+
+use crate::model::{Extension, Extensions};
+use crate::{
+    args::{Color, GlobalOptions},
+    detect::{detect_system, get_extension_path},
+    makefile::{self, add_make_file_entry},
 };
 
-use crate::{args::{GlobalOptions, Color}, makefile::add_make_file_entry};
-use crate::model::{Extension, Extensions};
-
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
-    let lower_case_names: Vec<String> = names.iter().map(|n|n.to_lowercase()).collect();
-    let extension_data_str = fs::read_to_string("./extensions.json").unwrap();
+    let (system_type, makefile) = detect_system();
+    println!(
+        "{}",
+        Yellow
+            .paint(format!("System: {:?}", system_type))
+            .to_string()
+    );
+    let file_path = get_extension_path(system_type);
+
+    let lower_case_names: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+    let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
-    
-    let installable_extensions: Vec<Extension> = data.extensions.clone().into_iter()
+
+    let installable_extensions: Vec<Extension> = data
+        .extensions
+        .clone()
+        .into_iter()
         .filter(|e| lower_case_names.contains(&e.name.to_lowercase()))
         .collect();
-
 
     if installable_extensions.is_empty() {
         println!(
@@ -28,18 +43,21 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 &names.join(", ")
             ))
         );
-        
+
         let mut all_results: Vec<String> = Vec::new();
         for name in names.iter() {
-            data.extensions.clone().into_iter()
-                .filter(|e| 
+            data.extensions
+                .clone()
+                .into_iter()
+                .filter(|e| {
                     FuzzySearch::new(&name, &e.name.to_lowercase())
-                    .case_insensitive()
-                    .best_match()
-                    .is_some())
-                .map(|e|e.name)
+                        .case_insensitive()
+                        .best_match()
+                        .is_some()
+                })
+                .map(|e| e.name)
                 .for_each(|local_result| all_results.push(local_result));
-        };
+        }
         if !all_results.is_empty() {
             print!("You may have meant to type: ");
             println!("{}", Yellow.paint(format!("{} ", all_results.join(", "))));
@@ -62,8 +80,11 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         let result: Vec<&str> = url.matches(".git").collect();
         let is_git_repo = !result.is_empty();
 
-        let use_colors = if Color::Never == global_options.color {false} else {true};
-
+        let use_colors = if Color::Never == global_options.color {
+            false
+        } else {
+            true
+        };
 
         if !is_git_repo {
             // Regular ifarchive procedure
@@ -83,12 +104,15 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
             let text = format!(" ==> {} INSTALLED", &extension.name);
             if use_colors {
                 println!("{}", Green.paint(text));
-            }else {
+            } else {
                 println!("{}", text);
+            }
+            if makefile.is_some() {
+                add_make_file_entry(makefile.as_ref().unwrap());
             }
 
             // TODO: add_make_file_entry();
-            
+
             return;
         }
 
@@ -112,7 +136,6 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         };
 
         // 2. If repository doesn't exist. Clone it into the folder of {path}
-
 
         /*
         // This below is for animation purpose, spawn a thread to print to stdout every nth millisecond
@@ -139,7 +162,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 }
                 sleep(Duration::from_millis(40));
             }
-        }); 
+        });
         */
 
         // 3. Clone the repository
@@ -150,7 +173,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 let text = format!(" ==> {} INSTALLED", &extension.name);
                 if use_colors {
                     println!("{}", Green.paint(text));
-                }else {
+                } else {
                     println!("{}", text);
                 }
             }

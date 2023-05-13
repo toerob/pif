@@ -2,7 +2,10 @@ extern crate ansi_term;
 extern crate clap;
 extern crate serde;
 
-use crate::args::{Color, GlobalOptions, SortProperty};
+use crate::{
+    args::{Color, GlobalOptions, SortProperty},
+    detect::{detect_system, get_extension_path, InteractiveFictionSystem},
+};
 use ansi_term::Colour::*;
 use args::{ListOptions, ListPresentation};
 use model::Extensions;
@@ -11,7 +14,17 @@ use sublime_fuzzy::FuzzySearch;
 
 #[warn(unused_attributes)]
 pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOptions) -> () {
-    let extension_data_str = fs::read_to_string("./extensions.json").unwrap();
+    let (system_type, _) = detect_system();
+
+    println!(
+        "{}",
+        Yellow
+            .paint(format!("System: {:?}", system_type))
+            .to_string()
+    );
+    let file_path = get_extension_path(system_type);
+
+    let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
     let mut extensions = data.extensions;
 
@@ -33,7 +46,6 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
             .collect();
     }
     if list_options.keyword.is_some() {
-        
         let keyword = list_options
             .keyword
             .as_ref()
@@ -51,20 +63,16 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
             })
             .collect();
     }
-    
+
     // TODO: implement OrderingDirection -> SortOrderDir
 
     if SortProperty::Name == list_options.sort_property {
-        extensions.sort_by_key(|e|e.to_owned().name);
+        extensions.sort_by_key(|e| e.to_owned().name);
     } else if SortProperty::Author == list_options.sort_property {
-        extensions.sort_by_key(|e|e.to_owned().author);
+        extensions.sort_by_key(|e| e.to_owned().author);
     } else if SortProperty::Date == list_options.sort_property {
-        extensions.sort_by_key(|e|e.to_owned().last_modified);
+        extensions.sort_by_key(|e| e.to_owned().last_modified);
     }
-
-
-
-    
 
     let delimiter = if list_options.presentation == ListPresentation::Comma {
         ","
@@ -79,7 +87,6 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
 
     let str = na.join(delimiter);
     println!("{}", str);
-
 }
 
 fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptions) -> String {
@@ -102,17 +109,17 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         2 => {
             name + " ("
                 + e.last_modified.as_ref().unwrap().to_owned().as_str()
-                + ") "
+                + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str()
         }
         _ => {
             name + " ("
                 + e.last_modified.as_ref().unwrap().to_owned().as_str()
-                + ") "
+                + ")"
                 + " by "
-                + e.author.as_ref().unwrap().to_owned().as_str()
-                + " "
+                + e.author.as_ref().unwrap().to_owned().as_str().trim_end()
+                + " - "
                 + e.desc.as_ref().unwrap().to_owned().as_str()
         }
     };

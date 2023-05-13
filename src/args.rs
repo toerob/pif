@@ -30,7 +30,9 @@ pub struct UpdateCommand {
 #[derive(Debug, Args)]
 pub struct InstallCommand {
     pub name: Vec<String>,
+
 }
+
 
 #[derive(Debug, Subcommand)]
 pub enum ListSubCommand {
