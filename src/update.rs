@@ -1,33 +1,47 @@
-use crate::args::GlobalOptions;
+use std::io::{stdout, Write};
+
+use ansi_term::Colour::*;
+use crate::args::{GlobalOptions, Color};
 use git2::{ErrorCode, Repository};
-use std::{fs, path::Path};
 
-pub fn update_extensions(_: &GlobalOptions) {
-    let workspace_folder = ".ifp";
+fn colorize_message(colour: Option<ansi_term::Colour>, msg: String) -> String {
+    let text = match colour {
+        Some(c) => format!("{}", c.paint(msg).to_owned()),
+        None => msg.to_owned(),
+    };
+    return text;
+}
+
+
+
+
+// TODO: add colors here as well
+pub fn update_extensions(global_options: &GlobalOptions, workspace_folder: &str) {
+
+    let success_color = match Color::Never != global_options.color {
+        true => Some(Green),
+        false => None,
+    };
+    
     let repository_url = "https://github.com/toerob/t3cartographer";
-
     let repository_main_branch = "master"; // TODO: rename to main when the public repository exists
-    if !Path::new(workspace_folder).exists() {
-        print!(" ==> Creating workspace directory: {} ", workspace_folder);
-        fs::create_dir(workspace_folder).expect("Could not create .ifp folder");
-        println!(" Done!");
-    }
-
     if !ensure_open(workspace_folder) {
-        print!(" ==> Downloading latest changes from: {} ", repository_url);
+        println!("{}", colorize_message(success_color,format!(" ==> Downloading latest changes from: {} ", repository_url)));
+        stdout().flush().unwrap();
         Repository::clone(repository_url, workspace_folder)
             .expect("failed to clone repository: {}");
-        println!(" Done!");
     }
-    pull_latest(workspace_folder, &repository_main_branch.to_string());
+    
+    pull_latest(global_options, workspace_folder, &repository_main_branch.to_string());
 }
 
 fn ensure_open(workspace_folder: &str) -> bool {
-    //println!(" ==> Ensuring {} exists", &workspace_folder);
     match Repository::open(workspace_folder) {
         Ok(_) => true,
         Err(e) => {
-            if ErrorCode::NotFound != e.code() {
+            if ErrorCode::NotFound == e.code() {
+                println!("Settings are missing. ");
+            } else {
                 panic!("failed to open: {}", e); // If due to other error than NotFound, let's panic!
             }
             false
@@ -35,8 +49,14 @@ fn ensure_open(workspace_folder: &str) -> bool {
     }
 }
 
-fn pull_latest(workspace_folder: &str, remote_branch: &String) -> () {
-    print!(" ==> Fetching latest changes");
+fn pull_latest(global_options: &GlobalOptions, workspace_folder: &str, remote_branch: &String) -> () {
+    
+    let success_color = match Color::Never != global_options.color {
+        true => Some(Green),
+        false => None,
+    };
+
+    print!("{}", colorize_message(success_color, String::from(" ==> Fetching latest changes")));
 
     let origin_name = "origin";
     let repo = Repository::open(workspace_folder).expect("Failed to open repository");
