@@ -4,7 +4,7 @@ extern crate serde;
 
 use crate::{
     args::{Color, GlobalOptions, SortProperty},
-    detect::{detect_system, get_extension_path}, model::Version,
+    detect::{detect_system, get_extension_path},
 };
 use ansi_term::Colour::*;
 use args::{ListOptions, ListPresentation};

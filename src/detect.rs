@@ -26,6 +26,7 @@ pub fn get_extension_path(system_type: InteractiveFictionSystem) -> String {
  */
 pub fn detect_system() -> (InteractiveFictionSystem, Option<DirEntry>) {
     //let current_directory = env::current_dir().unwrap();
+    //return (InteractiveFictionSystem::Dialog, None); // TODO: add override via function
 
     for entry in glob("*.{t3m}").expect("Failed to read tads3 glob pattern") {
         match entry {
