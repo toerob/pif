@@ -1,7 +1,7 @@
 {
   "extensions": [
     {
-      "name": "Threaded Conversation",
+      "name": "ThreadedConversation",
       "desc": "Implementation of threaded conversation for the Dialog IF language",
       "author": "Howard M. Lewis Ship",
       "versions": [
