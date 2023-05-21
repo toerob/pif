@@ -4,7 +4,7 @@ extern crate serde;
 
 use crate::{
     args::{Color, GlobalOptions, SortProperty},
-    detect::{detect_system, get_extension_path},
+    detect::{detect_system, get_extension_path}, model::Version,
 };
 use ansi_term::Colour::*;
 use args::{ListOptions, ListPresentation};
@@ -29,12 +29,14 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     let mut extensions = data.extensions;
 
     if list_options.author.is_some() {
+
         let author = list_options
             .author
             .as_ref()
             .unwrap()
             .to_owned()
             .to_lowercase();
+        
         extensions = extensions
             .into_iter()
             .filter(|e| {
@@ -71,7 +73,14 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     } else if SortProperty::Author == list_options.sort_property {
         extensions.sort_by_key(|e| e.to_owned().author);
     } else if SortProperty::Date == list_options.sort_property {
-        extensions.sort_by_key(|e| e.to_owned().last_modified);
+        // TODO: compare the version's version number (semver wise) to find out the latest version to compare with
+
+        extensions.sort_by_key(|e| {
+            match &e.versions.get(0) {
+                Some(v) => v.last_modified.to_owned(),
+                _ => Some(String::from("0"))
+            }
+        }); 
     }
 
     let delimiter = if list_options.presentation == ListPresentation::Comma {
@@ -104,18 +113,22 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         e.name.as_str().to_owned()
     };
 
+    // TODO: make sure sorting by semantic version works
+    e.versions.to_owned().sort_by_key(|v| v.to_owned().version);
+    let latest_version = e.versions.get(0).unwrap();
+
     return match verbosity_level {
         1 => name,
         2 => {
             name + " ("
-                + e.last_modified.as_ref().unwrap().to_owned().as_str()
+                + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
                 + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str()
         }
         _ => {
             name + " ("
-                + e.last_modified.as_ref().unwrap().to_owned().as_str()
+                + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
                 + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str().trim_end()
@@ -124,6 +137,7 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         }
     };
 }
+
 
 /*
 //let filteredData = filter_by_author(listOptions.author.as_ref().unwrap().to_owned(), &extensions);

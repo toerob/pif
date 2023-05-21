@@ -82,7 +82,9 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         let os_path = Path::new(library_path).join(&extension.name);
         let path = os_path.to_str().unwrap();
 
-        let url = extension.url.as_ref().unwrap().as_str();
+        let latest_version = extension.versions.get(0).unwrap();
+
+        let url = latest_version.url.as_ref().unwrap().as_str();
 
         let result: Vec<&str> = url.matches(".git").collect();
         let is_git_repo = !result.is_empty();
@@ -97,7 +99,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
             // Regular ifarchive procedure
             let response = reqwest::blocking::get(url).expect("Request did fail");
             let file_data = response.bytes().expect("Bytes are invalid");
-            let file_extension = extension.ext.as_ref().to_owned().unwrap();
+            let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
             if file_extension == "zip" {
                 let target_dir = Path::new(os_path.as_path());
                 zip_extract::extract(Cursor::new(file_data), &target_dir, true)

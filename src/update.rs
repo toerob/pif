@@ -23,7 +23,7 @@ pub fn update_extensions(global_options: &GlobalOptions, workspace_folder: &str)
         false => None,
     };
     
-    let repository_url = "https://github.com/toerob/t3cartographer";
+    let repository_url = "https://github.com/toerob/t3cartographer"; // TODO: Add public repository here instead of this placeholder
     let repository_main_branch = "master"; // TODO: rename to main when the public repository exists
     if !ensure_open(workspace_folder) {
         println!("{}", colorize_message(success_color,format!(" ==> Downloading latest changes from: {} ", repository_url)));
