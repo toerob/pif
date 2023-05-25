@@ -46,8 +46,13 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
 
       if ele.versions.to_owned().len() > 0 {
         println!("Versions: ");
-        for version in &ele.versions {
-          println!(" {}\n last modified: {}\n", &version.url.as_ref().unwrap(), &version.last_modified.as_ref().unwrap());
+        let mut sorted_versions =  ele.clone();
+        
+        sorted_versions.versions.sort_by_key(|e|e.to_owned().version);
+
+        for version in &sorted_versions.versions {
+            
+          println!("{}\n {}\n last modified: {}\n", &version.version.as_ref().unwrap(), &version.url.as_ref().unwrap(), &version.last_modified.as_ref().unwrap());
         }
   
       }

@@ -8,6 +8,7 @@ extern crate globwalk;
 extern crate dotenv;
 extern crate home;
 extern crate dirs;
+extern crate semver;
 
 mod detect;
 mod args;
@@ -18,13 +19,14 @@ mod install;
 mod list;
 mod makefile;
 
-use std::{fs::{self}};
+use std::{fs::{self}, process::exit};
 
 use args::{InteractiveFictionToolArgs, MenuSubCommand};
 use clap::{Parser};
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
+use semver::VersionReq;
 use update::update_extensions;
 
 
@@ -32,6 +34,16 @@ use update::update_extensions;
 
 // TODO: installation recipe that creates .ifp folder in the home directory. Clone settings to this
 fn main() -> () {
+
+
+    /*let v1 = VersionReq::parse("1.2.3").unwrap();
+    let v2 = VersionReq::parse("1.3").unwrap();
+    let lst = vec![v1, v2];
+    let x = lst.to_owned().sort_by_key(|e|e);
+
+    //exit(0);
+    */
+
     let home_dir = dirs::home_dir().expect("Could not determine home directory. ");
     //let ifp_home_dir = home_dir.join(".ifp");
     let ifp_settings_dir = home_dir.join(".ifp/settings");

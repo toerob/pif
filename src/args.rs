@@ -37,6 +37,7 @@ pub struct InstallCommand {
 
 #[derive(Debug, Args)]
 pub struct InfoCommand {
+    /// package names to retrieve info about
     pub name: Vec<String>,
 }
 

@@ -105,29 +105,37 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         true
     };
     let verbosity_level = global_options.verbose.unwrap();
+
+    //for version in e.versions.to_owned() {
+    //    print!("{:?}", &version.version);
+    //}
+    //println!();
+    let mut extension_versions = e.versions.to_owned();    
+    extension_versions.sort_by_key(|v| v.to_owned().version);
+
+    let latest_version = extension_versions.last().unwrap();
+    let version = latest_version.version.clone().unwrap_or_else(||String::from(""));
+
     let name = if use_colors {
+        
         Green
-            .paint(format!("{}", e.name.as_str().to_owned()))
+            .paint(format!("{} {} ", e.name.as_str().to_owned(), &version))
             .to_string()
     } else {
         e.name.as_str().to_owned()
     };
 
-    // TODO: make sure sorting by semantic version works
-    e.versions.to_owned().sort_by_key(|v| v.to_owned().version);
-    let latest_version = e.versions.get(0).unwrap();
-
     return match verbosity_level {
         1 => name,
         2 => {
-            name + " ("
+            name  + " ("
                 + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
                 + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str()
         }
         _ => {
-            name + " ("
+            name  + " ("
                 + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
                 + ")"
                 + " by "
