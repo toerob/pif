@@ -31,18 +31,8 @@ use update::update_extensions;
 
 
 // TODO: an info option that scans the folder and displays installed extensions along with their descriptions?
-
 // TODO: installation recipe that creates .ifp folder in the home directory. Clone settings to this
 fn main() -> () {
-
-
-    /*let v1 = VersionReq::parse("1.2.3").unwrap();
-    let v2 = VersionReq::parse("1.3").unwrap();
-    let lst = vec![v1, v2];
-    let x = lst.to_owned().sort_by_key(|e|e);
-
-    //exit(0);
-    */
 
     let home_dir = dirs::home_dir().expect("Could not determine home directory. ");
     //let ifp_home_dir = home_dir.join(".ifp");

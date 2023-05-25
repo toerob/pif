@@ -40,19 +40,26 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
         .iter()
         .filter(|ext| lowercase_names.contains(&ext.to_owned().name.to_lowercase()));
 
-    for ele in extensions_info {
+        //let iter = extensions_info.enumerate();
+    //let nr: usize = extensions_info.count();
+    for (_, ele) in extensions_info.enumerate() {
       println!("Extension name: {}\nby {} \nDescription: {}\n", &ele.name,  &ele.author.as_ref().unwrap(),  &ele.desc.as_ref().unwrap());
 
 
       if ele.versions.to_owned().len() > 0 {
         println!("Versions: ");
         let mut sorted_versions =  ele.clone();
+
         
         sorted_versions.versions.sort_by_key(|e|e.to_owned().version);
 
-        for version in &sorted_versions.versions {
+        let total = sorted_versions.versions.len()-1;
+
+        for (idx, version) in sorted_versions.versions.into_iter().enumerate() {
             
-          println!("{}\n {}\n last modified: {}\n", &version.version.as_ref().unwrap(), &version.url.as_ref().unwrap(), &version.last_modified.as_ref().unwrap());
+            let latest = if (idx ==  total) { "(LATEST)" } else { "" };
+            
+          println!("{} {}\n {}\n last modified: {}\n", &version.version.as_ref().unwrap(), latest, &version.url.as_ref().unwrap(), &version.last_modified.as_ref().unwrap());
         }
   
       }
