@@ -23,24 +23,24 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<DirEntry>) {
     for entry in glob("*.{t3m}").expect("Failed to read tads3 glob pattern") {
         match entry {
             Ok(path) => return (InteractiveFictionSystem::Tads3, Some(path)),
-            Err(e) => {
-                println!("***ERROR**");
+            Err(_) => {
+                eprintln!("***ERROR**");
             }
         }
     }
     for entry in glob("*.{inf}").expect("Failed to read inform6 glob pattern") {
         match entry {
             Ok(_) => return (InteractiveFictionSystem::Inform6, None),
-            Err(e) => {
-                println!("***ERROR**");
+            Err(_) => {
+                eprintln!("***ERROR**");
             }
         }
     }
     for entry in glob("*.{dg}").expect("Failed to read dialog glob pattern") {
         match entry {
             Ok(_) => return (InteractiveFictionSystem::Dialog, None),
-            Err(e) => {
-                println!("***ERROR**");
+            Err(_) => {
+                eprintln!("***ERROR**");
             }
         }
     }
