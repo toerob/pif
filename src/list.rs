@@ -3,7 +3,7 @@ extern crate clap;
 extern crate serde;
 
 use crate::{
-    args::{Color, GlobalOptions, SortProperty},
+    args::{Color, GlobalOptions, InteractiveFictionSystem, SortProperty},
     detect::{detect_system, get_extension_path},
 };
 use ansi_term::Colour::*;
@@ -14,7 +14,12 @@ use sublime_fuzzy::FuzzySearch;
 
 #[warn(unused_attributes)]
 pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOptions) -> () {
-    let (system_type, _) = detect_system();
+    
+    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system().0
+    } else {
+        global_options.system.clone()
+    };
 
     println!(
         "{}",
@@ -29,14 +34,13 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     let mut extensions = data.extensions;
 
     if list_options.author.is_some() {
-
         let author = list_options
             .author
             .as_ref()
             .unwrap()
             .to_owned()
             .to_lowercase();
-        
+
         extensions = extensions
             .into_iter()
             .filter(|e| {
@@ -75,12 +79,10 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     } else if SortProperty::Date == list_options.sort_property {
         // TODO: compare the version's version number (semver wise) to find out the latest version to compare with
 
-        extensions.sort_by_key(|e| {
-            match &e.versions.get(0) {
-                Some(v) => v.last_modified.to_owned(),
-                _ => Some(String::from("0"))
-            }
-        }); 
+        extensions.sort_by_key(|e| match &e.versions.get(0) {
+            Some(v) => v.last_modified.to_owned(),
+            _ => Some(String::from("0")),
+        });
     }
 
     let delimiter = if list_options.presentation == ListPresentation::Comma {
@@ -99,25 +101,27 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
 }
 
 fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptions) -> String {
+    let verbosity_level = global_options.verbose.unwrap();
     let use_colors = if Color::Never == global_options.color {
         false
     } else {
         true
     };
-    let verbosity_level = global_options.verbose.unwrap();
 
     //for version in e.versions.to_owned() {
     //    print!("{:?}", &version.version);
     //}
     //println!();
-    let mut extension_versions = e.versions.to_owned();    
+    let mut extension_versions = e.versions.to_owned();
     extension_versions.sort_by_key(|v| v.to_owned().version);
 
     let latest_version = extension_versions.last().unwrap();
-    let version = latest_version.version.clone().unwrap_or_else(||String::from(""));
+    let version = latest_version
+        .version
+        .clone()
+        .unwrap_or_else(|| String::from(""));
 
     let name = if use_colors {
-        
         Green
             .paint(format!("{} {} ", e.name.as_str().to_owned(), &version))
             .to_string()
@@ -128,15 +132,25 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     return match verbosity_level {
         1 => name,
         2 => {
-            name  + " ("
-                + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
+            name + " ("
+                + latest_version
+                    .last_modified
+                    .as_ref()
+                    .unwrap()
+                    .to_owned()
+                    .as_str()
                 + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str()
         }
         _ => {
-            name  + " ("
-                + latest_version.last_modified.as_ref().unwrap().to_owned().as_str()
+            name + " ("
+                + latest_version
+                    .last_modified
+                    .as_ref()
+                    .unwrap()
+                    .to_owned()
+                    .as_str()
                 + ")"
                 + " by "
                 + e.author.as_ref().unwrap().to_owned().as_str().trim_end()
@@ -145,7 +159,6 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         }
     };
 }
-
 
 /*
 //let filteredData = filter_by_author(listOptions.author.as_ref().unwrap().to_owned(), &extensions);

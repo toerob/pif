@@ -1,5 +1,6 @@
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
+
 #[derive(Debug, Parser)]
 #[clap(author, version, about)]
 pub struct InteractiveFictionToolArgs {
@@ -79,6 +80,10 @@ pub struct ListOptions {
 
 #[derive(Debug, Args)]
 pub struct GlobalOptions {
+    /// System
+    #[clap(long, value_enum, global = true, default_value_t = InteractiveFictionSystem::Auto)]
+    pub system: InteractiveFictionSystem,
+
     /// Color
     #[clap(long, value_enum, global = true, default_value_t = Color::Auto)]
     pub color: Color,
@@ -86,6 +91,17 @@ pub struct GlobalOptions {
     /// Verbosity level 1-3 (TODO)
     #[clap(short, long, global = true, default_value = "2")]
     pub verbose: Option<usize>,
+}
+
+
+#[derive(Debug, Clone, ValueEnum, PartialEq, Eq)]
+pub enum InteractiveFictionSystem {
+    Auto,
+    Tads3,
+    Dialog,
+    Inform6,
+    Inform7,
+    Unknown,
 }
 
 #[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]

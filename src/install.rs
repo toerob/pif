@@ -1,13 +1,14 @@
 use ansi_term::Colour::*;
 use git2::{ErrorCode, Repository};
+use online::check;
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
-    path::Path,
+    path::Path, process::exit,
 };
 use sublime_fuzzy::FuzzySearch;
 
-use crate::model::{Extension, Extensions};
+use crate::{model::{Extension, Extensions}, color::print_warning_msg, args::InteractiveFictionSystem};
 use crate::{
     args::{Color, GlobalOptions},
     detect::{detect_system, get_extension_path},
@@ -15,6 +16,12 @@ use crate::{
 };
 
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
+    let use_colours = Color::Never != global_options.color;
+    if !check(Some(5)).is_ok() {
+        print_warning_msg(use_colours, "No internet connection. Aborting. \n".to_string());
+        exit(0);
+    }
+
     if names.len() == 0 {
         println!(
             "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""))
@@ -22,7 +29,13 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         return;
     }
 
-    let (system_type, makefile) = detect_system();
+    let (system_type, makefile) = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system()
+    } else {
+        (global_options.system.clone(), None)
+    };
+
+
     println!(
         "{}",
         Yellow
@@ -31,9 +44,19 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
     );
     let file_path = get_extension_path(system_type);
 
-    let lower_case_names: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+
+
+    // TODO: extract version part from name@version if present
+    //let lower_case_names: Vec<String> = names.iter()
+    //    .map(|n| n.split("@").to_lowercase()).collect();
+
+    let lower_case_names: Vec<String> = names.iter()
+        .map(|n| n.to_lowercase()).collect();
+
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
+
+
 
     let installable_extensions: Vec<Extension> = data
         .extensions
@@ -43,13 +66,9 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         .collect();
 
     if installable_extensions.is_empty() {
-        println!(
-            "{}",
-            Red.paint(format!(
-                "No extension(s) found by the name: \"{}\"",
-                &names.join(", ")
-            ))
-        );
+        print_warning_msg(use_colours, format!(
+            "No extension(s) found by the name: \"{}\"\n",
+            &names.join(", ")));
 
         let mut all_results: Vec<String> = Vec::new();
         for name in names.iter() {
@@ -57,7 +76,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 .clone()
                 .into_iter()
                 .filter(|e| {
-                    FuzzySearch::new(&name, &e.name.to_lowercase())
+                    FuzzySearch::new(&name, &e.name.to_lowercase()) // TODO: should not be fuzzy during intall?
                         .case_insensitive()
                         .best_match()
                         .is_some()

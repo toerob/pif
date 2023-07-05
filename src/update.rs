@@ -1,32 +1,31 @@
-use std::io::{stdout, Write};
+use std::{io::{stdout, Write}, process::exit};
 
-use ansi_term::Colour::*;
-use crate::args::{GlobalOptions, Color};
+use online::check;
+use crate::{args::{GlobalOptions, Color}, color::{colorize_message, print_success_msg}};
 use git2::{ErrorCode, Repository};
-
-fn colorize_message(colour: Option<ansi_term::Colour>, msg: String) -> String {
-    let text = match colour {
-        Some(c) => format!("{}", c.paint(msg).to_owned()),
-        None => msg.to_owned(),
-    };
-    return text;
-}
-
 
 
 
 // TODO: add colors here as well
 pub fn update_extensions(global_options: &GlobalOptions, workspace_folder: &str) {
 
-    let success_color = match Color::Never != global_options.color {
+    if !check(Some(5)).is_ok() {
+        println!("No internet connection. Aborting. ");
+        exit(0);
+    }
+
+    let use_colour = Color::Never != global_options.color;
+    /*let success_color = match Color::Never != global_options.color {
         true => Some(Green),
         false => None,
-    };
+    };*/
     
     let repository_url = "https://github.com/toerob/t3cartographer"; // TODO: Add public repository here instead of this placeholder
     let repository_main_branch = "master"; // TODO: rename to main when the public repository exists
     if !ensure_open(workspace_folder) {
-        println!("{}", colorize_message(success_color,format!(" ==> Downloading latest changes from: {} ", repository_url)));
+        
+        print_success_msg(use_colour, format!(" ==> Downloading latest changes from: {} \n", repository_url));
+        //println!("{}", colorize_message(success_color,format!(" ==> Downloading latest changes from: {} ", repository_url)));
         stdout().flush().unwrap();
         Repository::clone(repository_url, workspace_folder)
             .expect("failed to clone repository: {}");
@@ -50,13 +49,17 @@ fn ensure_open(workspace_folder: &str) -> bool {
 }
 
 fn pull_latest(global_options: &GlobalOptions, workspace_folder: &str, remote_branch: &String) -> () {
+    let use_colour = Color::Never != global_options.color;
     
-    let success_color = match Color::Never != global_options.color {
+    /*let success_color = match Color::Never != global_options.color {
         true => Some(Green),
         false => None,
     };
 
-    print!("{}", colorize_message(success_color, String::from(" ==> Fetching latest changes")));
+    //print!("{}", colorize_message(success_color, String::from(" ==> Fetching latest changes")));*/
+
+    print_success_msg(use_colour, String::from(" ==> Fetching latest changes\n"));
+
 
     let origin_name = "origin";
     let repo = Repository::open(workspace_folder).expect("Failed to open repository");

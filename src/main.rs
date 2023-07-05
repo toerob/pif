@@ -9,6 +9,8 @@ extern crate dotenv;
 extern crate home;
 extern crate dirs;
 extern crate semver;
+extern crate online;
+extern crate mockall;
 
 mod detect;
 mod args;
@@ -18,6 +20,9 @@ mod info;
 mod install;
 mod list;
 mod makefile;
+mod color;
+mod common;
+
 
 use std::{fs::{self}, process::exit};
 
@@ -28,6 +33,10 @@ use install::install_extensions;
 use list::list_extensions;
 use semver::VersionReq;
 use update::update_extensions;
+
+use mockall::*;
+use mockall::predicate::*;
+
 
 
 // TODO: an info option that scans the folder and displays installed extensions along with their descriptions?
@@ -50,6 +59,35 @@ fn main() -> () {
     }
 }
 
+
+
+
+#[automock]
+trait Hello {
+    fn kalle(&self) -> u32  {
+        return 34;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn mockall() {
+        println!("###");
+        let mut mockHello = MockHello::new();
+        
+        mockHello.expect_kalle()
+            .returning(|| 112);
+
+        let x = mockHello.kalle();
+        println!("**{}", &x.to_string());
+        assert_eq!(x, 112);
+
+
+    }
+}
 
 
 /*

@@ -16,6 +16,31 @@
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
           "ext": "zip",
           "version": "2.1"
+        },
+        {
+          "last-modified": "2018-06-08",
+          "type": [
+            "adv3"
+          ],
+          "makefile-entries": [
+            "ConSpace2/ConSpace.tl"
+          ],
+          "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+          "ext": "zip",
+          "version": "2.2.1"
+        },
+
+        {
+          "last-modified": "2009-07-08",
+          "type": [
+            "adv3"
+          ],
+          "makefile-entries": [
+            "ConSpace2/ConSpace.tl"
+          ],
+          "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+          "ext": "zip",
+          "version": "2.1.1"
         }
       ],
       "tags": []

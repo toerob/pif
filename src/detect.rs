@@ -1,14 +1,6 @@
 use globwalk::{glob, DirEntry};
 
-#[derive(Debug)]
-pub enum InteractiveFictionSystem {
-    Tads3,
-    Dialog,
-    Inform6,
-    Inform7,
-    Unknown,
-}
-
+use crate::args::InteractiveFictionSystem;
 
 pub fn get_extension_path(system_type: InteractiveFictionSystem) -> String {
   match system_type {
@@ -53,4 +45,14 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<DirEntry>) {
         }
     }
     return (InteractiveFictionSystem::Unknown, None);
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_extension_path_works() {
+    }
 }

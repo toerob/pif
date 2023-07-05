@@ -1,4 +1,4 @@
-use crate::args;
+use crate::{args::{self, Color, InteractiveFictionSystem}, color::{create_success_msg, create_info_message}};
 use ansi_term::Colour::*;
 use std::{
     fs::{self},
@@ -10,19 +10,33 @@ use crate::{
 };
 
 pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
+    let verbosity_level = global_options.verbose.unwrap();
+    let use_colors = if Color::Never == global_options.color {
+        false   
+    } else {
+        true
+    };
+
     if names.len() == 0 {
         println!(
         "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""))
     );
         return;
     }
-    let (system_type, _) = detect_system();
+
+    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system().0
+    } else {
+        global_options.system.clone()
+    };
+
     println!(
-        "{}",
+        "{}\n",
         Yellow
-            .paint(format!("System: {:?}", system_type))
+            .paint(format!("[Detected system: {:?}]", system_type))
             .to_string()
     );
+
 
     let file_path = get_extension_path(system_type);
 
@@ -43,25 +57,35 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
         //let iter = extensions_info.enumerate();
     //let nr: usize = extensions_info.count();
     for (_, ele) in extensions_info.enumerate() {
-      println!("Extension name: {}\nby {} \nDescription: {}\n", &ele.name,  &ele.author.as_ref().unwrap(),  &ele.desc.as_ref().unwrap());
+      let name = match use_colors {
+        true => create_success_msg(use_colors, ele.name.clone()),
+        _ => ele.name.clone(),
+      };
+
+      println!("{} by {} \n{}\n", name,  &ele.author.as_ref().unwrap(),  &ele.desc.as_ref().unwrap());
 
 
       if ele.versions.to_owned().len() > 0 {
-        println!("Versions: ");
+        println!("Available versions: ");
         let mut sorted_versions =  ele.clone();
 
         
         sorted_versions.versions.sort_by_key(|e|e.to_owned().version);
 
         let total = sorted_versions.versions.len()-1;
+        
+        // TODO: colorize
+        // TODO: if already installed show that with green text
 
         for (idx, version) in sorted_versions.versions.into_iter().enumerate() {
-            
-            let latest = if (idx ==  total) { "(LATEST)" } else { "" };
-            
-          println!("{} {}\n {}\n last modified: {}\n", &version.version.as_ref().unwrap(), latest, &version.url.as_ref().unwrap(), &version.last_modified.as_ref().unwrap());
+            let version_number = create_info_message(use_colors, version.version.as_ref().unwrap().to_string()); //Blue.paint( version.version.as_ref().unwrap()).to_string();
+            let url = version.url.as_ref().unwrap();
+            let last_modified = version.last_modified.as_ref().unwrap();            
+            let latest = if idx ==  total { Green.paint("<== LATEST").to_string() } else { String::from("") };
+            println!("  *  {} {}  ({}) {} ",version_number, url, last_modified, latest);
+//Blue.paint( version.version.as_ref().unwrap()).to_string();
         }
-  
+        println!();
       }
 
     }
