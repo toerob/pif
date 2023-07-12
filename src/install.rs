@@ -4,11 +4,16 @@ use online::check;
 use std::{
     fs::{self, File},
     io::{Cursor, Write},
-    path::Path, process::exit,
+    path::Path,
+    process::exit,
 };
 use sublime_fuzzy::FuzzySearch;
 
-use crate::{model::{Extension, Extensions}, color::print_warning_msg, args::InteractiveFictionSystem};
+use crate::{
+    args::InteractiveFictionSystem,
+    color::print_warning_msg,
+    model::{Extension, Extensions},
+};
 use crate::{
     args::{Color, GlobalOptions},
     detect::{detect_system, get_extension_path},
@@ -18,7 +23,10 @@ use crate::{
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
     let use_colours = Color::Never != global_options.color;
     if !check(Some(5)).is_ok() {
-        print_warning_msg(use_colours, "No internet connection. Aborting. \n".to_string());
+        print_warning_msg(
+            use_colours,
+            "No internet connection. Aborting. \n".to_string(),
+        );
         exit(0);
     }
 
@@ -35,7 +43,6 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         (global_options.system.clone(), None)
     };
 
-
     println!(
         "{}",
         Yellow
@@ -44,19 +51,14 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
     );
     let file_path = get_extension_path(system_type);
 
-
-
     // TODO: extract version part from name@version if present
     //let lower_case_names: Vec<String> = names.iter()
     //    .map(|n| n.split("@").to_lowercase()).collect();
 
-    let lower_case_names: Vec<String> = names.iter()
-        .map(|n| n.to_lowercase()).collect();
+    let lower_case_names: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
 
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
-
-
 
     let installable_extensions: Vec<Extension> = data
         .extensions
@@ -66,9 +68,13 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         .collect();
 
     if installable_extensions.is_empty() {
-        print_warning_msg(use_colours, format!(
-            "No extension(s) found by the name: \"{}\"\n",
-            &names.join(", ")));
+        print_warning_msg(
+            use_colours,
+            format!(
+                "No extension(s) found by the name: \"{}\"\n",
+                &names.join(", ")
+            ),
+        );
 
         let mut all_results: Vec<String> = Vec::new();
         for name in names.iter() {
@@ -117,7 +123,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         if !is_git_repo {
             // Regular ifarchive procedure
             let response = reqwest::blocking::get(url).expect("Request did fail");
-            let file_data = response.bytes().expect("Bytes are invalid");
+            let file_data: hyper::body::Bytes = response.bytes().expect("Bytes are invalid");
             let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
             if file_extension == "zip" {
                 let target_dir = Path::new(os_path.as_path());
@@ -135,8 +141,13 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
             } else {
                 println!("{}", text);
             }
+
             if makefile.is_some() {
-                add_make_file_entry(makefile.as_ref().unwrap());
+                add_make_file_entry(
+                    extension.name.clone(),
+                    makefile.as_ref().unwrap(),
+                    latest_version.makefile_entries.as_ref().unwrap().to_owned(),
+                );
             }
 
             // TODO: add_make_file_entry();
