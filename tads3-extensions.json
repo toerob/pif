@@ -1570,6 +1570,23 @@
         }
       ],
       "tags": []
+    },
+    {
+      "name": "G-TADS",
+      "author": "Mikawa",
+      "desc": "German Library Extension for TADS 3",
+      "versions": [
+        {
+          "last-modified": "2021-12-16",
+          "type": [
+            "adv3"
+          ],
+          "url": "https://github.com/mikawa/G-TADS.git",
+          "ext": "zip",
+          "version": "1.0.0"
+        }
+      ],
+      "tags": []
     }
   ]
 }
