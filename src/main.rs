@@ -11,6 +11,8 @@ extern crate online;
 extern crate semver;
 extern crate serde;
 extern crate sublime_fuzzy;
+extern crate regex;
+extern crate lazy_static;
 
 mod args;
 mod color;

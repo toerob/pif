@@ -1,7 +1,7 @@
 use std::{io::{stdout, Write}, process::exit};
 
 use online::check;
-use crate::{args::{GlobalOptions, Color}, color::{colorize_message, print_success_msg}};
+use crate::{args::{GlobalOptions, Color}, color::{print_success_msg}};
 use git2::{ErrorCode, Repository};
 
 

@@ -10,7 +10,7 @@ use crate::{
 };
 
 pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
-    let verbosity_level = global_options.verbose.unwrap();
+    let _verbosity_level = global_options.verbose.unwrap();
     let use_colors = if Color::Never == global_options.color {
         false   
     } else {
@@ -37,7 +37,6 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
             .to_string()
     );
 
-
     let file_path = get_extension_path(system_type);
 
     let extension_data_str = fs::read_to_string(file_path).unwrap();
@@ -52,7 +51,16 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
     let extensions_info = data
         .extensions
         .iter()
-        .filter(|ext| lowercase_names.contains(&ext.to_owned().name.to_lowercase()));
+        .filter(|ext| {
+            let extension_name = ext.to_owned().name.to_lowercase();
+            for lowercase_name in lowercase_names.to_owned().into_iter() {
+                if extension_name.to_owned().starts_with(&lowercase_name) {
+                    return true;
+                }
+            }
+            return false;
+        });
+
 
         //let iter = extensions_info.enumerate();
     //let nr: usize = extensions_info.count();
