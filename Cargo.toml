@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Tomas Öberg"]
 description = "IFP - A CLI package manager for interactive fiction languages"
 
-#edition = "2021"
+edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -32,5 +32,6 @@ online = "4.0.1"
 mockall = "0.11.4"
 regex = "1.10.5"
 lazy_static = "1.5.0"
+dirs-next = "2.0.0"
 
 #tui = { version = "0.19.0" }

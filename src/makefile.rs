@@ -4,17 +4,15 @@ use std::error::Error;
 use globwalk::DirEntry;
 use lazy_static::lazy_static;
 
-
 lazy_static! {
     static ref LIB_SOURCE_REGEX: Regex = Regex::new(r"^-(lib|source)").unwrap();
 }
 
-
-
 fn get_last_source_and_last_lib_lines(lines: &[&str]) -> (usize, usize) {
-    
-    lines.iter().enumerate().fold((0, 0),
-     |(mut last_lib, mut last_source), (idx, line)| {
+    lines
+        .iter()
+        .enumerate()
+        .fold((0, 0), |(mut last_lib, mut last_source), (idx, line)| {
             if let Some(captures) = LIB_SOURCE_REGEX.captures(line) {
                 match &captures[1] {
                     "lib" => {
@@ -37,12 +35,12 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries:
     print!("\nMakefile entries:\n");
 
     let contents = fs
-        ::read_to_string(makefile.path().clone())
+        ::read_to_string(makefile.path())
         .expect("Could not read the makefile");
 
-    let lines: Vec<&str> = contents.lines().collect();
+    let mut lines: Vec<&str> = contents.lines().collect();
 
-    let (last_lib_line, last_source_line) = get_last_source_and_last_lib_lines(&lines);
+    let (mut last_lib_line, mut last_source_line) = get_last_source_and_last_lib_lines(&lines);
 
     println!("Last -lib line: {}", last_lib_line);
     println!("Last -source line: {}", last_source_line);
@@ -58,23 +56,33 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries:
     // TODO: decide for each entry if it is a lib or source row
     // if a lib, Locate the last -lib and use that as offset
     // if a source, Locate the last -source and use that as offset
+
     let libs_binding = makefile_entries.to_owned();
 
-    libs_binding.iter().for_each(|x| print!("{x}"));
-    println!("\n");
+    let libs: Vec<String> = libs_binding
+        .iter()
+        .filter(|x| x.to_owned().ends_with(".tl"))
+        .map(|s| s.to_string())
+        .collect();
 
-    let libs = libs_binding.iter().filter(|x| x.to_owned().ends_with(".tl"));
     for lib in libs {
-        println!("** LIB: {}", lib.to_string());
+        println!("** [ADDING LIB: {}] ** \n", lib);
+        let together = format!("-lib {}", lib);
+        //TODO: lines.insert(last_lib_line, together);
+        last_lib_line += 1;
     }
+
+    (_, last_source_line) = get_last_source_and_last_lib_lines(&lines);
 
     let sources = libs_binding.iter().filter(|x| x.to_owned().ends_with(".t"));
     for source in sources {
-        println!("** SOURCE: {}", source);
+        println!("** [ADDING SOURCE: {}] ** \n", source);
+        lines.insert(last_source_line, source);
+        last_source_line += 1;
     }
 
     println!("Makefile suggested contents:");
-    print!("{contents}");
+    print!("{}", lines.join("\n"));
 
     println!("Apply? y/n (n):");
 }

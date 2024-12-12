@@ -1,38 +1,37 @@
 use ansi_term::Colour::*;
-use git2::{ErrorCode, Repository};
+use git2::{ ErrorCode, Repository, FetchOptions, StatusOptions, RemoteCallbacks, Remote, Cred };
+
 use online::check;
-use std::{
-    fs::{self, File},
-    io::{Cursor, Write},
-    path::Path,
-    process::exit,
-};
+use std::{ fs::{ self, File }, io::{ Cursor, Write }, path::Path, process::exit };
 use sublime_fuzzy::FuzzySearch;
 
 use crate::{
     args::InteractiveFictionSystem,
     color::print_warning_msg,
-    model::{Extension, Extensions},
+    model::{ Extension, Extensions },
 };
 use crate::{
-    args::{Color, GlobalOptions},
-    detect::{detect_system, get_extension_path},
+    args::{ Color, GlobalOptions },
+    detect::{ detect_system, get_extension_path },
     makefile::add_make_file_entry,
 };
 
 pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
     let use_colours = Color::Never != global_options.color;
+    // TODO: 5 'r placeholder?
     if !check(Some(5)).is_ok() {
-        print_warning_msg(
-            use_colours,
-            "No internet connection. Aborting. \n".to_string(),
-        );
+        print_warning_msg(use_colours, "No internet connection. Aborting. \n".to_string());
         exit(0);
     }
 
     if names.len() == 0 {
         println!(
-            "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""))
+            "{}",
+            Red.paint(
+                format!(
+                    "No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""
+                )
+            )
         );
         return;
     }
@@ -43,25 +42,23 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         (global_options.system.clone(), None)
     };
 
-    println!(
-        "{}",
-        Yellow
-            .paint(format!("System: {:?}", system_type))
-            .to_string()
-    );
+    println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
     let file_path = get_extension_path(system_type);
 
     // TODO: extract version part from name@version if present
     //let lower_case_names: Vec<String> = names.iter()
     //    .map(|n| n.split("@").to_lowercase()).collect();
 
-    let lower_case_names: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+    let lower_case_names: Vec<String> = names
+        .iter()
+        .map(|n| n.to_lowercase())
+        .collect();
 
+    print!("Trying: {}", file_path);
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
 
-    let installable_extensions: Vec<Extension> = data
-        .extensions
+    let installable_extensions: Vec<Extension> = data.extensions
         .clone()
         .into_iter()
         .filter(|e| lower_case_names.contains(&e.name.to_lowercase()))
@@ -70,10 +67,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
     if installable_extensions.is_empty() {
         print_warning_msg(
             use_colours,
-            format!(
-                "No extension(s) found by the name: \"{}\"\n",
-                &names.join(", ")
-            ),
+            format!("No extension(s) found by the name: \"{}\"\n", &names.join(", "))
         );
 
         let mut all_results: Vec<String> = Vec::new();
@@ -114,11 +108,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         let result: Vec<&str> = url.matches(".git").collect();
         let is_git_repo = !result.is_empty();
 
-        let use_colors = if Color::Never == global_options.color {
-            false
-        } else {
-            true
-        };
+        let use_colors = if Color::Never == global_options.color { false } else { true };
 
         if !is_git_repo {
             // Regular ifarchive procedure
@@ -127,13 +117,13 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
             let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
             if file_extension == "zip" {
                 let target_dir = Path::new(os_path.as_path());
-                zip_extract::extract(Cursor::new(file_data), &target_dir, true)
+                zip_extract
+                    ::extract(Cursor::new(file_data), &target_dir, true)
                     .expect("Failed extract file. ");
             } else {
                 let file_name: String = path.to_owned() + "." + file_extension;
                 let mut file = File::create(file_name).expect("failed to create file. ");
-                file.write_all(&file_data)
-                    .expect("Failed to write to binary file. ");
+                file.write_all(&file_data).expect("Failed to write to binary file. ");
             }
             let text = format!(" ==> {} INSTALLED", &extension.name);
             if use_colors {
@@ -146,7 +136,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 add_make_file_entry(
                     extension.name.clone(),
                     makefile.as_ref().unwrap(),
-                    latest_version.makefile_entries.as_ref().unwrap().to_owned(),
+                    latest_version.makefile_entries.as_ref().unwrap().to_owned()
                 );
             }
 
@@ -159,8 +149,54 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
 
         // 1. First check if repository already exists
         match Repository::open(path) {
-            Ok(_) => {
+            Ok(repo) => {
                 println!("Repository already exists! TODO: update repository");
+
+                // Hämta remote (som oftast är 'origin')
+                let mut remote = repo.find_remote("origin").unwrap();
+
+                // Konfigurera callbacks för autentisering
+                let mut callbacks = RemoteCallbacks::new();
+                callbacks.credentials(|_url, _username_from_url, _allowed_types| {
+                    Cred::default()
+                });
+
+                // Ställ in fetch-alternativ
+                let mut fetch_options = FetchOptions::new();
+                fetch_options.remote_callbacks(callbacks);
+
+                // Gör fetch från remote
+                // TODO: gör branch anpassningsbar i json-struktur istf. "refs/heads/main"
+                remote.fetch(&["refs/heads/master"], Some(&mut fetch_options), None).unwrap();
+
+                // TODO: Check statuses
+                let mut statuses_options = StatusOptions::new();
+                let statuses = repo.statuses(Some(&mut statuses_options)).unwrap();
+                statuses.iter()
+                    .filter(|status|status.status().is_index_modified())
+                    .for_each(|status| {
+                        println!("Modified entry: {}", &status.path().unwrap());
+                    });
+
+                // Uppdatera lokala branch
+                let fetch_head = repo.find_reference("FETCH_HEAD").unwrap();
+                repo.set_head(fetch_head.name().unwrap()).unwrap();
+
+                repo.checkout_head(None).unwrap();
+                println!("Branch updated to match remote.");
+
+
+                // TODO:
+                /* let modifiedEntries: Vec<String> = statuses.iter()
+                    .filter(|status|status.status().is_index_modified())
+                    .map(|status| &status.path().unwrap().to_string())
+                    .collect();*/
+
+                    //.clone()
+                    //.into_iter()
+            
+
+
                 return;
             }
             Err(e) => {
@@ -172,7 +208,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                     panic!("failed to open: {}", e);
                 }
             }
-        };
+        }
 
         // 2. If repository doesn't exist. Clone it into the folder of {path}
 

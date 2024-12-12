@@ -2,44 +2,55 @@ extern crate ansi_term;
 extern crate clap;
 extern crate serde;
 
+use crate::args;
 use crate::{
-    args::{Color, GlobalOptions, InteractiveFictionSystem, SortProperty},
-    detect::{detect_system, get_extension_path},
+    args::{ Color, GlobalOptions, InteractiveFictionSystem, SortProperty },
+    detect::{ detect_system, get_extension_path },
 };
 use ansi_term::Colour::*;
-use args::{ListOptions, ListPresentation};
-use model::Extensions;
+//use args::{ListOptions, ListPresentation};
+use crate::args::ListPresentation;
+use crate::model;
+
 use std::fs;
 use sublime_fuzzy::FuzzySearch;
 
+//use model::Extensions;
+
 #[warn(unused_attributes)]
-pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOptions) -> () {
-    
+pub fn list_extensions(
+    list_options: &args::ListOptions,
+    global_options: &args::GlobalOptions
+) -> () {
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
         detect_system().0
     } else {
         global_options.system.clone()
     };
 
-    println!(
-        "{}",
-        Yellow
-            .paint(format!("System: {:?}", system_type))
-            .to_string()
-    );
+
+
+    println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
     let file_path = get_extension_path(system_type);
 
-    let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
+
+    // TODO: use repo_dir to get the latest json configuration file
+    let config_file = dirs_next::data_dir().expect("Could not determine data directory")
+                                        .join("ifp")
+                                        .join("repo")
+                                        .join(&file_path)
+                                        .clone();
+
+    println!("file_path: {} ", &config_file.clone().display());
+
+    //OLD: let extension_data_str = fs::read_to_string(file_path).unwrap();
+    let extension_data_str = fs::read_to_string(config_file).unwrap();
+
+    let data: model::Extensions = serde_json::from_str(&extension_data_str).unwrap();
     let mut extensions = data.extensions;
 
     if list_options.author.is_some() {
-        let author = list_options
-            .author
-            .as_ref()
-            .unwrap()
-            .to_owned()
-            .to_lowercase();
+        let author = list_options.author.as_ref().unwrap().to_owned().to_lowercase();
 
         extensions = extensions
             .into_iter()
@@ -52,12 +63,7 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
             .collect();
     }
     if list_options.keyword.is_some() {
-        let keyword = list_options
-            .keyword
-            .as_ref()
-            .unwrap()
-            .to_owned()
-            .to_lowercase();
+        let keyword = list_options.keyword.as_ref().unwrap().to_owned().to_lowercase();
 
         extensions = extensions
             .into_iter()
@@ -79,13 +85,15 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
     } else if SortProperty::Date == list_options.sort_property {
         // TODO: compare the version's version number (semver wise) to find out the latest version to compare with
 
-        extensions.sort_by_key(|e| match &e.versions.get(0) {
-            Some(v) => v.last_modified.to_owned(),
-            _ => Some(String::from("0")),
+        extensions.sort_by_key(|e| {
+            match &e.versions.get(0) {
+                Some(v) => v.last_modified.to_owned(),
+                _ => Some(String::from("0")),
+            }
         });
     }
 
-    let delimiter = if list_options.presentation == ListPresentation::Comma {
+    let delimiter = if list_options.presentation == args::ListPresentation::Comma {
         ","
     } else {
         "\n"
@@ -98,15 +106,12 @@ pub fn list_extensions(list_options: &ListOptions, global_options: &GlobalOption
 
     let str = na.join(delimiter);
     println!("{}", str);
+    println!("[Filter by -a / --author, -k / --keyword]");
 }
 
 fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptions) -> String {
     let verbosity_level = global_options.verbose.unwrap();
-    let use_colors = if Color::Never == global_options.color {
-        false
-    } else {
-        true
-    };
+    let use_colors = if Color::Never == global_options.color { false } else { true };
 
     //for version in e.versions.to_owned() {
     //    print!("{:?}", &version.version);
@@ -116,15 +121,10 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     extension_versions.sort_by_key(|v| v.to_owned().version);
 
     let latest_version = extension_versions.last().unwrap();
-    let version = latest_version
-        .version
-        .clone()
-        .unwrap_or_else(|| String::from(""));
+    let version = latest_version.version.clone().unwrap_or_else(|| String::from(""));
 
     let name = if use_colors {
-        Green
-            .paint(format!("{} {} ", e.name.as_str().to_owned(), &version))
-            .to_string()
+        Green.paint(format!("{} {} ", e.name.as_str().to_owned(), &version)).to_string()
     } else {
         e.name.as_str().to_owned()
     };
@@ -132,30 +132,22 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     return match verbosity_level {
         1 => name,
         2 => {
-            name + " ("
-                + latest_version
-                    .last_modified
-                    .as_ref()
-                    .unwrap()
-                    .to_owned()
-                    .as_str()
-                + ")"
-                + " by "
-                + e.author.as_ref().unwrap().to_owned().as_str()
+            name +
+                " (" +
+                latest_version.last_modified.as_ref().unwrap().to_owned().as_str() +
+                ")" +
+                " by " +
+                e.author.as_ref().unwrap().to_owned().as_str()
         }
         _ => {
-            name + " ("
-                + latest_version
-                    .last_modified
-                    .as_ref()
-                    .unwrap()
-                    .to_owned()
-                    .as_str()
-                + ")"
-                + " by "
-                + e.author.as_ref().unwrap().to_owned().as_str().trim_end()
-                + " - "
-                + e.desc.as_ref().unwrap().to_owned().as_str()
+            name +
+                " (" +
+                latest_version.last_modified.as_ref().unwrap().to_owned().as_str() +
+                ")" +
+                " by " +
+                e.author.as_ref().unwrap().to_owned().as_str().trim_end() +
+                " - " +
+                e.desc.as_ref().unwrap().to_owned().as_str()
         }
     };
 }
