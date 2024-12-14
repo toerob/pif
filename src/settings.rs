@@ -61,6 +61,7 @@ main_repository_branch: master
     Ok(config_file)
 }
 
+/*
 pub fn write_default_settings() -> Result<(), io::Error> {
     let config_file = get_main_config_file()?;
     println!("*** Checking config file ***");
@@ -75,7 +76,7 @@ main_repository_branch: master
         println!("Default settings written to {:?}", config_file);
     }
     Ok(())
-}
+}*/
 
 
 

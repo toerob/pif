@@ -38,11 +38,13 @@ use install::install_extensions;
 use list::list_extensions;
 use update::{ update_extensions };
 
-use settings::{ write_default_settings, get_main_config_file };
+use settings::{ get_main_config_file };
+use log::{info, trace, warn};
 
 // TODO: make ifarchive possible without maintaining a specific list
 
 fn main() -> () {
+
     //let config_file_pathbuf = get_main_config_file().expect("Main configuration file could not be found");
     // TODO: check if update is needed for first run
 

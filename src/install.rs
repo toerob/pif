@@ -58,6 +58,10 @@ pub fn install_extensions(
     };
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
+    if makefile.is_some() {
+        println!("{}", Yellow.paint(format!("Makefile detected: {:?}", makefile.as_ref().unwrap().to_owned().path().display())).to_string());
+    }
+
     let file_path_end = get_extension_path(system_type);
 
     // TODO: extract version part from name@version if present
@@ -79,7 +83,7 @@ pub fn install_extensions(
 
     let file_path_str = file_path.as_path().to_str().clone().unwrap();
 
-    print!("Trying: {}", file_path_str);
+    //print!("Trying: {}", file_path_str);
 
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
@@ -173,15 +177,15 @@ pub fn install_extensions(
                 let mut file = File::create(file_name).expect("failed to create file. ");
                 file.write_all(&file_data).expect("Failed to write to binary file. ");
             }
-            let text = format!(" ==> {} INSTALLED", &extension.name);
+            let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
             if use_colors {
                 println!("{}", Green.paint(text));
             } else {
                 println!("{}", text);
             }
 
+            // TODO: break out this so it can be called from both git/ifarchive extensions
             if makefile.is_some() && latest_version.makefile_entries.is_some() {
-                
                 add_make_file_entry(
                     extension.name.clone(),
                     makefile.as_ref().unwrap(),
@@ -192,6 +196,7 @@ pub fn install_extensions(
             return;
         }
 
+        println!("GIT REPO");
         // IT is a GIT repo, clone or update it:
         // TODO: make branch name adaptable from the json format
         let branch_head_name = format!("refs/heads/{}", branch_name);

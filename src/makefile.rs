@@ -4,11 +4,18 @@ use std::error::Error;
 use globwalk::DirEntry;
 use lazy_static::lazy_static;
 
+use std::io::{ self, Write, Read };
+
+use crate::{ color::{ print_success_msg }, common::{ yes_or_no } };
+use ansi_term::Colour::*;
+
+use log::{info, trace, warn};
+
 lazy_static! {
     static ref LIB_SOURCE_REGEX: Regex = Regex::new(r"^-(lib|source)").unwrap();
 }
 
-fn get_last_source_and_last_lib_lines(lines: &[&str]) -> (usize, usize) {
+fn get_last_source_and_last_lib_lines(lines: &Vec<String>) -> (usize, usize) {
     lines
         .iter()
         .enumerate()
@@ -30,59 +37,82 @@ fn get_last_source_and_last_lib_lines(lines: &[&str]) -> (usize, usize) {
 
 // TODO: make sure the correct makefile comes in here
 pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries: Vec<String>) {
-    print!("Add makefile entry to: {:?} ? (y/n, default: y): ", makefile.path());
+    /*let text = format!("Add makefile entry to: {:?} ", makefile.path());
+    if !yes_or_no(&text, true) {
+        return;
+    }*/
 
-    print!("\nMakefile entries:\n");
+    let contents = fs::read_to_string(&makefile.path()).expect("Could not read the makefile");
 
-    let contents = fs
-        ::read_to_string(makefile.path())
-        .expect("Could not read the makefile");
-
-    let mut lines: Vec<&str> = contents.lines().collect();
+    let mut lines: Vec<String> = contents
+        .lines()
+        .map(|s| s.to_string())
+        .collect();
+    let mut diff_lines = lines.clone();
 
     let (mut last_lib_line, mut last_source_line) = get_last_source_and_last_lib_lines(&lines);
-
-    println!("Last -lib line: {}", last_lib_line);
-    println!("Last -source line: {}", last_source_line);
-
-    println!("[last lib line: {}, and last source line: {}]\n", last_lib_line, last_source_line);
-    println!(
-        "[last lib word: {}, and last source word: {}]\n",
-        lines[last_lib_line],
-        lines[last_source_line]
-    );
-    // TODO: locate suitable place within contents and concat the makefile_entries there
-
-    // TODO: decide for each entry if it is a lib or source row
-    // if a lib, Locate the last -lib and use that as offset
-    // if a source, Locate the last -source and use that as offset
+    last_lib_line += 1;
 
     let libs_binding = makefile_entries.to_owned();
-
     let libs: Vec<String> = libs_binding
         .iter()
         .filter(|x| x.to_owned().ends_with(".tl"))
         .map(|s| s.to_string())
         .collect();
 
+    // Iterate all the makefile entries for -lib and add to lines
+
     for lib in libs {
-        println!("** [ADDING LIB: {}] ** \n", lib);
-        let together = format!("-lib {}", lib);
-        //TODO: lines.insert(last_lib_line, together);
-        last_lib_line += 1;
+        let prep = format!("-lib {}", lib).to_string();
+        if !contents.contains(&prep) {
+            let colorized = format!("{}", Green.paint(&prep).to_owned().to_string());
+            diff_lines.insert(last_lib_line, colorized);
+            lines.insert(last_lib_line, prep);
+            last_lib_line += 1;    
+        }
     }
 
     (_, last_source_line) = get_last_source_and_last_lib_lines(&lines);
-
+    last_source_line += 1;
     let sources = libs_binding.iter().filter(|x| x.to_owned().ends_with(".t"));
     for source in sources {
-        println!("** [ADDING SOURCE: {}] ** \n", source);
-        lines.insert(last_source_line, source);
-        last_source_line += 1;
+        let prep = format!("-source {}", source).to_string();
+        if !contents.contains(&prep) {
+            let colorized = format!("{}", Green.paint(&prep).to_owned().to_string());
+            diff_lines.insert(last_source_line, colorized);
+            lines.insert(last_source_line, prep);
+            last_source_line += 1;
+        }
     }
 
-    println!("Makefile suggested contents:");
-    print!("{}", lines.join("\n"));
+    // Compiled changes 
+    let makefile_changed = lines.join("\n");
 
-    println!("Apply? y/n (n):");
+    let trimmed_original = &contents.trim()
+        .split(' ')
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    if makefile_changed.eq(&trimmed_original.to_string()) {
+        // println!("{}", Yellow.paint(format!("[No changes needed in the makefile]")).to_string());
+        return;
+    }
+
+    println!("{}", Yellow.paint(format!("Makefile suggested contents:")).to_string());
+    print!("{}\n\n", diff_lines.join("\n"));
+
+
+    if yes_or_no("Apply above changes?", true) {
+        if makefile.path().exists() {
+            fs::write(&makefile.path(), makefile_changed).expect(
+                "Makefile could not be found. Skipping. "
+            );
+            println!("Changes applied");
+        }
+    } else {
+        println!("No changes applied");
+    }
+    println!("\n");
+    // TODO: save to file
 }

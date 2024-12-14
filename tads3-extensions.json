@@ -611,27 +611,7 @@
         "debug"
       ]
     },
-    {
-      "name": "lastTyped",
-      "author": "jbg",
-      "desc": "lastTyped, version 1.0, by jbg. A library for keeping track of the specific nouns and verbs used in a typed command, and for coverting them into a form suitable for output.",
-      "versions": [
-        {
-          "last-modified": "2022-06-10 21:49",
-          "type": [
-            "adv3"
-          ],
-          "makefile-entries": [
-            "TODO"
-          ],
-          "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/lastTyped.zip",
-          "branch": "main",
-          "ext": "zip",
-          "version": "1.0"
-        }
-      ],
-      "tags": []
-    },
+
     {
       "name": "listControl",
       "author": "Eric Eve",
@@ -1584,7 +1564,7 @@
             "absentActor/absentActor.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/absentActor.git",
-          "branch": "master",
+          "branch": "main",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1597,6 +1577,20 @@
       "desc": "A TADS3 module for keeping track of the specific nouns and verbs in a typed command",
       "versions": [
         {
+          "last-modified": "2022-06-10 21:49",
+          "type": [
+            "adv3"
+          ],
+          "makefile-entries": [
+            "lastTyped/lastTyped.tl"
+          ],
+          "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/lastTyped.zip",
+          "branch": "main",
+          "ext": "zip",
+          "version": "1.0"
+        },
+
+        {
           "last-modified": "2022-01-30",
           "type": [
             "adv3"
@@ -1605,10 +1599,10 @@
             "lastTyped/lastTyped.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/lastTyped.git",
-          "branch": "master",
+          "branch": "main",
           "ext": "zip",
           "version": "1.0"
-        }
+        }        
       ],
       "tags": []
     },
