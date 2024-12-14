@@ -25,10 +25,9 @@ mod makefile;
 mod model;
 mod update;
 
-use std::fs::{self};
+use std::fs::{ self };
 
-
-use args::{InteractiveFictionToolArgs, MenuSubCommand};
+use args::{ InteractiveFictionToolArgs, MenuSubCommand };
 use clap::Parser;
 use info::extensions_info;
 use install::install_extensions;
@@ -37,12 +36,13 @@ use update::update_extensions3;
 
 use std::path::PathBuf;
 
-
 // TODO: make ifarchive possible without maintaining a specific list
 
 fn main() -> () {
     // Bring the repository home inside the workspace_folder
-    let workspace_folder2 : PathBuf = get_data_dir().expect("Could not determine workspace folder. ");
+    let workspace_folder2: PathBuf = get_data_dir().expect(
+        "Could not determine workspace folder. "
+    );
     print!("Path: {}\n", workspace_folder2.as_path().display());
 
     let home_dir = dirs::home_dir().expect("Could not determine home directory. ");
@@ -50,8 +50,9 @@ fn main() -> () {
 
     let ifp_settings_dir = home_dir.join(".ifp/settings");
 
-    fs::create_dir_all(&ifp_settings_dir)
-        .expect("Could not create home and settings directory for ifp.");
+    fs::create_dir_all(&ifp_settings_dir).expect(
+        "Could not create home and settings directory for ifp."
+    );
 
     let workspace_folder = ifp_settings_dir
         .as_os_str()
@@ -63,11 +64,11 @@ fn main() -> () {
         .to_str()
         .expect("Conversion from PathBuf to str failed");
 
-
     let choice = InteractiveFictionToolArgs::parse();
     match choice.menu {
         //MenuSubCommand::Update(_) => update_extensions(&choice.global_options, &workspace_folder),
-        MenuSubCommand::Update(_) => update_extensions3(&choice.global_options, &workspace_folder_str_2),
+        MenuSubCommand::Update(_) =>
+            update_extensions3(&choice.global_options, &workspace_folder_str_2),
         MenuSubCommand::Info(cmd_args) => extensions_info(&cmd_args.name, &choice.global_options),
         MenuSubCommand::List(cmd_args) => {
             list_extensions(&cmd_args.list_options, &choice.global_options)
@@ -78,12 +79,8 @@ fn main() -> () {
     }
 }
 
-
-
 fn get_data_dir() -> Result<PathBuf, std::io::Error> {
-    let repo_dir = dirs_next::data_dir()
-        .expect("Could not determine data directory")
-        .join("ifp");
+    let repo_dir = dirs_next::data_dir().expect("Could not determine data directory").join("ifp");
     if !repo_dir.exists() {
         fs::create_dir_all(&repo_dir)?;
     }

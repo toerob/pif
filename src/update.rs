@@ -19,16 +19,28 @@ use git2::{
 use std::path::PathBuf;
 use dirs_next::home_dir;
 
-pub fn update_extensions3(global_options: &GlobalOptions, workspace_folder: &str) {
+use config::Config;
+use std::collections::HashMap;
 
+pub fn update_extensions3(global_options: &GlobalOptions, workspace_folder: &str) {
     let use_colour = Color::Never != global_options.color;
     let success_color = match Color::Never != global_options.color {
         true => Some(Green),
         false => None,
     };
 
-    let repository_url = "https://github.com/toerob/t3cartographer"; // TODO: Add public repository here instead of this placeholder
-    let repository_main_branch = "master"; // TODO: rename to main when the public repository exists
+    let settings = Config::builder()
+        .add_source(config::File::with_name("Settings.yaml"))
+        .build()
+        .unwrap();
+
+    let config = settings.clone().try_deserialize::<HashMap<String, String>>().unwrap();
+
+    let repository_url = &settings.get_string("main_repository_url").unwrap();
+    let repository_main_branch = &settings.get_string("main_repository_branch").unwrap();
+
+    // println!("{:?}", &repository_url);
+    // println!("{:?}", &repository_main_branch);
 
     let repo_dir = dirs_next
         ::data_dir()
@@ -42,18 +54,12 @@ pub fn update_extensions3(global_options: &GlobalOptions, workspace_folder: &str
     match get_or_create_repo_dir(&repo_dir_str) {
         Ok(repo_path) => {
             if let Err(e) = clone_or_pull_repo(repository_url, "refs/heads/master", &repo_path) {
-                print_warning_msg(
-                    use_colour,
-                    format!("Error: {}\n", e)
-                );        
+                print_warning_msg(use_colour, format!("Error: {}\n", e));
             }
         }
-        Err(e) => {
-            eprintln!("Failed to create repository directory: {}", e)
-        }
+        Err(e) => { eprintln!("Failed to create repository directory: {}", e) }
     }
 }
-
 
 pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<(), Error> {
     if repo_path.join(".git").exists() {
@@ -112,7 +118,6 @@ pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> 
     }
     Ok(())
 }
-
 
 pub fn get_or_create_repo_dir(subdir: &str) -> Result<PathBuf, std::io::Error> {
     // Hämta hemkatalog och lägg till underkatalog

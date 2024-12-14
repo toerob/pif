@@ -28,18 +28,17 @@ pub fn list_extensions(
         global_options.system.clone()
     };
 
-
-
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
     let file_path = get_extension_path(system_type);
 
-
     // TODO: use repo_dir to get the latest json configuration file
-    let config_file = dirs_next::data_dir().expect("Could not determine data directory")
-                                        .join("ifp")
-                                        .join("repo")
-                                        .join(&file_path)
-                                        .clone();
+    let config_file = dirs_next
+        ::data_dir()
+        .expect("Could not determine data directory")
+        .join("ifp")
+        .join("repo")
+        .join(&file_path)
+        .clone();
 
     println!("file_path: {} ", &config_file.clone().display());
 

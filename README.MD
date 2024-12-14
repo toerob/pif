@@ -1,24 +1,26 @@
 # IFP - The (I)nteractive (F)iction (P)ackage Manager
 
 # What is it?
+
 A CLI tool to help catalogize, search and install extensions for various interactive fiction systems such as:
 
-  * Dialog
-  * Inform6
-  * Tads3
+- Dialog
+- Inform6
+- Tads3
 
 # Why is it?
 
-The main reason for the existence of this tool is to make it possible to easily find and retrive extensions from various sources like ifarchive.org and github without ever having to leave the console application. 
+The main reason for the existence of this tool is to make it possible to easily find and retrive extensions from various sources like ifarchive.org and github without ever having to leave the console application.
 
 It's written in Rust to easily obtain platform independence, and also because it features a great CLI extension (Clap) to build upon.
 
-# Usage 
+# Usage
 
 Just type:
-```ifp```
+`ifp`
 
 To get the following menu:
+
 ```
 IFP - A CLI package manager for interactive fiction languages
 
@@ -39,30 +41,28 @@ Options:
   -V, --version            Print version
 ```
 
+- Update the master list for all the available extensions: `ifp update`
 
-* Update the master list for all the available extensions: `ifp update` 
+- List all extensions for a given system (auto detecting which system if in a project folder): `ifp list`
 
-* List all extensions for a given system (auto detecting which system if in a project folder): `ifp list` 
+- Filter out an extensions based on chars from the extension name (fuzzy search) : `ifp list -k t3cr`
 
-* Filter out an extensions based on chars from the extension name (fuzzy search) : `ifp list -k t3cr` 
+- Filter out an extensions based on chars from the author name (fuzzy search) : `ifp list -a tö`
 
-* Filter out an extensions based on chars from the author name (fuzzy search) : `ifp list -a tö` 
+- List all extensions for a given system (manua): `ifp list --system tads3`
 
-* List all extensions for a given system (manua): `ifp list --system tads3` 
+- Display information about an extension: `ifp info t3cartographer`
 
-* Display information about an extension: `ifp info t3cartographer` 
+- Install an extension: `ifp install t3cartographer` (The extension name must be correct but is case insensitive)
 
-* Install an extension: `ifp install t3cartographer` (The extension name must be correct but is case insensitive)
-
-* Help on available commands: `ifp help list` - will show all available options
-
+- Help on available commands: `ifp help list` - will show all available options
 
 # How to add one of your extensions to this tool?
 
 Internally IFP works by keeping a master list of extensions in a global repository, it doen't host them itself (but could potentially do that as well). The urls for each extension can in practicallity point anywhere but _must_ either point to:
 
-1.  a single unarchived file 
-2.  a zip-file 
+1.  a single unarchived file
+2.  a zip-file
 3.  a github repository link (ending in ".git")
 
 In order to add an extension to the list just add a pull request (PR) to the list where the URL can either point to a zip archive on for instance ifarchive.org (e.g https://ifarchive.org/if-archive/programming/tads3/library/contributions/t3cartographer.zip), or
@@ -70,14 +70,13 @@ a git url (e.g https://github.com/toerob/t3cartographer.git)
 
 The master list for each system can currently be found here:
 
-* https://github.com/toerob/rift/blob/main/dialog-extensions.json
+- https://github.com/toerob/rift/blob/main/dialog-extensions.json
 
-* https://github.com/toerob/rift/blob/main/inform6-extensions.json
+- https://github.com/toerob/rift/blob/main/inform6-extensions.json
 
-* https://github.com/toerob/rift/blob/main/tads3-extensions.json
+- https://github.com/toerob/rift/blob/main/tads3-extensions.json
 
 (It may be moved to a more suitable place later.)
-
 
 # Example
 
@@ -100,6 +99,7 @@ A PR should include the following information for a completely new extension:
           ],
           "url": "https://github.com/toerob/t3cartographer.git",
           "ext": "zip",
+          "branch": "master",
           "version": "0.7"
         }
       ],
@@ -117,15 +117,15 @@ If you just wish to add a separate version of your extension just add another ob
     ],
     "url": "https://github.com/toerob/t3cartographer-0.8.git",
     "ext": "zip",
+    "branch": "master",
     "version": "0.8"
   }
 ```
 
 Or replace the entry completely.
 
-
 # Disclaimer
-A work in progress as most of these tools are. It also comes with no warranties, use at your own risk.
 
+A work in progress as most of these tools are. It also comes with no warranties, use at your own risk.
 
 Copyright @2023 Tomas Öberg
