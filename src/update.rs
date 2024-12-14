@@ -44,7 +44,7 @@ pub fn update_extensions(global_options: &GlobalOptions) {
         .build()
         .unwrap();
 
-    let config = settings.clone().try_deserialize::<HashMap<String, String>>().unwrap();
+    //let config = settings.clone().try_deserialize::<HashMap<String, String>>().unwrap();
 
     let repository_url = &settings.get_string("main_repository_url").unwrap();
     let repository_main_branch = &settings.get_string("main_repository_branch").unwrap();

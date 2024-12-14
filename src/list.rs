@@ -6,6 +6,7 @@ use crate::args;
 use crate::{
     args::{ Color, GlobalOptions, InteractiveFictionSystem, SortProperty },
     detect::{ detect_system, get_extension_path },
+    update::{ update_extensions },
 };
 use ansi_term::Colour::*;
 //use args::{ListOptions, ListPresentation};
@@ -20,8 +21,14 @@ use sublime_fuzzy::FuzzySearch;
 #[warn(unused_attributes)]
 pub fn list_extensions(
     list_options: &args::ListOptions,
-    global_options: &args::GlobalOptions
+    global_options: &args::GlobalOptions,
+    update_needed: bool
 ) -> () {
+
+    if update_needed {
+        update_extensions(global_options);
+    }
+
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
         detect_system().0
     } else {

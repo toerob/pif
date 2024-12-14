@@ -3,6 +3,37 @@ use std::fs;
 use std::path::PathBuf;
 use std::io::{ self, Write, Read };
 
+use config::Config;
+use std::collections::HashMap;
+
+/*
+pub fn get_main_repository_local_path_and_branch() -> (&str, &str) {
+
+  println!("GONG!!");
+  let config_file_pathbuf = get_main_config_file().unwrap();
+  let config_file_path_str = config_file_pathbuf.to_str().unwrap();
+  
+  println!("***{}***", config_file_path_str);
+
+  let settings = Config::builder()
+      .add_source(config::File::with_name(config_file_path_str))
+      .build()
+      .unwrap();
+
+  //let config = settings.clone().try_deserialize::<HashMap<String, String>>().unwrap();
+
+  let repository_url = settings.get_string("main_repository_url").unwrap().clone();
+  let repository_main_branch = settings.get_string("main_repository_branch").unwrap().clone();
+
+
+  println!("{:?}", &repository_url);
+  println!("{:?}", &repository_main_branch);
+
+  //(repository.to_string(), repository_main_branch.to_string());
+  ("sadf", "ssdfsdf")
+}*/
+
+
 pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
     let config_dir = config_dir()
         .expect("Could not determine config directory")

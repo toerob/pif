@@ -15,6 +15,7 @@ use crate::{
     detect::{ detect_system, get_extension_path },
     makefile::add_make_file_entry,
     gitops::{ get_or_create_repo_dir, clone_or_pull_repo },
+    update::{ update_extensions },
 };
 
 use dirs_next::data_dir;
@@ -22,8 +23,14 @@ use dirs_next::data_dir;
 pub fn install_extensions(
     names: &Vec<String>,
     install_options: &InstallOptions,
-    global_options: &GlobalOptions
+    global_options: &GlobalOptions,
+    update_needed: bool
 ) -> () {
+
+    if update_needed {
+        update_extensions(global_options);
+    }
+
     let use_colours = Color::Never != global_options.color;
 
     /*// TODO: 5 'r placeholder?

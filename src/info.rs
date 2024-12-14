@@ -7,9 +7,14 @@ use std::{
 use crate::model::{Extensions};
 use crate::{
     detect::{detect_system, get_extension_path},
+    update::{ update_extensions },
 };
 
-pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions) {
+pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, update_needed: bool) {
+    if update_needed {
+        update_extensions(global_options);
+    }
+
     let _verbosity_level = global_options.verbose.unwrap();
     let use_colors = if Color::Never == global_options.color {
         false   

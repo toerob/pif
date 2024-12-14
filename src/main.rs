@@ -36,26 +36,42 @@ use std::path::PathBuf;
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
-use update::update_extensions;
+use update::{ update_extensions };
 
 use settings::{ write_default_settings, get_main_config_file };
 
 // TODO: make ifarchive possible without maintaining a specific list
 
 fn main() -> () {
-    /*if let Err(e) = write_default_settings() {
-        eprintln!("Failed to write settings: {}", e);
-    }*/
+    //let config_file_pathbuf = get_main_config_file().expect("Main configuration file could not be found");
+    // TODO: check if update is needed for first run
+
+    let repo_dir = dirs_next
+        ::data_dir()
+        .expect("Could not determine data directory")
+        .join("ifp")
+        .join("repo")
+        .clone();
+
+    let update_needed = if repo_dir.exists() { false } else { true };
 
     let choice = InteractiveFictionToolArgs::parse();
+
     match choice.menu {
         MenuSubCommand::Update(_) => update_extensions(&choice.global_options),
-        MenuSubCommand::Info(cmd_args) => extensions_info(&cmd_args.name, &choice.global_options),
+        MenuSubCommand::Info(cmd_args) => {
+            extensions_info(&cmd_args.name, &choice.global_options, update_needed)
+        }
         MenuSubCommand::List(cmd_args) => {
-            list_extensions(&cmd_args.list_options, &choice.global_options)
+            list_extensions(&cmd_args.list_options, &choice.global_options, update_needed)
         }
         MenuSubCommand::Install(cmd_args) => {
-            install_extensions(&cmd_args.name, &cmd_args.install_options, &choice.global_options)
+            install_extensions(
+                &cmd_args.name,
+                &cmd_args.install_options,
+                &choice.global_options,
+                update_needed
+            )
         }
     }
 }
