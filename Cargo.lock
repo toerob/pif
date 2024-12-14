@@ -1043,37 +1043,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ifp"
-version = "0.1.0"
-dependencies = [
- "ansi_term",
- "assert_cmd",
- "clap",
- "config",
- "dirs",
- "dirs-next",
- "dotenv",
- "git2",
- "glob",
- "globwalk",
- "home",
- "http",
- "hyper",
- "json",
- "lazy_static",
- "mockall",
- "online",
- "predicates 2.1.5",
- "regex",
- "reqwest",
- "semver",
- "serde",
- "serde_json",
- "sublime_fuzzy",
- "zip-extract",
-]
-
-[[package]]
 name = "ignore"
 version = "0.4.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1517,6 +1486,37 @@ dependencies = [
  "once_cell",
  "pest",
  "sha2",
+]
+
+[[package]]
+name = "pif"
+version = "0.1.0"
+dependencies = [
+ "ansi_term",
+ "assert_cmd",
+ "clap",
+ "config",
+ "dirs",
+ "dirs-next",
+ "dotenv",
+ "git2",
+ "glob",
+ "globwalk",
+ "home",
+ "http",
+ "hyper",
+ "json",
+ "lazy_static",
+ "mockall",
+ "online",
+ "predicates 2.1.5",
+ "regex",
+ "reqwest",
+ "semver",
+ "serde",
+ "serde_json",
+ "sublime_fuzzy",
+ "zip-extract",
 ]
 
 [[package]]

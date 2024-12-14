@@ -1,4 +1,4 @@
-# IFP - The (I)nteractive (F)iction (P)ackage Manager
+# PIF - The (P)ackage Manager for (I)nteractive (F)iction
 
 # What is it?
 
@@ -17,14 +17,14 @@ It's written in Rust to easily obtain platform independence, and also because it
 # Usage
 
 Just type:
-`ifp`
+`pif`
 
 To get the following menu:
 
 ```
-IFP - A CLI package manager for interactive fiction languages
+PIF - A CLI package manager for interactive fiction languages
 
-Usage: ifp [OPTIONS] <COMMAND>
+Usage: pif [OPTIONS] <COMMAND>
 
 Commands:
   info     Show information about an extension
@@ -41,25 +41,25 @@ Options:
   -V, --version            Print version
 ```
 
-- Update the master list for all the available extensions: `ifp update`
+- Update the master list for all the available extensions: `pif update`
 
-- List all extensions for a given system (auto detecting which system if in a project folder): `ifp list`
+- List all extensions for a given system (auto detecting which system if in a project folder): `pif list`
 
-- Filter out an extensions based on chars from the extension name (fuzzy search) : `ifp list -k t3cr`
+- Filter out an extensions based on chars from the extension name (fuzzy search) : `pif list -k t3cr`
 
-- Filter out an extensions based on chars from the author name (fuzzy search) : `ifp list -a tö`
+- Filter out an extensions based on chars from the author name (fuzzy search) : `pif list -a tö`
 
-- List all extensions for a given system (manua): `ifp list --system tads3`
+- List all extensions for a given system (manua): `pif list --system tads3`
 
-- Display information about an extension: `ifp info t3cartographer`
+- Display information about an extension: `pif info t3cartographer`
 
-- Install an extension: `ifp install t3cartographer` (The extension name must be correct but is case insensitive)
+- Install an extension: `pif install t3cartographer` (The extension name must be correct but is case insensitive)
 
-- Help on available commands: `ifp help list` - will show all available options
+- Help on available commands: `pif help list` - will show all available options
 
 # How to add one of your extensions to this tool?
 
-Internally IFP works by keeping a master list of extensions in a global repository, it doen't host them itself (but could potentially do that as well). The urls for each extension can in practicallity point anywhere but _must_ either point to:
+Internally PIF works by keeping a master list of extensions in a global repository, it doen't host them itself (but could potentially do that as well). The urls for each extension can in practicallity point anywhere but _must_ either point to:
 
 1.  a single unarchived file
 2.  a zip-file

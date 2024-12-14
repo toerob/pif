@@ -49,7 +49,7 @@ fn main() -> () {
     let repo_dir = dirs_next
         ::data_dir()
         .expect("Could not determine data directory")
-        .join("ifp")
+        .join("pif")
         .join("repo")
         .clone();
 

@@ -24,7 +24,7 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
 
     if names.len() == 0 {
         println!(
-        "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""))
+        "{}",Red.paint(format!("No packages specified. Command usage examples: \n  \"pif install abc \"\n  \"pif install abc def\""))
     );
         return;
     }

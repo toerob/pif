@@ -42,7 +42,7 @@ pub fn list_extensions(
     let config_file = dirs_next
         ::data_dir()
         .expect("Could not determine data directory")
-        .join("ifp")
+        .join("pif")
         .join("repo")
         .join(&file_path)
         .clone();

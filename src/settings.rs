@@ -37,7 +37,7 @@ pub fn get_main_repository_local_path_and_branch() -> (&str, &str) {
 pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
     let config_dir = config_dir()
         .expect("Could not determine config directory")
-        .join("ifp")
+        .join("pif")
         .join("config");
 
     if !config_dir.exists() {

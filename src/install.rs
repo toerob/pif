@@ -44,7 +44,7 @@ pub fn install_extensions(
             "{}",
             Red.paint(
                 format!(
-                    "No packages specified. Command usage examples: \n  \"ifp install abc \"\n  \"ifp install abc def\""
+                    "No packages specified. Command usage examples: \n  \"pif install abc \"\n  \"pif install abc def\""
                 )
             )
         );
@@ -72,7 +72,7 @@ pub fn install_extensions(
 
     let file_path = dirs_next::data_dir()
         .expect("Could not determine data directory")
-        .join("ifp")
+        .join("pif")
         .join("repo")
         .join(file_path_end)
         .clone();

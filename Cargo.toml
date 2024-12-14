@@ -1,8 +1,8 @@
 [package]
-name = "ifp"
+name = "pif"
 version = "0.1.0"
 authors = ["Tomas Öberg"]
-description = "IFP - A CLI package manager for interactive fiction languages"
+description = "PIF - A CLI package manager for interactive fiction languages"
 
 edition = "2021"
 
