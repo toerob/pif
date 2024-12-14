@@ -14,21 +14,10 @@ use crate::{
     args::{ Color, GlobalOptions, InstallOptions },
     detect::{ detect_system, get_extension_path },
     makefile::add_make_file_entry,
-    update::{ get_or_create_repo_dir, clone_or_pull_repo },
+    gitops::{ get_or_create_repo_dir, clone_or_pull_repo },
 };
 
-/*
-#[warn(unused_attributes)]
-pub fn list_extensions(
-    list_options: &args::ListOptions,
-    global_options: &args::GlobalOptions
-) -> () {
-    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
-        detect_system().0
-    } else {
-        global_options.system.clone()
-    };
-*/
+use dirs_next::data_dir;
 
 pub fn install_extensions(
     names: &Vec<String>,
@@ -62,7 +51,7 @@ pub fn install_extensions(
     };
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
-    let file_path = get_extension_path(system_type);
+    let file_path_end = get_extension_path(system_type);
 
     // TODO: extract version part from name@version if present
     //let lower_case_names: Vec<String> = names.iter()
@@ -73,7 +62,18 @@ pub fn install_extensions(
         .map(|n| n.to_lowercase())
         .collect();
 
-    //print!("Trying: {}", file_path);
+
+    let file_path = dirs_next::data_dir()
+        .expect("Could not determine data directory")
+        .join("ifp")
+        .join("repo")
+        .join(file_path_end)
+        .clone();
+
+    let file_path_str = file_path.as_path().to_str().clone().unwrap();
+
+    print!("Trying: {}", file_path_str);
+
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
 
@@ -173,14 +173,15 @@ pub fn install_extensions(
                 println!("{}", text);
             }
 
-            if makefile.is_some() {
+            if makefile.is_some() && latest_version.makefile_entries.is_some() {
+                
                 add_make_file_entry(
                     extension.name.clone(),
                     makefile.as_ref().unwrap(),
                     latest_version.makefile_entries.as_ref().unwrap().to_owned()
                 );
             }
-            // TODO: add_make_file_entry();
+            // TODO: add_make_file_entry() for both, not just non-git;
             return;
         }
 
