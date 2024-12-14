@@ -73,7 +73,7 @@ fn main() -> () {
             list_extensions(&cmd_args.list_options, &choice.global_options)
         }
         MenuSubCommand::Install(cmd_args) => {
-            install_extensions(&cmd_args.name, &choice.global_options)
+            install_extensions(&cmd_args.name, &cmd_args.install_options, &choice.global_options)
         }
     }
 }

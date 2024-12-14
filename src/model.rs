@@ -28,6 +28,7 @@ pub struct Version {
     #[serde(rename = "makefile-entries")]
     pub makefile_entries: Option<Vec<String>>,
     pub ext: Option<String>,
+    pub branch: Option<String>,
 
     #[serde(rename = "last-modified")]
     pub last_modified: Option<String>,

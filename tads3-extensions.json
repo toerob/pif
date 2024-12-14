@@ -14,6 +14,7 @@
             "ConSpace2/ConSpace.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.1"
         },
@@ -26,6 +27,7 @@
             "ConSpace2/ConSpace.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.2.1"
         },
@@ -39,6 +41,7 @@
             "ConSpace2/ConSpace.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.1.1"
         }
@@ -59,6 +62,7 @@
             "ContWithLid.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ContWithLid.t",
+          "branch": "master",
           "ext": "t",
           "version": "1"
         }
@@ -79,6 +83,7 @@
             "dstrucs/lib/dstruc.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/Dstrucs.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.0.1"
         }
@@ -99,6 +104,7 @@
             "DupDobj.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/DupDobj.t",
+          "branch": "master",
           "ext": "t",
           "version": "1.2"
         }
@@ -119,6 +125,7 @@
             "lookDir.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/LookDir.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "4"
         }
@@ -139,6 +146,7 @@
             "TADS 3 Component/MazeClass.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MazeGenerator.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1"
         }
@@ -159,6 +167,7 @@
             "MultiMorphic/multi_morphic.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MultiMorphic.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -179,6 +188,7 @@
             "OccludingConnector.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/OccludingConnector.t",
+          "branch": "master",
           "ext": "t",
           "version": "1"
         }
@@ -195,6 +205,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "zip",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/Pathfinders.zip",
           "version": null
@@ -216,6 +227,7 @@
             "SayQuery/SayQuery.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SayQuery.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -236,6 +248,7 @@
             "SpellingCorrector.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SpellingCorrector.t",
+          "branch": "master",
           "ext": "t",
           "version": "1.1"
         }
@@ -252,6 +265,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SunTracker.t",
           "version": null
@@ -269,6 +283,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/T3checks.t",
           "version": "1.0"
@@ -290,6 +305,7 @@
             "TCommand/TCommand.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/TCommand.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "3"
         }
@@ -310,6 +326,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/achievement.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -330,6 +347,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/adv3Lite.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.6.1"
         }
@@ -346,6 +364,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/asto.t",
           "version": "2.0"
@@ -367,6 +386,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/autosave.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "November 23, 2008"
         }
@@ -387,6 +407,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/combine.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "4"
         }
@@ -407,6 +428,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/compass.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "3"
         }
@@ -427,6 +449,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/contaction.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.6"
         }
@@ -444,6 +467,7 @@
             "adv3"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/cquotes.t",
+          "branch": "master",
           "ext": "t",
           "version": "0.2"
         }
@@ -464,6 +488,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/csc.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.2"
         }
@@ -480,6 +505,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/diff.t",
           "version": "1.0"
@@ -497,6 +523,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/easyListing.t",
           "version": "0.3"
@@ -518,6 +545,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/flags.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.0"
         }
@@ -538,6 +566,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/hypoTester.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "4"
         }
@@ -554,6 +583,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/imm.t",
           "version": null
@@ -571,6 +601,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "t",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/kfDebug.t",
           "version": "1"
@@ -594,6 +625,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/lastTyped.zip",
+          "branch": "main",
           "ext": "zip",
           "version": "1.0"
         }
@@ -611,6 +643,7 @@
             "adv3"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/listControl.t",
+          "branch": "master",
           "ext": "t",
           "version": "0.2"
         }
@@ -631,6 +664,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/londoncabs.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0.2"
         }
@@ -651,6 +685,7 @@
             "match/match.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/match.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "3"
         }
@@ -671,6 +706,7 @@
             "megatads/megatads.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/megatads.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1"
         }
@@ -691,6 +727,7 @@
             "memory.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/memory.t",
+          "branch": "master",
           "ext": "t",
           "version": "1"
         }
@@ -711,6 +748,7 @@
             "msg_custom.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/msg_custom.t",
+          "branch": "master",
           "ext": "t",
           "version": "2.2"
         }
@@ -731,6 +769,7 @@
             "ncDebugActions.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ncDebugActions.t",
+          "branch": "master",
           "ext": "t",
           "version": "1.1"
         }
@@ -749,6 +788,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "h",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/nobreak.h",
           "version": null
@@ -770,6 +810,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/optimizations.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1"
         }
@@ -790,6 +831,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/padlock.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -810,6 +852,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/proteus.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.1.5"
         }
@@ -830,6 +873,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/qtalk.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2"
         }
@@ -847,6 +891,7 @@
             "adv3"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/reaction.t",
+          "branch": "master",
           "ext": "t",
           "version": "0.2"
         }
@@ -867,6 +912,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/relation.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "3.0"
         }
@@ -887,6 +933,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rextok.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "2.0"
         }
@@ -907,6 +954,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rulebooks.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.1"
         }
@@ -924,6 +972,7 @@
             "adv3"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/scenes.t",
+          "branch": "master",
           "ext": "t",
           "version": "1.0"
         }
@@ -944,6 +993,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/splitgame.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "0.9"
         }
@@ -959,6 +1009,7 @@
           "last-modified": "2004-09-22 06:32",
           "version": "1.1",
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/t3knowledge.t",
+          "branch": "master",
           "ext": "t",
           "type": [
             "adv3"
@@ -979,6 +1030,7 @@
           "type": [
             "adv3"
           ],
+          "branch": "master",
           "ext": "zip",
           "makefile-entries": [
             "t3RAP/t3rapKer",
@@ -1006,6 +1058,7 @@
             "tests.t"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests.t",
+          "branch": "master",
           "ext": "t",
           "version": null
         }
@@ -1026,6 +1079,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests2.zip",
+          "branch": "master",
           "ext": "zip",
           "version": null
         }
@@ -1043,6 +1097,7 @@
             "adv3"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/timepasses.t",
+          "branch": "master",
           "ext": "t",
           "version": null
         }
@@ -1063,6 +1118,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/timesys.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "3.0.3"
         }
@@ -1083,6 +1139,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tips.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1"
         }
@@ -1103,6 +1160,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/toksync.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.1"
         }
@@ -1123,6 +1181,7 @@
             "tsp/lib/tsp.tl"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tsp.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0.2"
         }
@@ -1143,6 +1202,7 @@
             "TODO"
           ],
           "url": "https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/xactor.zip",
+          "branch": "master",
           "ext": "zip",
           "version": "1.05"
         }
@@ -1163,6 +1223,7 @@
             "textMenu/textMenu.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/textMenu.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1183,6 +1244,7 @@
             "notReallyRandom/notReallyRandom.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/notReallyRandom.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1203,6 +1265,7 @@
             "intMath/intMath.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/intMath.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1223,6 +1286,7 @@
             "routeTable/routeTable.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/routeTable.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1243,6 +1307,7 @@
             "simpleGraph/simpleGraph.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/simpleGraph.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1263,6 +1328,7 @@
             "statTest/statTest.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/statTest.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1283,6 +1349,7 @@
             "autoTest/autoTest.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/autoTest.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1303,6 +1370,7 @@
             "remoteView/remoteView.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/remoteView.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1323,6 +1391,7 @@
             "debugTool/debugTool.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/debugTool.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1345,6 +1414,7 @@
             "nounAsVerb/nounAsVerb.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/nounAsVerb.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1365,6 +1435,7 @@
             "debugToolLite/debugToolLite.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/debugToolLite.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1387,6 +1458,7 @@
             "bufferedOutputFilter/bufferedOutputFilter.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/bufferedOutputFilter.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1407,6 +1479,7 @@
             "dynamicWord/dynamicWord.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/dynamicWord.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1427,6 +1500,7 @@
             "patchLoader/patchLoader.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/patchLoader.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1447,6 +1521,7 @@
             "eventHandler/eventHandler.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/eventHandler.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1467,6 +1542,7 @@
             "dynamicThing/dynamicThing.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/dynamicThing.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1487,6 +1563,7 @@
             "newActorCommand/newActorCommand.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/newActorCommand.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1507,6 +1584,7 @@
             "absentActor/absentActor.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/absentActor.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1527,6 +1605,7 @@
             "lastTyped/lastTyped.tl"
           ],
           "url": "https://github.com/diegesisandmimesis/lastTyped.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0"
         }
@@ -1548,6 +1627,7 @@
             "t3cartographer/cartographer.tl"
           ],
           "url": "https://github.com/toerob/t3cartographer.git",
+          "branch": "master",
           "ext": "zip",
           "version": "0.7"
         }
@@ -1565,6 +1645,7 @@
             "adv3"
           ],
           "url": "https://github.com/Th3OneAndOnly/AdventEX.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0.1"
         }
@@ -1582,6 +1663,7 @@
             "adv3"
           ],
           "url": "https://github.com/mikawa/G-TADS.git",
+          "branch": "master",
           "ext": "zip",
           "version": "1.0.0"
         }

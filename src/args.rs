@@ -34,6 +34,8 @@ pub struct UpdateCommand {
 #[derive(Debug, Args)]
 pub struct InstallCommand {
     pub name: Vec<String>,
+    #[clap(flatten)]
+    pub install_options: InstallOptions,
 }
 
 #[derive(Debug, Args)]
@@ -53,6 +55,14 @@ pub struct ListCommand {
     #[clap(flatten)]
     pub list_options: ListOptions,
 }
+
+#[derive(Debug, Args)]
+pub struct InstallOptions {
+    /// Directory where the extensions gets installed
+    #[arg(short = 'd', long = "directory", value_name = "FOLDER", default_value = "libs")]
+    pub installation_directory: Option<String>,
+}
+
 
 #[derive(Debug, Args)]
 pub struct ListOptions {
@@ -110,6 +120,12 @@ pub enum Color {
     Auto,
     Never,
 }
+
+#[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
+pub enum InstallationDirectory {
+    Libs,
+}
+
 
 #[derive(Clone, Debug, ValueEnum, PartialEq, Eq)]
 pub enum ListPresentation {

@@ -7,22 +7,41 @@ use sublime_fuzzy::FuzzySearch;
 
 use crate::{
     args::InteractiveFictionSystem,
-    color::print_warning_msg,
+    color::{ print_warning_msg, print_success_msg },
     model::{ Extension, Extensions },
 };
 use crate::{
-    args::{ Color, GlobalOptions },
+    args::{ Color, GlobalOptions, InstallOptions },
     detect::{ detect_system, get_extension_path },
     makefile::add_make_file_entry,
+    update::{ get_or_create_repo_dir, clone_or_pull_repo },
 };
 
-pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -> () {
+/*
+#[warn(unused_attributes)]
+pub fn list_extensions(
+    list_options: &args::ListOptions,
+    global_options: &args::GlobalOptions
+) -> () {
+    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system().0
+    } else {
+        global_options.system.clone()
+    };
+*/
+
+pub fn install_extensions(
+    names: &Vec<String>,
+    install_options: &InstallOptions,
+    global_options: &GlobalOptions
+) -> () {
     let use_colours = Color::Never != global_options.color;
-    // TODO: 5 'r placeholder?
+
+    /*// TODO: 5 'r placeholder?
     if !check(Some(5)).is_ok() {
         print_warning_msg(use_colours, "No internet connection. Aborting. \n".to_string());
         exit(0);
-    }
+    }*/
 
     if names.len() == 0 {
         println!(
@@ -54,7 +73,7 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
         .map(|n| n.to_lowercase())
         .collect();
 
-    print!("Trying: {}", file_path);
+    //print!("Trying: {}", file_path);
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
 
@@ -95,15 +114,37 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
 
     // TODO: ensure the extension folder exists or is created first
 
-    installable_extensions.iter().for_each(|extension| {
-        let library_path = "./libs"; // TODO: overridable set via installOptions
+    /*
+    if install_options.installation_directory.is_some() {
+        let dir = install_options.installation_directory.as_ref().unwrap().to_owned();
+    } else {
+        println!("\nNo default value for!!!****");
+    }*/
 
+    let library_path = install_options.installation_directory.as_ref().unwrap(); // TODO: overridable set via installOptions
+
+    // Ensure directory exists:
+    if !std::path::Path::new(&library_path).exists() {
+        match fs::create_dir_all(library_path) {
+            Ok(p) => {}
+            Err(e) => {
+                print_warning_msg(
+                    use_colours,
+                    format!("Could not create directory {}, beacuse: {} ", library_path, e)
+                );
+                return;
+            }
+        }
+    }
+
+    installable_extensions.iter().for_each(|extension| {
         let os_path = Path::new(library_path).join(&extension.name);
         let path = os_path.to_str().unwrap();
 
         let latest_version = extension.versions.get(0).unwrap();
 
         let url = latest_version.url.as_ref().unwrap().as_str();
+        let branch_name = latest_version.branch.as_ref().unwrap();
 
         let result: Vec<&str> = url.matches(".git").collect();
         let is_git_repo = !result.is_empty();
@@ -139,80 +180,30 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                     latest_version.makefile_entries.as_ref().unwrap().to_owned()
                 );
             }
-
             // TODO: add_make_file_entry();
-
             return;
         }
 
-        // Clone repository procedure
-
-        // 1. First check if repository already exists
-        match Repository::open(path) {
-            Ok(repo) => {
-                println!("Repository already exists! TODO: update repository");
-
-                // Hämta remote (som oftast är 'origin')
-                let mut remote = repo.find_remote("origin").unwrap();
-
-                // Konfigurera callbacks för autentisering
-                let mut callbacks = RemoteCallbacks::new();
-                callbacks.credentials(|_url, _username_from_url, _allowed_types| {
-                    Cred::default()
-                });
-
-                // Ställ in fetch-alternativ
-                let mut fetch_options = FetchOptions::new();
-                fetch_options.remote_callbacks(callbacks);
-
-                // Gör fetch från remote
-                // TODO: gör branch anpassningsbar i json-struktur istf. "refs/heads/main"
-                remote.fetch(&["refs/heads/master"], Some(&mut fetch_options), None).unwrap();
-
-                // TODO: Check statuses
-                let mut statuses_options = StatusOptions::new();
-                let statuses = repo.statuses(Some(&mut statuses_options)).unwrap();
-                statuses.iter()
-                    .filter(|status|status.status().is_index_modified())
-                    .for_each(|status| {
-                        println!("Modified entry: {}", &status.path().unwrap());
-                    });
-
-                // Uppdatera lokala branch
-                let fetch_head = repo.find_reference("FETCH_HEAD").unwrap();
-                repo.set_head(fetch_head.name().unwrap()).unwrap();
-
-                repo.checkout_head(None).unwrap();
-                println!("Branch updated to match remote.");
-
-
-                // TODO:
-                /* let modifiedEntries: Vec<String> = statuses.iter()
-                    .filter(|status|status.status().is_index_modified())
-                    .map(|status| &status.path().unwrap().to_string())
-                    .collect();*/
-
-                    //.clone()
-                    //.into_iter()
-            
-
-
-                return;
-            }
-            Err(e) => {
-                // If repository isn't found, don't panic!
-                if ErrorCode::NotFound == e.code() {
-                    //println!("{:?}", e.code());
-                } else {
-                    // If due to other error, let's panic!
-                    panic!("failed to open: {}", e);
+        // IT is a GIT repo, clone or update it:
+        // TODO: make branch name adaptable from the json format
+        let branch_head_name = format!("refs/heads/{}", branch_name);
+        
+        match get_or_create_repo_dir(&path) {
+            Ok(repo_path) => {
+                if let Err(e) = clone_or_pull_repo(url, &branch_head_name, &repo_path) {
+                    print_warning_msg(use_colours, format!("Error: {}\n", e));
                 }
+                print_success_msg(
+                    use_colours,
+                    format!("Extension installed into {}\n", repo_path.display())
+                );
             }
+            Err(e) => { eprintln!("Failed to create repository directory: {}", e) }
         }
+    });
+}
 
-        // 2. If repository doesn't exist. Clone it into the folder of {path}
-
-        /*
+/*
         // This below is for animation purpose, spawn a thread to print to stdout every nth millisecond
 
         print!("Installing {}, progress: ", &extension.name);
@@ -238,69 +229,8 @@ pub fn install_extensions(names: &Vec<String>, global_options: &GlobalOptions) -
                 sleep(Duration::from_millis(40));
             }
         });
-        */
 
-        // 3. Clone the repository
-        match Repository::clone(url, path) {
-            Ok(_) => {
-                //println!(" DONE!");
-                //let text = format!("Installing \"{}\" in folder: {}", &extension.name, &path);
-                let text = format!(" ==> {} INSTALLED", &extension.name);
-                if use_colors {
-                    println!("{}", Green.paint(text));
-                } else {
-                    println!("{}", text);
-                }
-            }
-            Err(e) => {
-                /*
-                // Make sure to stop the thread before panicking.
-                *progress.lock().unwrap() = 100; // Trigger 100% and cause the animation to end
-                animation_process_handle.join().unwrap();
-                 */
-                panic!("failed to clone repository: {}", e)
-            }
-        };
-
-        /*
         // Make sure to stop the thread.
         *progress.lock().unwrap() = 100; // Trigger 100% and cause the animation to end
         animation_process_handle.join().unwrap();
          */
-    });
-}
-
-/*
-
-let repo = match Repository::open(path) {
-       Ok(repo) => {
-           /*let statuses = match repo.statuses(None) {
-               Ok(statuses) => {
-                   statuses.iter().for_each(|status| {
-                       println!("STATUSES OK!");
-                       //status.status()
-                   });
-                   //let status = statuses.get(0);
-                   print!("{}", statuses.len());
-                   //statuses.len();
-               }
-               Err(e) => panic!("failed to fetch statuses: {}", e),
-           };*/
-
-           /*for entry in statuses.iter() {
-
-               let status = entry.status();
-               //if status.intersects(INTERESTING) {
-               if let Some(path) = entry.path() {
-                   let path = workdir.join(path);
-                   interesting_statuses.insert(path, status);
-               }
-               //}
-           }*/
-           print!("OK!");
-           //repo;
-
-       },
-       Err(e) => panic!("failed to open: {}", e),
-
-*/
