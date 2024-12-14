@@ -24,7 +24,7 @@ mod list;
 mod makefile;
 mod model;
 mod update;
-mod settings;
+pub mod settings;
 mod gitops;
 
 use args::{ InteractiveFictionToolArgs, MenuSubCommand };

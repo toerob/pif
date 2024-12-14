@@ -76,3 +76,30 @@ main_repository_branch: master
     }
     Ok(())
 }
+
+
+
+
+
+#[cfg(test)]
+mod tests {
+    
+    use super::*;
+    use std::fs;
+    use std::path::Path;
+
+    #[test]
+    fn test_get_main_config_file() {
+        /*let temp_dir = std::env::temp_dir().join("test_prepare_environment");
+        if temp_dir.exists() {
+            fs::remove_dir_all(&temp_dir).unwrap();
+        }
+
+        get_main_config_file(&temp_dir).unwrap();
+        assert!(temp_dir.exists());
+        assert!(temp_dir.is_dir());
+
+        fs::remove_dir_all(&temp_dir).unwrap();
+        */
+    }
+}
