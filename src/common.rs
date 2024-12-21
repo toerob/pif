@@ -1,8 +1,4 @@
-use std::fs;
-use regex::Regex;
-use std::error::Error;
-
-use std::io::{ self, Write, Read };
+use std::io::{ self, Write, };
 
 pub fn yes_or_no(prompt: &str, default: bool) -> bool {
     loop {

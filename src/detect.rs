@@ -60,7 +60,7 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<DirEntry>) {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 
     #[test]
     fn get_extension_path_works() {

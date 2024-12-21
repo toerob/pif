@@ -1,6 +1,5 @@
 use std::{ io::{ stdout, Write }, process::exit };
 use std::{ fs::{ self, File }, io::{ Cursor }, path::Path };
-use ansi_term::Colour::*;
 
 use online::check;
 use crate::{ 
@@ -22,9 +21,6 @@ use git2::{
 
 use std::path::PathBuf;
 use dirs_next::data_dir;
-
-use config::Config;
-use std::collections::HashMap;
 
 pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<(), Error> {
     if repo_path.join(".git").exists() {

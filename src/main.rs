@@ -26,24 +26,32 @@ mod model;
 mod update;
 pub mod settings;
 mod gitops;
+mod db;
 
 use args::{ InteractiveFictionToolArgs, MenuSubCommand };
 use clap::Parser;
 
+use db::{check_installations, get_or_create_table};
+
+
 use std::fs::{ self };
-use std::path::PathBuf;
+use std::process::exit;
 
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
 use update::{ update_extensions };
 
-use settings::{ get_main_config_file };
-use log::{info, trace, warn};
+
 
 // TODO: make ifarchive possible without maintaining a specific list
 
 fn main() -> () {
+    
+    let conn = get_or_create_table().unwrap();
+    check_installations(&conn);
+    //exit(0);
+    
 
     //let config_file_pathbuf = get_main_config_file().expect("Main configuration file could not be found");
     // TODO: check if update is needed for first run

@@ -4,6 +4,7 @@ use git2::{ ErrorCode, Repository, FetchOptions, StatusOptions, RemoteCallbacks,
 use online::check;
 use std::{ fs::{ self, File }, io::{ Cursor, Write }, path::Path, process::exit };
 use sublime_fuzzy::FuzzySearch;
+use std::env::{current_dir};
 
 use crate::{
     args::InteractiveFictionSystem,
@@ -16,8 +17,8 @@ use crate::{
     makefile::add_make_file_entry,
     gitops::{ get_or_create_repo_dir, clone_or_pull_repo },
     update::{ update_extensions },
+    db::{ get_or_create_table, record_installation },
 };
-
 use dirs_next::data_dir;
 
 pub fn install_extensions(
@@ -26,7 +27,6 @@ pub fn install_extensions(
     global_options: &GlobalOptions,
     update_needed: bool
 ) -> () {
-
     if update_needed {
         update_extensions(global_options);
     }
@@ -59,7 +59,15 @@ pub fn install_extensions(
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
     if makefile.is_some() {
-        println!("{}", Yellow.paint(format!("Makefile detected: {:?}", makefile.as_ref().unwrap().to_owned().path().display())).to_string());
+        println!(
+            "{}",
+            Yellow.paint(
+                format!(
+                    "Makefile detected: {:?}",
+                    makefile.as_ref().unwrap().to_owned().path().display()
+                )
+            ).to_string()
+        );
     }
 
     let file_path_end = get_extension_path(system_type);
@@ -73,8 +81,8 @@ pub fn install_extensions(
         .map(|n| n.to_lowercase())
         .collect();
 
-
-    let file_path = dirs_next::data_dir()
+    let file_path = dirs_next
+        ::data_dir()
         .expect("Could not determine data directory")
         .join("pif")
         .join("repo")
@@ -149,8 +157,12 @@ pub fn install_extensions(
     }
 
     installable_extensions.iter().for_each(|extension| {
-        let os_path = Path::new(library_path).join(&extension.name);
+        let current_dir = current_dir().unwrap();
+        let os_path = Path::new(&current_dir).join(library_path).join(&extension.name);
         let path = os_path.to_str().unwrap();
+
+        println!("installation {path}");
+
 
         let latest_version = extension.versions.get(0).unwrap();
 
@@ -177,7 +189,27 @@ pub fn install_extensions(
                 let mut file = File::create(file_name).expect("failed to create file. ");
                 file.write_all(&file_data).expect("Failed to write to binary file. ");
             }
-            let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
+
+            add_data_record(&extension.name, &path, use_colors);
+
+            // TODO:  egen metod och återanvänd
+            match get_or_create_table() {
+                Ok(conn) => {
+                    record_installation(&conn, &extension.name, &path);
+                }
+                Err(e) => {
+                    print_warning_msg(
+                        use_colours,
+                        format!("Something failed when trying to access sqlite db: {}\n", e)
+                    );
+                }
+            }
+
+            let text = format!(
+                " ==> {} installed into directory {}",
+                &extension.name,
+                &os_path.display()
+            );
             if use_colors {
                 println!("{}", Green.paint(text));
             } else {
@@ -200,7 +232,7 @@ pub fn install_extensions(
         // IT is a GIT repo, clone or update it:
         // TODO: make branch name adaptable from the json format
         let branch_head_name = format!("refs/heads/{}", branch_name);
-        
+
         match get_or_create_repo_dir(&path) {
             Ok(repo_path) => {
                 if let Err(e) = clone_or_pull_repo(url, &branch_head_name, &repo_path) {
@@ -211,8 +243,13 @@ pub fn install_extensions(
                     format!("Extension installed into {}\n", repo_path.display())
                 );
             }
-            Err(e) => { eprintln!("Failed to create repository directory: {}", e) }
+            Err(e) => {
+                eprintln!("Failed to create repository directory: {}", e);
+            }
         }
+
+        add_data_record(&extension.name, &path, use_colors);
+
     });
 }
 
@@ -247,3 +284,18 @@ pub fn install_extensions(
         *progress.lock().unwrap() = 100; // Trigger 100% and cause the animation to end
         animation_process_handle.join().unwrap();
          */
+
+fn add_data_record(name: &str, path: &str, use_colors: bool) {
+    // TODO:  egen metod och återanvänd
+    match get_or_create_table() {
+        Ok(conn) => {
+            record_installation(&conn, &name, &path);
+        }
+        Err(e) => {
+            print_warning_msg(
+                use_colors,
+                format!("Something failed when trying to access sqlite db: {}\n", e)
+            );
+        }
+    }
+}
