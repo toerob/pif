@@ -13,7 +13,7 @@ use crate::{
     args::{ Color, GlobalOptions, InstallOptions },
     detect::{ detect_system, get_extension_path },
     makefile::add_make_file_entry,
-    gitops::{ get_or_create_repo_dir, clone_or_pull_repo },
+    gitops::{ get_or_create_repo_dir, clone_or_pull_repo, latest_semver_tag, checkout_tag },
     update::{ update_extensions },
     db::{ get_or_create_table, record_installation },
 };
@@ -112,6 +112,9 @@ pub fn install_extensions(
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
 
+    for warning in data.validate() {
+        print_warning_msg(use_colours, format!("Schema warning: {}\n", warning));
+    }
 
     let installable_extensions: Vec<Extension> = data.extensions
         .clone()
@@ -193,25 +196,20 @@ pub fn install_extensions(
 
         if version_asked_for.to_lowercase() == "latest" {
             print!("Version asked for is 'LATEST'\n");
-            // So we just grab the first element out of the sorted version by semver::version-order
-            versions.sort_by_key(|x| x.version.clone());
+            versions.sort_by_key(|x| x.version.clone().unwrap_or(semver::Version::new(0, 0, 0)));
             found_matching_version = versions.last().cloned();
         } else if version_asked_for.to_lowercase() == "snapshot" {
             print!("Version asked for is 'SNAPSHOT'\n");
-            let version_req = semver::VersionReq::parse("0.0.0-SNAPSHOT")
-                .unwrap();
-                print!("Specific version asked for {} \n", version_req);
+            let version_req = semver::VersionReq::parse("0.0.0-SNAPSHOT").unwrap();
             found_matching_version = versions
                 .into_iter()
-                .find(|x| version_req.matches(&x.version));
-
+                .find(|x| x.version.as_ref().map_or(false, |v| version_req.matches(v)));
         } else {
             let version_req = semver::VersionReq::parse(version_asked_for)
                 .expect("Not a compatible version format");
-            print!("Specific version asked for {} \n", version_req);
             found_matching_version = versions
                 .into_iter()
-                .find(|x| version_req.matches(&x.version));
+                .find(|x| x.version.as_ref().map_or(false, |v| version_req.matches(v)));
         }
 
 
@@ -222,8 +220,9 @@ pub fn install_extensions(
         };*/
 
         match &found_matching_version {
-            Some(x)=> {
-                print!("Version asked for: {} found -> {}", version_asked_for, &x.version);
+            Some(x) => {
+                let v = x.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".to_string());
+                print!("Version asked for: {} found -> {}", version_asked_for, v);
             },
             None => {
                 print!("No version found\n");
@@ -235,15 +234,11 @@ pub fn install_extensions(
         //let latest_version = extension.versions.get(0).unwrap();
 
         let url = latest_version.url.as_ref().unwrap().as_str();
-        let branch_name = latest_version.branch.as_ref().unwrap();
-
-        let result: Vec<&str> = url.matches(".git").collect();
-        let is_git_repo = !result.is_empty();
+        let is_git_repo = latest_version.branch.is_some();
 
         let use_colors = if Color::Never == global_options.color { false } else { true };
 
         if !is_git_repo {
-            // Regular ifarchive procedure
             let response = reqwest::blocking::get(url).expect("Request did fail");
             let file_data: hyper::body::Bytes = response.bytes().expect("Bytes are invalid");
             let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
@@ -260,31 +255,9 @@ pub fn install_extensions(
 
             add_data_record(&extension.name, &path, use_colors);
 
-            // TODO:  egen metod och återanvänd
-            match get_or_create_table() {
-                Ok(conn) => {
-                    record_installation(&conn, &extension.name, &path);
-                }
-                Err(e) => {
-                    print_warning_msg(
-                        use_colours,
-                        format!("Something failed when trying to access sqlite db: {}\n", e)
-                    );
-                }
-            }
+            let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
+            if use_colors { println!("{}", Green.paint(text)); } else { println!("{}", text); }
 
-            let text = format!(
-                " ==> {} installed into directory {}",
-                &extension.name,
-                &os_path.display()
-            );
-            if use_colors {
-                println!("{}", Green.paint(text));
-            } else {
-                println!("{}", text);
-            }
-
-            // TODO: break out this so it can be called from both git/ifarchive extensions
             if makefile.is_some() && latest_version.makefile_entries.is_some() {
                 add_make_file_entry(
                     extension.name.clone(),
@@ -292,24 +265,39 @@ pub fn install_extensions(
                     latest_version.makefile_entries.as_ref().unwrap().to_owned()
                 );
             }
-            // TODO: add_make_file_entry() for both, not just non-git;
             return;
         }
 
-        println!("GIT REPO");
-        // IT is a GIT repo, clone or update it:
-        // TODO: make branch name adaptable from the json format
+        // Git repo: clone/pull, then resolve to latest release tag unless SNAPSHOT was requested.
+        let branch_name = latest_version.branch.as_deref().unwrap_or("master");
         let branch_head_name = format!("refs/heads/{}", branch_name);
+        let is_snapshot = version_asked_for.to_lowercase() == "snapshot";
 
         match get_or_create_repo_dir(&path) {
             Ok(repo_path) => {
                 if let Err(e) = clone_or_pull_repo(url, &branch_head_name, &repo_path) {
                     print_warning_msg(use_colours, format!("Error: {}\n", e));
+                    return;
                 }
-                print_success_msg(
-                    use_colours,
-                    format!("Extension installed into {}\n", repo_path.display())
-                );
+
+                if is_snapshot {
+                    print_success_msg(use_colours, format!("Using branch tip ({})\n", branch_name));
+                } else {
+                    match git2::Repository::open(&repo_path)
+                        .ok()
+                        .and_then(|r| latest_semver_tag(&r).map(|t| (r, t)))
+                    {
+                        Some((repo, tag)) => {
+                            match checkout_tag(&repo, &tag) {
+                                Ok(_) => print_success_msg(use_colours, format!("Checked out release {}\n", tag)),
+                                Err(e) => print_warning_msg(use_colours, format!("Could not checkout tag {}: {} — using branch tip\n", tag, e)),
+                            }
+                        }
+                        None => print_success_msg(use_colours, format!("No release tags found, using branch tip ({})\n", branch_name)),
+                    }
+                }
+
+                print_success_msg(use_colours, format!("Extension installed into {}\n", repo_path.display()));
             }
             Err(e) => {
                 eprintln!("Failed to create repository directory: {}", e);

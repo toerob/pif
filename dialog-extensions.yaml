@@ -1,21 +1,19 @@
+schema-version: 1
+
 extensions:
   - name: ThreadedConversation
     desc: Implementation of threaded conversation for the Dialog IF language
     author: Howard M. Lewis Ship
-    tags: []
     versions:
       - version: 0.7.1
         last-modified: "2021-01-08"
         url: https://github.com/hlship/threaded-conversation/archive/refs/tags/v0.7.1.zip
         ext: zip
-        branch: main
   - name: Dialog-German-Library
     desc: German Library Extension for Dialog Language
     author: Howard M. Lewis Ship
-    tags: []
     versions:
       - version: 1.0.0
         last-modified: "2022-09-13"
         url: https://github.com/mikawa/Dialog-German-Library.git
-        ext: zip
         branch: main

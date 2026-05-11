@@ -1,4 +1,5 @@
 use crate::{args::{self, Color, InteractiveFictionSystem}, color::{create_success_msg, create_info_message}};
+use semver;
 use ansi_term::Colour::*;
 use std::{
     fs::{self},
@@ -47,6 +48,10 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
     let extension_data_str = fs::read_to_string(file_path).unwrap();
     let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
 
+    for warning in data.validate() {
+        eprintln!("Schema warning: {}", warning);
+    }
+
     let lowercase_names: Vec<String> = names
         .to_owned()
         .into_iter()
@@ -83,15 +88,13 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
         let mut sorted_versions =  ele.clone();
 
         
-        sorted_versions.versions.sort_by_key(|e|e.to_owned().version);
+        sorted_versions.versions.sort_by_key(|e| e.to_owned().version.unwrap_or(semver::Version::new(0, 0, 0)));
 
         let total = sorted_versions.versions.len()-1;
-        
-        // TODO: colorize
-        // TODO: if already installed show that with green text
 
         for (idx, version) in sorted_versions.versions.into_iter().enumerate() {
-            let version_number = create_info_message(use_colors, version.version.to_string()); //Blue.paint( version.version.as_ref().unwrap()).to_string();
+            let v_str = version.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".to_string());
+            let version_number = create_info_message(use_colors, v_str);
             let url = version.url.as_ref().unwrap();
             let last_modified = version.last_modified.as_ref().unwrap();            
             let latest = if idx ==  total { Green.paint("<== LATEST").to_string() } else { String::from("") };
