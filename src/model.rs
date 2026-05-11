@@ -1,9 +1,9 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 
-#[derive(Deserialize, Debug, Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Extensions {
-    #[serde(rename = "schema-version")]
+    #[serde(rename = "schema-version", skip_serializing_if = "Option::is_none")]
     pub schema_version: Option<u32>,
     pub extensions: Vec<Extension>,
 }
@@ -38,35 +38,51 @@ impl Extensions {
     }
 }
 
-#[derive(Deserialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
 pub struct Extension {
     pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub desc: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dependencies: Option<Vec<String>>,
     pub versions: Vec<Version>,
 }
 
-#[derive(Deserialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Version {
-    #[serde(rename = "type")]
+    // last-modified first so it appears at the top of each version block in the YAML output
+    #[serde(rename = "last-modified", skip_serializing_if = "Option::is_none")]
+    pub last_modified: Option<String>,
+
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub extension_type: Option<Vec<String>>,
 
-    #[serde(deserialize_with = "deserialize_version", default)]
+    #[serde(
+        deserialize_with = "deserialize_version",
+        serialize_with = "serialize_version",
+        skip_serializing_if = "Option::is_none",
+        default
+    )]
     pub version: Option<semver::Version>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
 
-    #[serde(rename = "makefile-entries")]
+    #[serde(rename = "makefile-entries", skip_serializing_if = "Option::is_none")]
     pub makefile_entries: Option<Vec<String>>,
-    pub ext: Option<String>,
-    pub branch: Option<String>,
 
-    #[serde(rename = "last-modified")]
-    pub last_modified: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ext: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub branch: Option<String>,
 }
 
 fn deserialize_version<'de, D>(deserializer: D) -> Result<Option<semver::Version>, D::Error>
@@ -84,3 +100,18 @@ where
     semver::Version::parse(&normalized).map(Some).map_err(serde::de::Error::custom)
 }
 
+fn serialize_version<S>(v: &Option<semver::Version>, s: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match v {
+        Some(ver)
+            if ver.major == 0 && ver.minor == 0 && ver.patch == 0
+                && ver.pre.as_str() == "SNAPSHOT" =>
+        {
+            s.serialize_str("SNAPSHOT")
+        }
+        Some(ver) => s.serialize_str(&ver.to_string()),
+        None => unreachable!("skip_serializing_if guards None"),
+    }
+}

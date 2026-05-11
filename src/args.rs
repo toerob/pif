@@ -24,10 +24,20 @@ pub enum MenuSubCommand {
 
     /// Lists available extensions
     List(ListCommand),
+
+    /// Publish an extension to the pif index
+    Publish(PublishCommand),
 }
 
 #[derive(Debug, Args)]
 pub struct UpdateCommand {
+}
+
+#[derive(Debug, Args)]
+pub struct PublishCommand {
+    /// Path to the extension directory
+    #[arg(default_value = ".")]
+    pub directory: String,
 }
 
 

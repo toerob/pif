@@ -23,6 +23,7 @@ mod install;
 mod list;
 mod makefile;
 mod model;
+mod publish;
 mod update;
 pub mod settings;
 mod gitops;
@@ -36,6 +37,7 @@ use db::{check_installations, get_or_create_table};
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
+use publish::publish_extension;
 use update::{ update_extensions };
 
 
@@ -79,12 +81,14 @@ fn main() -> () {
         }
         MenuSubCommand::Install(cmd_args) => {
             install_extensions(
-            &cmd_args.names,
-                //&cmd_args.install_versions,
+                &cmd_args.names,
                 &cmd_args.install_options,
                 &choice.global_options,
                 update_needed
             )
+        }
+        MenuSubCommand::Publish(cmd_args) => {
+            publish_extension(&cmd_args.directory, &choice.global_options)
         }
     }
 }
