@@ -52,7 +52,7 @@ pub fn list_extensions(
     //OLD: let extension_data_str = fs::read_to_string(file_path).unwrap();
     let extension_data_str = fs::read_to_string(config_file).unwrap();
 
-    let data: model::Extensions = serde_json::from_str(&extension_data_str).unwrap();
+    let data: model::Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
     let mut extensions = data.extensions;
 
     if list_options.author.is_some() {
@@ -127,7 +127,7 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     extension_versions.sort_by_key(|v| v.to_owned().version);
 
     let latest_version = extension_versions.last().unwrap();
-    let version = latest_version.version.clone().unwrap_or_else(|| String::from(""));
+    let version = latest_version.version.clone(); //.unwrap_or(semver::Version::new(0,0,0));
 
     let name = if use_colors {
         Green.paint(format!("{} {} ", e.name.as_str().to_owned(), &version)).to_string()

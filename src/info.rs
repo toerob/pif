@@ -45,7 +45,7 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
     let file_path = get_extension_path(system_type);
 
     let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
+    let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
 
     let lowercase_names: Vec<String> = names
         .to_owned()
@@ -91,7 +91,7 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
         // TODO: if already installed show that with green text
 
         for (idx, version) in sorted_versions.versions.into_iter().enumerate() {
-            let version_number = create_info_message(use_colors, version.version.as_ref().unwrap().to_string()); //Blue.paint( version.version.as_ref().unwrap()).to_string();
+            let version_number = create_info_message(use_colors, version.version.to_string()); //Blue.paint( version.version.as_ref().unwrap()).to_string();
             let url = version.url.as_ref().unwrap();
             let last_modified = version.last_modified.as_ref().unwrap();            
             let latest = if idx ==  total { Green.paint("<== LATEST").to_string() } else { String::from("") };

@@ -4,9 +4,9 @@ use crate::args::InteractiveFictionSystem;
 
 pub fn get_extension_path(system_type: InteractiveFictionSystem) -> String {
   match system_type {
-      InteractiveFictionSystem::Tads3 => "./tads3-extensions.json",
-      InteractiveFictionSystem::Inform6 => "./inform6-extensions.json",
-      InteractiveFictionSystem::Dialog => "./dialog-extensions.json",
+      InteractiveFictionSystem::Tads3 => "./tads3-extensions.yaml",
+      InteractiveFictionSystem::Inform6 => "./inform6-extensions.yaml",
+      InteractiveFictionSystem::Dialog => "./dialog-extensions.yaml",
       _ => panic!("System not supported yet"),
   }
   .to_owned()
@@ -24,7 +24,7 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<DirEntry>) {
         .filter_map(Result::ok) 
         .min_by_key(|e| e.path().display().to_string().len());
         
-    if let Some(file) = &shortest_path {
+    if let Some(_file) = &shortest_path {
         //println!("Makefile shortest path: {}\n", &file.path().display().to_string());
         return (InteractiveFictionSystem::Tads3, shortest_path)
     }    

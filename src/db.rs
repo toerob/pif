@@ -5,7 +5,7 @@ fn create_table(conn: &Connection) -> Result<()> {
         let Err(e) = conn.execute(
             "CREATE TABLE IF NOT EXISTS installations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT UNQIUE NOT NULL,
+                name TEXT UNIQUE NOT NULL,
                 path TEXT UNIQUE NOT NULL,
                 active BOOLEAN
             )",
@@ -23,7 +23,7 @@ pub fn record_installation(conn: &Connection, name: &str, installation_path: &st
     match conn.execute("INSERT INTO installations (name, path, active) VALUES (?1, ?2, true)",
         params![name, installation_path]
     ) {
-        Ok(msg) => {
+        Ok(_msg) => {
             println!("Installation added: {} ({})", name, installation_path);
         },
         Err(e) => {
@@ -103,5 +103,5 @@ pub fn get_or_create_table() -> Result<Connection> {
 
     println!("Ansluten till databasen!");
     create_table(&conn)?;
-    Ok((conn))
+    Ok(conn)
 }

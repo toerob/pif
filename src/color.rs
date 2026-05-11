@@ -1,6 +1,6 @@
 use ansi_term::Colour::*;
 
-pub fn colorize_message(colour: Option<ansi_term::Colour>, msg: String) -> String {
+pub fn _colorize_message(colour: Option<ansi_term::Colour>, msg: String) -> String {
   let text = match colour {
       Some(c) => format!("{}", c.paint(msg).to_owned()),
       None => msg.to_owned(),

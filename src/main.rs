@@ -30,13 +30,9 @@ mod db;
 
 use args::{ InteractiveFictionToolArgs, MenuSubCommand };
 use clap::Parser;
-
-use db::{check_installations, get_or_create_table};
-
-
-use std::fs::{ self };
 use std::process::exit;
 
+use db::{check_installations, get_or_create_table};
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
@@ -49,8 +45,14 @@ use update::{ update_extensions };
 fn main() -> () {
     
     let conn = get_or_create_table().unwrap();
-    check_installations(&conn);
-    //exit(0);
+
+
+    match check_installations(&conn) {
+        Ok(_x) => {},
+        Err(_e) =>{
+            exit(0);
+        }
+    }
     
 
     //let config_file_pathbuf = get_main_config_file().expect("Main configuration file could not be found");
@@ -77,7 +79,8 @@ fn main() -> () {
         }
         MenuSubCommand::Install(cmd_args) => {
             install_extensions(
-                &cmd_args.name,
+            &cmd_args.names,
+                //&cmd_args.install_versions,
                 &cmd_args.install_options,
                 &choice.global_options,
                 update_needed

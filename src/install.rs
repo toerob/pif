@@ -1,15 +1,13 @@
 use ansi_term::Colour::*;
-use git2::{ ErrorCode, Repository, FetchOptions, StatusOptions, RemoteCallbacks, Remote, Cred };
 
-use online::check;
-use std::{ fs::{ self, File }, io::{ Cursor, Write }, path::Path, process::exit };
+use std::{ collections::HashMap, fs::{ self, File }, io::{ Cursor, Write }, path::Path, process::exit };
 use sublime_fuzzy::FuzzySearch;
 use std::env::{current_dir};
 
 use crate::{
     args::InteractiveFictionSystem,
-    color::{ print_warning_msg, print_success_msg },
-    model::{ Extension, Extensions },
+    color::{ print_success_msg, print_warning_msg },
+    model::{ Extension, Extensions, Version },
 };
 use crate::{
     args::{ Color, GlobalOptions, InstallOptions },
@@ -19,10 +17,10 @@ use crate::{
     update::{ update_extensions },
     db::{ get_or_create_table, record_installation },
 };
-use dirs_next::data_dir;
 
 pub fn install_extensions(
     names: &Vec<String>,
+    //install_version: &String,
     install_options: &InstallOptions,
     global_options: &GlobalOptions,
     update_needed: bool
@@ -76,9 +74,28 @@ pub fn install_extensions(
     //let lower_case_names: Vec<String> = names.iter()
     //    .map(|n| n.split("@").to_lowercase()).collect();
 
-    let lower_case_names: Vec<String> = names
+    /*let lower_case_names: Vec<String> = names
         .iter()
         .map(|n| n.to_lowercase())
+        .collect();*/
+
+    let name_version_map: HashMap<String, String> = names
+        .iter()
+        .map(|x|{
+            let lowercased = x.to_lowercase();
+            let splitted: Vec<&str> = lowercased.split(':').collect();
+            if splitted.len() == 2 {
+                (splitted[0].to_string(), splitted[1].to_string())
+            } else {
+                (splitted[0].to_string(), "LATEST".to_string())
+            }
+        })
+        .collect();
+
+    
+    let lower_case_names : Vec<String> = name_version_map
+        .keys()
+        .map(|x|x.to_string())
         .collect();
 
     let file_path = dirs_next
@@ -89,17 +106,19 @@ pub fn install_extensions(
         .join(file_path_end)
         .clone();
 
-    let file_path_str = file_path.as_path().to_str().clone().unwrap();
-
-    //print!("Trying: {}", file_path_str);
+    let _file_path_str = file_path.as_path().to_str().clone().unwrap();
+    print!("Trying: {}", &_file_path_str);
 
     let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let data: Extensions = serde_json::from_str(&extension_data_str).unwrap();
+    let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
+
 
     let installable_extensions: Vec<Extension> = data.extensions
         .clone()
         .into_iter()
-        .filter(|e| lower_case_names.contains(&e.name.to_lowercase()))
+        .filter(|e| {
+            lower_case_names.contains(&e.name.to_lowercase())            
+        })
         .collect();
 
     if installable_extensions.is_empty() {
@@ -145,7 +164,7 @@ pub fn install_extensions(
     // Ensure directory exists:
     if !std::path::Path::new(&library_path).exists() {
         match fs::create_dir_all(library_path) {
-            Ok(p) => {}
+            Ok(_p) => {}
             Err(e) => {
                 print_warning_msg(
                     use_colours,
@@ -164,7 +183,56 @@ pub fn install_extensions(
         println!("installation {path}");
 
 
-        let latest_version = extension.versions.get(0).unwrap();
+        // TODO: 
+        let found_matching_version: Option<Version>;
+        let version_asked_for = name_version_map.get(&extension.name.to_lowercase()).unwrap(); //.unwrap_or_else('');
+        
+        //extension.versions.sort_by_key(|x|x.version);
+
+        let mut versions = extension.versions.clone();
+
+        if version_asked_for.to_lowercase() == "latest" {
+            print!("Version asked for is 'LATEST'\n");
+            // So we just grab the first element out of the sorted version by semver::version-order
+            versions.sort_by_key(|x| x.version.clone());
+            found_matching_version = versions.last().cloned();
+        } else if version_asked_for.to_lowercase() == "snapshot" {
+            print!("Version asked for is 'SNAPSHOT'\n");
+            let version_req = semver::VersionReq::parse("0.0.0-SNAPSHOT")
+                .unwrap();
+                print!("Specific version asked for {} \n", version_req);
+            found_matching_version = versions
+                .into_iter()
+                .find(|x| version_req.matches(&x.version));
+
+        } else {
+            let version_req = semver::VersionReq::parse(version_asked_for)
+                .expect("Not a compatible version format");
+            print!("Specific version asked for {} \n", version_req);
+            found_matching_version = versions
+                .into_iter()
+                .find(|x| version_req.matches(&x.version));
+        }
+
+
+        /* 
+        let text = match colour {
+            Some(c) => format!("{}", c.paint(msg).to_owned()),
+            None => msg.to_owned(),
+        };*/
+
+        match &found_matching_version {
+            Some(x)=> {
+                print!("Version asked for: {} found -> {}", version_asked_for, &x.version);
+            },
+            None => {
+                print!("No version found\n");
+                exit(0);
+            }
+        }
+
+        let latest_version = &found_matching_version.unwrap();
+        //let latest_version = extension.versions.get(0).unwrap();
 
         let url = latest_version.url.as_ref().unwrap().as_str();
         let branch_name = latest_version.branch.as_ref().unwrap();

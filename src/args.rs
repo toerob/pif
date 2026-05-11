@@ -33,7 +33,11 @@ pub struct UpdateCommand {
 
 #[derive(Debug, Args)]
 pub struct InstallCommand {
-    pub name: Vec<String>,
+    /// Names of the extensions together with a specific version, colon-separated. 
+    /// e.g t3cartographer:1.0 conspace:2.1
+    /// if version is left out LATEST will be used as default
+    pub names: Vec<String>,
+
     #[clap(flatten)]
     pub install_options: InstallOptions,
 }

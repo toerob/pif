@@ -1,21 +1,10 @@
-use std::{ io::{ stdout, Write }, process::exit };
-use std::{ fs::{ self, File }, io::{ Cursor }, path::Path };
+use std:: fs::{ self } ;
 
-use online::check;
-use crate::{ 
-    args::{ GlobalOptions, Color }, 
-    color::{ print_success_msg, print_warning_msg },
-    settings::get_main_config_file
-};
 use git2::{
     Error,
-    ErrorCode,
     Repository,
     FetchOptions,
-    StatusOptions,
-    MergeOptions,
     RemoteCallbacks,
-    Remote,
     Cred,
 };
 

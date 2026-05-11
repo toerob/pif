@@ -1,35 +1,18 @@
-use std::{ io::{ stdout, Write }, process::exit };
-use std::{ fs::{ self, File }, io::{ Cursor }, path::Path };
 use ansi_term::Colour::*;
 
-use online::check;
 use crate::{ 
     args::{ GlobalOptions, Color }, 
-    color::{ print_success_msg, print_warning_msg },
+    color::{ print_warning_msg },
     settings::get_main_config_file,
     gitops::{get_or_create_repo_dir, clone_or_pull_repo},
 };
-use git2::{
-    Error,
-    ErrorCode,
-    Repository,
-    FetchOptions,
-    StatusOptions,
-    MergeOptions,
-    RemoteCallbacks,
-    Remote,
-    Cred,
-};
 
-use std::path::PathBuf;
-use dirs_next::data_dir;
 
 use config::Config;
-use std::collections::HashMap;
 
 pub fn update_extensions(global_options: &GlobalOptions) {
     let use_colour = Color::Never != global_options.color;
-    let success_color = match Color::Never != global_options.color {
+    let _success_color = match Color::Never != global_options.color {
         true => Some(Green),
         false => None,
     };
