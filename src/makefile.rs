@@ -1,113 +1,146 @@
 use std::fs;
-use regex::Regex;
 use globwalk::DirEntry;
-use lazy_static::lazy_static;
 
 use crate::common::yes_or_no;
 use ansi_term::Colour::*;
 
-lazy_static! {
-    static ref LIB_SOURCE_REGEX: Regex = Regex::new(r"^-(lib|source)").unwrap();
+enum EntryKind {
+    Define { key: String, directive: String },
+    Lib(String),
+    Source(String),
 }
 
-fn get_last_source_and_last_lib_lines(lines: &Vec<String>) -> (usize, usize) {
-    lines
-        .iter()
-        .enumerate()
-        .fold((0, 0), |(mut last_lib, mut last_source), (idx, line)| {
-            if let Some(captures) = LIB_SOURCE_REGEX.captures(line) {
-                match &captures[1] {
-                    "lib" => {
-                        last_lib = idx;
-                    }
-                    "source" => {
-                        last_source = idx;
-                    }
-                    _ => {}
-                }
-            }
-            (last_lib, last_source)
-        })
+fn classify(entry: &str) -> EntryKind {
+    if entry.ends_with(".tl") {
+        return EntryKind::Lib(format!("-lib {}", entry));
+    }
+    if entry.ends_with(".t") {
+        return EntryKind::Source(format!("-source {}", entry));
+    }
+    if entry.starts_with("-lib ") {
+        return EntryKind::Lib(entry.to_string());
+    }
+    if entry.starts_with("-source ") {
+        return EntryKind::Source(entry.to_string());
+    }
+    // "-D KEY=VALUE" or "-D FLAG" — key is everything up to '='
+    if entry.starts_with("-D ") {
+        let key = entry[3..].split('=').next().unwrap_or("").trim().to_string();
+        return EntryKind::Define { key, directive: entry.to_string() };
+    }
+    // Fallback: treat as a define-style flag (insert before lib block)
+    EntryKind::Define { key: entry.to_string(), directive: entry.to_string() }
 }
 
-// TODO: make sure the correct makefile comes in here
-pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries: Vec<String>) {
-    /*let text = format!("Add makefile entry to: {:?} ", makefile.path());
-    if !yes_or_no(&text, true) {
-        return;
-    }*/
+// Returns the index of the last line starting with "-D ", or None.
+fn last_define_line(lines: &[String]) -> Option<usize> {
+    lines.iter().enumerate()
+        .filter(|(_, l)| l.starts_with("-D "))
+        .map(|(i, _)| i)
+        .last()
+}
 
+// Returns the index of the first -lib or -source line, or None.
+fn first_lib_or_source_line(lines: &[String]) -> Option<usize> {
+    lines.iter().enumerate()
+        .find(|(_, l)| l.starts_with("-lib ") || l.starts_with("-source "))
+        .map(|(i, _)| i)
+}
+
+fn last_lib_line(lines: &[String]) -> usize {
+    lines.iter().enumerate()
+        .filter(|(_, l)| l.starts_with("-lib "))
+        .map(|(i, _)| i)
+        .last()
+        .unwrap_or(0)
+}
+
+fn last_source_line(lines: &[String]) -> usize {
+    lines.iter().enumerate()
+        .filter(|(_, l)| l.starts_with("-source "))
+        .map(|(i, _)| i)
+        .last()
+        .unwrap_or(0)
+}
+
+pub fn add_make_file_entry(_name: String, makefile: &DirEntry, build_entries: Vec<String>) {
     let contents = fs::read_to_string(&makefile.path()).expect("Could not read the makefile");
 
-    let mut lines: Vec<String> = contents
-        .lines()
-        .map(|s| s.to_string())
-        .collect();
+    let mut lines: Vec<String> = contents.lines().map(|s| s.to_string()).collect();
     let mut diff_lines = lines.clone();
+    let mut any_change = false;
 
-    let (mut last_lib_line, _) = get_last_source_and_last_lib_lines(&lines);
-    last_lib_line += 1;
+    // Pass 1: -D defines — replace in-place or insert before the lib block.
+    for entry in &build_entries {
+        let EntryKind::Define { key, directive } = classify(entry) else { continue };
 
-    let libs_binding = makefile_entries.to_owned();
-    let libs: Vec<String> = libs_binding
-        .iter()
-        .filter(|x| x.to_owned().ends_with(".tl"))
-        .map(|s| s.to_string())
-        .collect();
+        // Look for an existing "-D KEY=..." or "-D KEY" line to replace.
+        let existing_idx = lines.iter().position(|l| {
+            l.starts_with("-D ") && {
+                let rest = l[3..].trim();
+                rest == key || rest.starts_with(&format!("{}=", key)) || rest.starts_with(&format!("{} ", key))
+            }
+        });
 
-    // Iterate all the makefile entries for -lib and add to lines
+        if let Some(idx) = existing_idx {
+            if lines[idx] == directive {
+                continue; // already correct
+            }
+            diff_lines[idx] = format!("{} {} {}", Red.paint(&lines[idx]), Yellow.paint("=>"), Green.paint(&directive));
+            lines[idx] = directive;
+            any_change = true;
+        } else {
+            // Insert after the last -D line, or just before the first -lib/-source, or at position 0.
+            let insert_at = last_define_line(&lines)
+                .map(|i| i + 1)
+                .or_else(|| first_lib_or_source_line(&lines))
+                .unwrap_or(0);
 
-    for lib in libs {
-        let prep = format!("-lib {}", lib).to_string();
-        if !contents.contains(&prep) {
-            let colorized = format!("{}", Green.paint(&prep).to_owned().to_string());
-            diff_lines.insert(last_lib_line, colorized);
-            lines.insert(last_lib_line, prep);
-            last_lib_line += 1;    
+            diff_lines.insert(insert_at, Green.paint(&directive).to_string());
+            lines.insert(insert_at, directive);
+            any_change = true;
         }
     }
 
-    let (_, mut last_source_line) = get_last_source_and_last_lib_lines(&lines);
-    last_source_line += 1;
-    let sources = libs_binding.iter().filter(|x| x.to_owned().ends_with(".t"));
-    for source in sources {
-        let prep = format!("-source {}", source).to_string();
-        if !contents.contains(&prep) {
-            let colorized = format!("{}", Green.paint(&prep).to_owned().to_string());
-            diff_lines.insert(last_source_line, colorized);
-            lines.insert(last_source_line, prep);
-            last_source_line += 1;
+    // Pass 2: -lib entries — insert after the last -lib line.
+    for entry in &build_entries {
+        let EntryKind::Lib(directive) = classify(entry) else { continue };
+        if lines.iter().any(|l| l == &directive) {
+            continue;
         }
+        let insert_at = last_lib_line(&lines) + 1;
+        diff_lines.insert(insert_at, Green.paint(&directive).to_string());
+        lines.insert(insert_at, directive);
+        any_change = true;
     }
 
-    // Compiled changes 
-    let makefile_changed = lines.join("\n");
+    // Pass 3: -source entries — insert after the last -source line.
+    for entry in &build_entries {
+        let EntryKind::Source(directive) = classify(entry) else { continue };
+        if lines.iter().any(|l| l == &directive) {
+            continue;
+        }
+        let insert_at = last_source_line(&lines) + 1;
+        diff_lines.insert(insert_at, Green.paint(&directive).to_string());
+        lines.insert(insert_at, directive);
+        any_change = true;
+    }
 
-    let trimmed_original = &contents.trim()
-        .split(' ')
-        .filter(|s| !s.is_empty())
-        .collect::<Vec<_>>()
-        .join(" ");
-
-    if makefile_changed.eq(&trimmed_original.to_string()) {
-        // println!("{}", Yellow.paint(format!("[No changes needed in the makefile]")).to_string());
+    if !any_change {
         return;
     }
 
-    println!("{}", Yellow.paint(format!("Makefile suggested contents:")).to_string());
+    println!("{}", Yellow.paint("Makefile suggested contents:"));
     print!("{}\n\n", diff_lines.join("\n"));
-
 
     if yes_or_no("Apply above changes?", true) {
         if makefile.path().exists() {
-            fs::write(&makefile.path(), makefile_changed).expect(
-                "Makefile could not be found. Skipping. "
-            );
+            fs::write(&makefile.path(), lines.join("\n"))
+                .expect("Makefile could not be found. Skipping. ");
             println!("Changes applied");
         }
     } else {
         println!("No changes applied");
     }
-    println!("\n");
-    // TODO: save to file
+    println!();
 }

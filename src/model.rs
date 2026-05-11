@@ -79,8 +79,8 @@ pub struct Version {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
 
-    #[serde(rename = "makefile-entries", skip_serializing_if = "is_none_or_empty")]
-    pub makefile_entries: Option<Vec<String>>,
+    #[serde(rename = "build-entries", skip_serializing_if = "is_none_or_empty")]
+    pub build_entries: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ext: Option<String>,

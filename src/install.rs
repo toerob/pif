@@ -264,11 +264,11 @@ pub fn install_extensions(
             let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
             if use_colors { println!("{}", Green.paint(text)); } else { println!("{}", text); }
 
-            if makefile.is_some() && latest_version.makefile_entries.is_some() {
+            if makefile.is_some() && latest_version.build_entries.is_some() {
                 add_make_file_entry(
                     extension.name.clone(),
                     makefile.as_ref().unwrap(),
-                    latest_version.makefile_entries.as_ref().unwrap().to_owned()
+                    latest_version.build_entries.as_ref().unwrap().to_owned()
                 );
             }
             return;
@@ -300,6 +300,14 @@ pub fn install_extensions(
                 }
 
                 print_success_msg(use_colours, format!("Extension installed into {}\n", repo_path.display()));
+
+                if makefile.is_some() && latest_version.build_entries.is_some() {
+                    add_make_file_entry(
+                        extension.name.clone(),
+                        makefile.as_ref().unwrap(),
+                        latest_version.build_entries.as_ref().unwrap().to_owned()
+                    );
+                }
             }
             Err(e) => {
                 eprintln!("Failed to create repository directory: {}", e);

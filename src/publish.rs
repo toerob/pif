@@ -209,7 +209,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         t      => vec![t.to_string()],
     };
 
-    let makefile_entries = optional_split(&ask("Makefile entries, semicolon-separated (optional)", None), ';');
+    let makefile_entries = optional_split(&ask("Build file entries, semicolon-separated (optional)", None), ';');
     let tags             = optional_split(&ask("Tags, comma-separated (optional)",                  None), ',');
     let dependencies     = optional_split(&ask("Dependencies, comma-separated (optional)",          None), ',');
 
@@ -241,7 +241,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         extension_type: Some(lib_types),
         version: parsed_version,
         url: Some(url.clone()),
-        makefile_entries,
+        build_entries: makefile_entries,
         ext: ext_field,
         branch,
         last_modified: Some(today_iso()),
