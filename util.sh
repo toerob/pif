@@ -1,6 +1,0 @@
-cp tads3-extensions.json "$HOME/Library/Application Support/pif/repo/"
-cp dialog-extensions.json "$HOME/Library/Application Support/pif/repo/"
-cp inform6-extensions.json "$HOME/Library/Application Support/pif/repo/"
-cp tads3-extensions.yaml "$HOME/Library/Application Support/pif/repo/"
-cp dialog-extensions.yaml "$HOME/Library/Application Support/pif/repo/"
-cp inform6-extensions.yaml "$HOME/Library/Application Support/pif/repo/"
