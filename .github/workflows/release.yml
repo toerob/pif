@@ -139,6 +139,13 @@ jobs:
       - name: Install dependencies
         run: |
           ${{ matrix.packages_install }}
+      - name: Install SQLite (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          vcpkg install sqlite3:x64-windows
+          Add-Content $env:GITHUB_ENV "SQLITE3_LIB_DIR=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\lib"
+          Add-Content $env:GITHUB_ENV "SQLITE3_INCLUDE_DIR=$env:VCPKG_INSTALLATION_ROOT\installed\x64-windows\include"
+        shell: powershell
       - name: Build artifacts
         run: |
           # Actually do builds and make zips and whatnot
