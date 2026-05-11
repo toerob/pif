@@ -2,14 +2,13 @@ use globwalk::{glob, DirEntry};
 
 use crate::args::InteractiveFictionSystem;
 
-pub fn get_extension_path(system_type: InteractiveFictionSystem) -> String {
-  match system_type {
-      InteractiveFictionSystem::Tads3 => "./tads3-extensions.yaml",
-      InteractiveFictionSystem::Inform6 => "./inform6-extensions.yaml",
-      InteractiveFictionSystem::Dialog => "./dialog-extensions.yaml",
-      _ => panic!("System not supported yet"),
-  }
-  .to_owned()
+pub fn get_extension_path(system_type: InteractiveFictionSystem) -> Option<String> {
+    match system_type {
+        InteractiveFictionSystem::Tads3  => Some("./tads3-extensions.yaml".to_owned()),
+        InteractiveFictionSystem::Inform6 => Some("./inform6-extensions.yaml".to_owned()),
+        InteractiveFictionSystem::Dialog  => Some("./dialog-extensions.yaml".to_owned()),
+        _ => None,
+    }
 }
 
 

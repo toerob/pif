@@ -29,45 +29,27 @@ pub mod settings;
 mod gitops;
 mod db;
 
-use args::{ InteractiveFictionToolArgs, MenuSubCommand };
+use args::{InteractiveFictionToolArgs, MenuSubCommand, RegistryAction};
 use clap::Parser;
-use std::process::exit;
 
-use db::{check_installations, get_or_create_table};
+use db::{clean_stale_installations, get_or_create_table, print_installations, remove_installation};
 use info::extensions_info;
 use install::install_extensions;
 use list::list_extensions;
 use publish::publish_extension;
-use update::{ update_extensions };
-
-
+use update::update_extensions;
 
 // TODO: make ifarchive possible without maintaining a specific list
 
-fn main() -> () {
-    
-    let conn = get_or_create_table().unwrap();
+fn main() {
+    let conn = get_or_create_table().expect("Could not open registry database");
 
-
-    match check_installations(&conn) {
-        Ok(_x) => {},
-        Err(_e) =>{
-            exit(0);
-        }
-    }
-    
-
-    //let config_file_pathbuf = get_main_config_file().expect("Main configuration file could not be found");
-    // TODO: check if update is needed for first run
-
-    let repo_dir = dirs_next
-        ::data_dir()
+    let repo_dir = dirs_next::data_dir()
         .expect("Could not determine data directory")
         .join("pif")
-        .join("repo")
-        .clone();
+        .join("repo");
 
-    let update_needed = if repo_dir.exists() { false } else { true };
+    let update_needed = !repo_dir.exists();
 
     let choice = InteractiveFictionToolArgs::parse();
 
@@ -89,6 +71,29 @@ fn main() -> () {
         }
         MenuSubCommand::Publish(cmd_args) => {
             publish_extension(&cmd_args.directory, &choice.global_options)
+        }
+        MenuSubCommand::Registry(cmd_args) => {
+            match cmd_args.action {
+                RegistryAction::List => {
+                    if let Err(e) = print_installations(&conn) {
+                        eprintln!("Registry error: {}", e);
+                    }
+                }
+                RegistryAction::Remove(args) => {
+                    match remove_installation(&conn, &args.name, args.path.as_deref()) {
+                        Ok(0) => println!("No matching registry entry found for '{}'.", args.name),
+                        Ok(n) => println!("Removed {} registry entr{}.", n, if n == 1 { "y" } else { "ies" }),
+                        Err(e) => eprintln!("Registry error: {}", e),
+                    }
+                }
+                RegistryAction::Clean => {
+                    match clean_stale_installations(&conn) {
+                        Ok(0) => println!("All registry entries are valid."),
+                        Ok(n) => println!("Removed {} stale entr{}.", n, if n == 1 { "y" } else { "ies" }),
+                        Err(e) => eprintln!("Registry error: {}", e),
+                    }
+                }
+            }
         }
     }
 }

@@ -1,57 +1,34 @@
-use std::fs;
-
-use git2::{
-    AutotagOption, Error, FetchOptions, ObjectType, RemoteCallbacks, Repository, Cred,
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    process::Command,
 };
 
-use std::path::PathBuf;
+use git2::{Error, ObjectType, Repository};
 use dirs_next::data_dir;
 
-pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<(), Error> {
-    if repo_path.join(".git").exists() {
-        println!("Repository exists. Performing 'git pull' on {}...", repo_path.display());
-        let repo = Repository::open(repo_path)?;
-
-        let mut callbacks = RemoteCallbacks::new();
-        callbacks.credentials(|_url, _username_from_url, _allowed_types| {
-            Cred::default()
-        });
-
-        let mut fetch_options = FetchOptions::new();
-        fetch_options.remote_callbacks(callbacks);
-        fetch_options.download_tags(AutotagOption::All);
-
-        let mut remote = repo.find_remote("origin")?;
-        remote.fetch(&[branch], Some(&mut fetch_options), None)?;
-
-        let fetch_head = repo.find_reference("FETCH_HEAD")?;
-        let fetch_commit = repo.reference_to_annotated_commit(&fetch_head)?;
-
-        let analysis = repo.merge_analysis(&[&fetch_commit])?;
-        if analysis.0.is_up_to_date() {
-            println!("Already up-to-date.");
-        } else if analysis.0.is_fast_forward() {
-            println!("Fast-forwarding...");
-            let mut reference = repo.find_reference(branch)?;
-            reference.set_target(fetch_commit.id(), "Fast-forward")?;
-            repo.set_head(branch)?;
-            repo.checkout_head(Some(&mut git2::build::CheckoutBuilder::default()))?;
-        } else if analysis.0.is_normal() {
-            println!("Performing a normal merge...");
-            repo.merge(&[&fetch_commit], None, None)?;
-            if repo.index()?.has_conflicts() {
-                println!("Merge conflicts detected!");
-            } else {
-                println!("Merge completed without conflicts.");
-                repo.checkout_head(Some(&mut git2::build::CheckoutBuilder::default()))?;
-            }
+pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<(), String> {
+    let run = |args: &[&str]| -> Result<(), String> {
+        let out = Command::new("git")
+            .args(args)
+            .current_dir(repo_path)
+            .output()
+            .map_err(|e| e.to_string())?;
+        if out.status.success() {
+            Ok(())
         } else {
-            println!("Unknown merge state. Aborting merge...");
-            repo.checkout_head(Some(&mut git2::build::CheckoutBuilder::default()))?;
+            Err(String::from_utf8_lossy(&out.stderr).trim().to_string())
         }
+    };
+
+    if repo_path.join(".git").exists() {
+        println!("Repository exists. Updating {}...", repo_path.display());
+        run(&["fetch", "--tags", "origin", branch])?;
+        run(&["reset", "--hard", "FETCH_HEAD"])?;
+        println!("Updated successfully.");
     } else {
         println!("Cloning repository from {} to {:?}", repo_url, repo_path);
-        Repository::clone(repo_url, repo_path)?;
+        run(&["clone", repo_url, "."])?;
         println!("Repository cloned successfully.");
     }
     Ok(())
@@ -59,7 +36,8 @@ pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> 
 
 /// Returns the name of the highest semver tag in the repo, or None if no semver tags exist.
 /// Strips a leading `v` before parsing, so both `v1.0.0` and `1.0.0` are recognised.
-pub fn latest_semver_tag(repo: &Repository) -> Option<String> {
+pub fn latest_semver_tag(repo_path: &Path) -> Option<String> {
+    let repo = Repository::open(repo_path).ok()?;
     let tag_names = repo.tag_names(None).ok()?;
     let mut versions: Vec<(String, semver::Version)> = tag_names
         .iter()
@@ -76,7 +54,8 @@ pub fn latest_semver_tag(repo: &Repository) -> Option<String> {
 
 /// Checks out a tag by name. Handles both lightweight and annotated tags by
 /// peeling to the underlying commit.
-pub fn checkout_tag(repo: &Repository, tag_name: &str) -> Result<(), Error> {
+pub fn checkout_tag(repo_path: &Path, tag_name: &str) -> Result<(), Error> {
+    let repo = Repository::open(repo_path)?;
     let obj = repo.revparse_single(&format!("refs/tags/{}", tag_name))?;
     let commit_obj = obj.peel(ObjectType::Commit)?;
     repo.checkout_tree(&commit_obj, Some(git2::build::CheckoutBuilder::default().force()))?;

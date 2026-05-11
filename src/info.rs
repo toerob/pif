@@ -36,16 +36,22 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
         global_options.system.clone()
     };
 
-    println!(
-        "{}\n",
-        Yellow
-            .paint(format!("[Detected system: {:?}]", system_type))
-            .to_string()
-    );
+    let systems: Vec<InteractiveFictionSystem> = if system_type == InteractiveFictionSystem::Unknown {
+        vec![InteractiveFictionSystem::Tads3, InteractiveFictionSystem::Dialog, InteractiveFictionSystem::Inform6]
+    } else {
+        vec![system_type]
+    };
 
-    let file_path = get_extension_path(system_type);
+    for system in systems {
+        let file_path = match get_extension_path(system.clone()) {
+            Some(p) => p,
+            None => continue,
+        };
 
-    let extension_data_str = fs::read_to_string(file_path).unwrap();
+        println!("{}\n", Yellow.paint(format!("[System: {:?}]", system)));
+
+        let extension_data_str = fs::read_to_string(&file_path).unwrap_or_default();
+        if extension_data_str.is_empty() { continue; }
     let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
 
     for warning in data.validate() {
@@ -105,4 +111,5 @@ pub fn extensions_info(names: &[String], global_options: &args::GlobalOptions, u
       }
 
     }
+  }
 }

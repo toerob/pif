@@ -1,5 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+fn is_none_or_empty<T>(v: &Option<Vec<T>>) -> bool {
+    v.as_ref().map_or(true, |vec| vec.is_empty())
+}
+
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Extensions {
@@ -47,9 +51,9 @@ pub struct Extension {
     pub desc: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub homepage: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_none_or_empty")]
     pub tags: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "is_none_or_empty")]
     pub dependencies: Option<Vec<String>>,
     pub versions: Vec<Version>,
 }
@@ -61,7 +65,7 @@ pub struct Version {
     #[serde(rename = "last-modified", skip_serializing_if = "Option::is_none")]
     pub last_modified: Option<String>,
 
-    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "type", skip_serializing_if = "is_none_or_empty")]
     pub extension_type: Option<Vec<String>>,
 
     #[serde(
@@ -75,7 +79,7 @@ pub struct Version {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
 
-    #[serde(rename = "makefile-entries", skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "makefile-entries", skip_serializing_if = "is_none_or_empty")]
     pub makefile_entries: Option<Vec<String>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,12 +94,13 @@ where
     D: serde::Deserializer<'de>,
 {
     let version_str: String = String::deserialize(deserializer)?;
+    let bare = version_str.trim_start_matches(|c| c == 'v' || c == 'V');
     let normalized = if version_str.eq_ignore_ascii_case("SNAPSHOT") {
         "0.0.0-SNAPSHOT".to_string()
-    } else if version_str.matches('.').count() == 1 {
-        format!("{}.0", version_str)
+    } else if bare.matches('.').count() == 1 {
+        format!("{}.0", bare)
     } else {
-        version_str
+        bare.to_string()
     };
     semver::Version::parse(&normalized).map(Some).map_err(serde::de::Error::custom)
 }

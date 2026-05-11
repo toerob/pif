@@ -27,6 +27,9 @@ pub enum MenuSubCommand {
 
     /// Publish an extension to the pif index
     Publish(PublishCommand),
+
+    /// Manage the local extension registry
+    Registry(RegistryCommand),
 }
 
 #[derive(Debug, Args)]
@@ -73,7 +76,7 @@ pub struct ListCommand {
 #[derive(Debug, Args)]
 pub struct InstallOptions {
     /// Directory where the extensions gets installed
-    #[arg(short = 'd', long = "directory", value_name = "FOLDER", default_value = "libs")]
+    #[arg(short = 'd', long = "directory", value_name = "FOLDER")]
     pub installation_directory: Option<String>,
 }
 
@@ -160,4 +163,32 @@ pub enum SortProperty {
     Name,
     Author,
     Date
+}
+
+#[derive(Debug, Args)]
+pub struct RegistryCommand {
+    #[clap(subcommand)]
+    pub action: RegistryAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum RegistryAction {
+    /// List all recorded extension installations
+    List,
+
+    /// Remove a registry entry by extension name
+    Remove(RegistryRemoveCommand),
+
+    /// Remove registry entries whose install paths no longer exist
+    Clean,
+}
+
+#[derive(Debug, Args)]
+pub struct RegistryRemoveCommand {
+    /// Name of the extension to remove from the registry
+    pub name: String,
+
+    /// Restrict removal to this specific install path (optional)
+    #[arg(short, long)]
+    pub path: Option<String>,
 }

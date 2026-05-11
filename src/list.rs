@@ -9,8 +9,6 @@ use crate::{
     update::{ update_extensions },
 };
 use ansi_term::Colour::*;
-//use args::{ListOptions, ListPresentation};
-use crate::args::ListPresentation;
 use crate::model;
 
 use std::fs;
@@ -36,7 +34,26 @@ pub fn list_extensions(
     };
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
-    let file_path = get_extension_path(system_type);
+    let systems: Vec<InteractiveFictionSystem> = if system_type == InteractiveFictionSystem::Unknown {
+        vec![InteractiveFictionSystem::Tads3, InteractiveFictionSystem::Dialog, InteractiveFictionSystem::Inform6]
+    } else {
+        vec![system_type]
+    };
+
+    for system_type in systems {
+        list_for_system(system_type, list_options, global_options);
+    }
+}
+
+fn list_for_system(
+    system_type: InteractiveFictionSystem,
+    list_options: &args::ListOptions,
+    global_options: &args::GlobalOptions,
+) {
+    let file_path = match get_extension_path(system_type.clone()) {
+        Some(p) => p,
+        None => return,
+    };
 
     // TODO: use repo_dir to get the latest json configuration file
     let config_file = dirs_next
@@ -47,7 +64,7 @@ pub fn list_extensions(
         .join(&file_path)
         .clone();
 
-    println!("file_path: {} ", &config_file.clone().display());
+    // println!("file_path: {} ", &config_file.clone().display());
 
     //OLD: let extension_data_str = fs::read_to_string(file_path).unwrap();
     let extension_data_str = fs::read_to_string(config_file).unwrap();
@@ -117,6 +134,7 @@ pub fn list_extensions(
 
     let str = na.join(delimiter);
     println!("{}", str);
+    println!("");
     println!("[Filter by -a / --author, -k / --keyword]");
 }
 
@@ -132,7 +150,13 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     extension_versions.sort_by_key(|v| v.to_owned().version.unwrap_or(semver::Version::new(0, 0, 0)));
 
     let latest_version = extension_versions.last().unwrap();
-    let version = latest_version.version.clone().map(|v| v.to_string()).unwrap_or_else(|| "unknown".to_string());
+    let version = match &latest_version.version {
+        Some(v) if v.major == 0 && v.minor == 0 && v.patch == 0 && v.pre.as_str() == "SNAPSHOT" => {
+            "SNAPSHOT".to_string()
+        }
+        Some(v) => v.to_string(),
+        None => "LATEST".to_string(),
+    };
 
     let name = if use_colors {
         Green.paint(format!("{} {} ", e.name.as_str(), &version)).to_string()

@@ -20,8 +20,8 @@ pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
     if !config_file.exists() {
         println!("No config file exists. Writing a default one");
         let default_content =
-r#"main_repository_url: https://github.com/toerob/t3cartographer
-main_repository_branch: master
+r#"main_repository_url: https://github.com/toerob/if-extensions
+main_repository_branch: main
 "#;
         fs::write(&config_file, default_content)?;
         println!("Default settings written to {:?}", config_file);

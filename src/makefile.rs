@@ -1,15 +1,10 @@
 use std::fs;
 use regex::Regex;
-use std::error::Error;
 use globwalk::DirEntry;
 use lazy_static::lazy_static;
 
-use std::io::{ self, Write, Read };
-
-use crate::{ color::{ print_success_msg }, common::{ yes_or_no } };
+use crate::common::yes_or_no;
 use ansi_term::Colour::*;
-
-use log::{info, trace, warn};
 
 lazy_static! {
     static ref LIB_SOURCE_REGEX: Regex = Regex::new(r"^-(lib|source)").unwrap();
@@ -50,7 +45,7 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries:
         .collect();
     let mut diff_lines = lines.clone();
 
-    let (mut last_lib_line, mut last_source_line) = get_last_source_and_last_lib_lines(&lines);
+    let (mut last_lib_line, _) = get_last_source_and_last_lib_lines(&lines);
     last_lib_line += 1;
 
     let libs_binding = makefile_entries.to_owned();
@@ -72,7 +67,7 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, makefile_entries:
         }
     }
 
-    (_, last_source_line) = get_last_source_and_last_lib_lines(&lines);
+    let (_, mut last_source_line) = get_last_source_and_last_lib_lines(&lines);
     last_source_line += 1;
     let sources = libs_binding.iter().filter(|x| x.to_owned().ends_with(".t"));
     for source in sources {

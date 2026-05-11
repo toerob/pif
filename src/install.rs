@@ -68,7 +68,13 @@ pub fn install_extensions(
         );
     }
 
-    let file_path_end = get_extension_path(system_type);
+    let file_path_end = match get_extension_path(system_type) {
+        Some(p) => p,
+        None => {
+            print_warning_msg(use_colours, "Could not detect IF system. Use --system tads3|dialog|inform6.\n".to_string());
+            return;
+        }
+    };
 
     // TODO: extract version part from name@version if present
     //let lower_case_names: Vec<String> = names.iter()
@@ -162,7 +168,7 @@ pub fn install_extensions(
         println!("\nNo default value for!!!****");
     }*/
 
-    let library_path = install_options.installation_directory.as_ref().unwrap(); // TODO: overridable set via installOptions
+    let library_path = install_options.installation_directory.as_deref().unwrap_or("");
 
     // Ensure directory exists:
     if !std::path::Path::new(&library_path).exists() {
@@ -270,12 +276,11 @@ pub fn install_extensions(
 
         // Git repo: clone/pull, then resolve to latest release tag unless SNAPSHOT was requested.
         let branch_name = latest_version.branch.as_deref().unwrap_or("master");
-        let branch_head_name = format!("refs/heads/{}", branch_name);
         let is_snapshot = version_asked_for.to_lowercase() == "snapshot";
 
         match get_or_create_repo_dir(&path) {
             Ok(repo_path) => {
-                if let Err(e) = clone_or_pull_repo(url, &branch_head_name, &repo_path) {
+                if let Err(e) = clone_or_pull_repo(url, branch_name, &repo_path) {
                     print_warning_msg(use_colours, format!("Error: {}\n", e));
                     return;
                 }
@@ -283,12 +288,9 @@ pub fn install_extensions(
                 if is_snapshot {
                     print_success_msg(use_colours, format!("Using branch tip ({})\n", branch_name));
                 } else {
-                    match git2::Repository::open(&repo_path)
-                        .ok()
-                        .and_then(|r| latest_semver_tag(&r).map(|t| (r, t)))
-                    {
-                        Some((repo, tag)) => {
-                            match checkout_tag(&repo, &tag) {
+                    match latest_semver_tag(&repo_path) {
+                        Some(tag) => {
+                            match checkout_tag(&repo_path, &tag) {
                                 Ok(_) => print_success_msg(use_colours, format!("Checked out release {}\n", tag)),
                                 Err(e) => print_warning_msg(use_colours, format!("Could not checkout tag {}: {} — using branch tip\n", tag, e)),
                             }

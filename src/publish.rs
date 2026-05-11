@@ -18,11 +18,11 @@ use crate::{
 // ── Prompt helpers ────────────────────────────────────────────────────────────
 
 fn ask(label: &str, default: Option<&str>) -> String {
-    let mut b = Input::<String>::new().with_prompt(label);
-    if let Some(d) = default.filter(|d| !d.is_empty()) {
-        b = b.default(d.to_string());
-    }
-    b.interact_text().unwrap_or_default()
+    Input::<String>::new()
+        .with_prompt(label)
+        .default(default.unwrap_or("").to_string())
+        .interact_text()
+        .unwrap_or_default()
 }
 
 fn ask_required(label: &str, default: Option<&str>) -> String {
@@ -37,8 +37,10 @@ fn ask_required(label: &str, default: Option<&str>) -> String {
     b.interact_text().unwrap()
 }
 
-fn optional_words(input: &str) -> Option<Vec<String>> {
-    (!input.is_empty()).then(|| input.split_whitespace().map(String::from).collect())
+fn optional_split(input: &str, delim: char) -> Option<Vec<String>> {
+    (!input.is_empty()).then(|| {
+        input.split(delim).map(|s| s.trim().to_string()).filter(|s| !s.is_empty()).collect()
+    })
 }
 
 // ── Misc helpers ──────────────────────────────────────────────────────────────
@@ -47,27 +49,48 @@ fn today_iso() -> String {
     Local::now().format("%Y-%m-%d").to_string()
 }
 
-fn push_branch(repo: &git2::Repository, branch_name: &str) -> Result<(), git2::Error> {
-    let mut remote = repo.find_remote("origin")?;
-    let mut callbacks = git2::RemoteCallbacks::new();
-    callbacks.credentials(|_url, _username, _allowed| git2::Cred::default());
-    let mut opts = git2::PushOptions::new();
-    opts.remote_callbacks(callbacks);
-    let refspec = format!("refs/heads/{}:refs/heads/{}", branch_name, branch_name);
-    remote.push(&[&refspec], Some(&mut opts))
+// Convert an HTTPS GitHub URL to SSH so existing SSH credentials are used.
+fn to_ssh_url(url: &str) -> String {
+    url.strip_prefix("https://github.com/")
+        .map(|path| format!("git@github.com:{}", path.trim_end_matches('/')))
+        .unwrap_or_else(|| url.to_string())
 }
 
-fn pr_compare_url(repo_url: &str, branch: &str) -> String {
-    format!("{}/compare/{}?expand=1", repo_url.trim_end_matches(".git"), branch)
+// Shell out to the system git for the push so all credential mechanisms
+// (SSH agent, macOS Keychain, GitHub CLI, credential helpers, etc.) work
+// transparently rather than having to re-implement them via git2.
+// Use the configured index URL (not the local clone's origin remote) so the
+// push destination always matches the compare URL, even if the local clone was
+// set up incorrectly.
+fn push_branch(repo: &git2::Repository, branch_name: &str, index_url: &str) -> Result<(), String> {
+    let workdir = repo.workdir().ok_or("no working directory")?;
+    let push_url = to_ssh_url(index_url);
+    let output = std::process::Command::new("git")
+        .args(["push", "--force", &push_url, branch_name])
+        .current_dir(workdir)
+        .output()
+        .map_err(|e| e.to_string())?;
+    if output.status.success() {
+        Ok(())
+    } else {
+        Err(String::from_utf8_lossy(&output.stderr).trim().to_string())
+    }
 }
 
-fn load_index_repo_url() -> String {
+fn pr_compare_url(repo_url: &str, base: &str, branch: &str) -> String {
+    let encoded = branch.replace('/', "%2F");
+    format!("{}/compare/{}...{}?expand=1", repo_url.trim_end_matches(".git"), base, encoded)
+}
+
+fn load_index_config() -> (String, String) {
     let config_file = get_main_config_file().unwrap();
     let settings = Config::builder()
         .add_source(config::File::with_name(config_file.to_str().unwrap()))
         .build()
         .unwrap();
-    settings.get_string("main_repository_url").unwrap_or_default()
+    let url    = settings.get_string("main_repository_url").unwrap_or_default();
+    let branch = settings.get_string("main_repository_branch").unwrap_or_else(|_| "main".to_string());
+    (url, branch)
 }
 
 // ── Main ──────────────────────────────────────────────────────────────────────
@@ -120,11 +143,11 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         .and_then(|r| r.head().ok())
         .and_then(|h| h.shorthand().map(String::from));
 
-    let default_author = git2::Config::open_default()
-        .ok()
-        .and_then(|c| c.get_string("user.name").ok());
+    let git_config = git2::Config::open_default().ok();
+    let default_author = git_config.as_ref().and_then(|c| c.get_string("user.name").ok());
+    let default_email  = git_config.as_ref().and_then(|c| c.get_string("user.email").ok());
 
-    let default_version = local_repo.as_ref().and_then(|r| latest_semver_tag(r));
+    let default_version = latest_semver_tag(&target_dir);
 
     // Detect which IF system we're in to pick the right index file
     let (detected_system, _) = detect_system();
@@ -144,9 +167,13 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         detected_system
     };
 
-    let index_filename = get_extension_path(system)
-        .trim_start_matches("./")
-        .to_string();
+    let index_filename = match get_extension_path(system) {
+        Some(p) => p.trim_start_matches("./").to_string(),
+        None => {
+            eprintln!("Unsupported IF system. Aborting.");
+            return;
+        }
+    };
 
     println!("\n{}", Yellow.paint("=== pif publish ==="));
     println!("Index file: {}\n", index_filename);
@@ -182,24 +209,32 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         t      => vec![t.to_string()],
     };
 
-    let makefile_entries = optional_words(&ask("Makefile entries, space-separated (optional)", None));
-    let tags             = optional_words(&ask("Tags, space-separated (optional)",             None));
-    let dependencies     = optional_words(&ask("Dependencies, space-separated (optional)",    None));
+    let makefile_entries = optional_split(&ask("Makefile entries, semicolon-separated (optional)", None), ';');
+    let tags             = optional_split(&ask("Tags, comma-separated (optional)",                  None), ',');
+    let dependencies     = optional_split(&ask("Dependencies, comma-separated (optional)",          None), ',');
 
-    let email_input = ask("Your email for PR approval notification (optional)", None);
-    let email = (!email_input.is_empty()).then_some(email_input);
 
     // ── Build Version entry ───────────────────────────────────────────────────
 
     let parsed_version = {
+        let bare = version.trim_start_matches(|c| c == 'v' || c == 'V');
         let normalized = if version.eq_ignore_ascii_case("SNAPSHOT") {
             "0.0.0-SNAPSHOT".to_string()
-        } else if version.matches('.').count() == 1 {
-            format!("{}.0", version)
+        } else if bare.matches('.').count() == 1 {
+            format!("{}.0", bare)
         } else {
-            version.clone()
+            bare.to_string()
         };
-        semver::Version::parse(&normalized).ok()
+        match semver::Version::parse(&normalized) {
+            Ok(v) => Some(v),
+            Err(e) => {
+                print_warning_msg(use_colours, format!(
+                    "Could not parse version '{}': {}. The version field will be omitted from the index entry.\n",
+                    version, e
+                ));
+                None
+            }
+        }
     };
 
     let new_version = Version {
@@ -238,6 +273,17 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         let existing = data.extensions.iter_mut()
             .find(|e| e.name.to_lowercase() == name.to_lowercase())
             .unwrap();
+
+        let duplicate = existing.versions.iter().any(|v| {
+            v.url == new_version.url && v.branch == new_version.branch
+        });
+        if duplicate {
+            println!("\n{}", Yellow.paint(format!(
+                "'{}' already has an entry with this URL and branch. Nothing to add.", name
+            )));
+            return;
+        }
+
         existing.versions.push(new_version);
         println!("\n{}", Yellow.paint(format!("Adding new version to existing '{}' entry.", name)));
     } else {
@@ -298,17 +344,11 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
     let tree = index_repo.find_tree(tree_oid).unwrap();
 
     let sig = index_repo.signature().unwrap_or_else(|_| {
-        let email_str = email.as_deref().unwrap_or("pif@localhost");
+        let email_str = default_email.as_deref().unwrap_or("pif@localhost");
         git2::Signature::now(&author, email_str).unwrap()
     });
 
-    let pr_body = {
-        let mut body = format!("Adds **{}** `{}` to the pif index.\n", name, version);
-        if let Some(ref e) = email {
-            body += &format!("\nContact for approval notification: {}", e);
-        }
-        body
-    };
+    let pr_body = format!("Adds **{}** `{}` to the pif index.\n", name, version);
 
     index_repo.commit(
         Some(&format!("refs/heads/{}", branch_name)),
@@ -330,20 +370,22 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
 
     // ── Push & report ────────────────────────────────────────────────────────
 
-    let repo_url = load_index_repo_url();
+    let (repo_url, base_branch) = load_index_config();
 
-    match push_branch(&index_repo, &branch_name) {
+    match push_branch(&index_repo, &branch_name, &repo_url) {
         Ok(_) => {
-            let link = pr_compare_url(&repo_url, &branch_name);
+            let link = pr_compare_url(&repo_url, &base_branch, &branch_name);
             print_success_msg(use_colours, "\nBranch pushed successfully!\n".to_string());
-            println!("Open your pull request here:");
+            println!("Make sure you are logged in to GitHub in your browser, then click \"Create pull request\".");
+            println!("Opening pull request form...");
+            let _ = open::that(&link);
             println!("  {}\n", Green.paint(&link));
         }
         Err(e) => {
             print_warning_msg(use_colours, format!("\nCould not push to remote ({})\n", e));
             println!("The commit is ready locally on branch '{}'.", branch_name);
             println!("To submit manually:");
-            println!("  1. Fork {}", repo_url);
+            println!("  1. Fork {} (or push directly if you have access)", repo_url);
             println!("  2. Add it as a remote and push branch '{}'", branch_name);
             println!("  3. Open a pull request\n");
         }
