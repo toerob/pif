@@ -1,6 +1,6 @@
 [package]
 name = "pif"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Tomas Öberg <tomaserikoberg@gmail.com>"]
 description = "PIF - A CLI package manager for interactive fiction languages"
 license = "MIT"
