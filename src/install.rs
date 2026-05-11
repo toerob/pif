@@ -242,11 +242,9 @@ pub fn install_extensions(
         let url = latest_version.url.as_ref().unwrap().as_str();
         let is_git_repo = latest_version.branch.is_some();
 
-        let use_colors = if Color::Never == global_options.color { false } else { true };
-
         if !is_git_repo {
             let response = reqwest::blocking::get(url).expect("Request did fail");
-            let file_data: hyper::body::Bytes = response.bytes().expect("Bytes are invalid");
+            let file_data = response.bytes().expect("Bytes are invalid");
             let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
             if file_extension == "zip" {
                 let target_dir = Path::new(os_path.as_path());
@@ -259,10 +257,10 @@ pub fn install_extensions(
                 file.write_all(&file_data).expect("Failed to write to binary file. ");
             }
 
-            add_data_record(&extension.name, &path, use_colors);
+            add_data_record(&extension.name, &path, use_colours);
 
             let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
-            if use_colors { println!("{}", Green.paint(text)); } else { println!("{}", text); }
+            if use_colours { println!("{}", Green.paint(text)); } else { println!("{}", text); }
 
             if makefile.is_some() && latest_version.build_entries.is_some() {
                 add_make_file_entry(
@@ -314,7 +312,7 @@ pub fn install_extensions(
             }
         }
 
-        add_data_record(&extension.name, &path, use_colors);
+        add_data_record(&extension.name, &path, use_colours);
 
     });
 }
@@ -351,7 +349,7 @@ pub fn install_extensions(
         animation_process_handle.join().unwrap();
          */
 
-fn add_data_record(name: &str, path: &str, use_colors: bool) {
+fn add_data_record(name: &str, path: &str, use_colours: bool) {
     // TODO:  egen metod och återanvänd
     match get_or_create_table() {
         Ok(conn) => {
@@ -359,7 +357,7 @@ fn add_data_record(name: &str, path: &str, use_colors: bool) {
         }
         Err(e) => {
             print_warning_msg(
-                use_colors,
+                use_colours,
                 format!("Something failed when trying to access sqlite db: {}\n", e)
             );
         }

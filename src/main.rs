@@ -1,19 +1,3 @@
-extern crate ansi_term;
-extern crate clap;
-extern crate dirs;
-extern crate dotenv;
-extern crate git2;
-extern crate glob;
-extern crate globwalk;
-extern crate home;
-extern crate mockall;
-extern crate online;
-extern crate semver;
-extern crate serde;
-extern crate sublime_fuzzy;
-extern crate regex;
-extern crate lazy_static;
-
 mod args;
 mod color;
 mod common;
