@@ -167,7 +167,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         detected_system
     };
 
-    let index_filename = match get_extension_path(system) {
+    let index_filename = match get_extension_path(system.clone()) {
         Some(p) => p.trim_start_matches("./").to_string(),
         None => {
             eprintln!("Unsupported IF system. Aborting.");
@@ -182,8 +182,10 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
 
     let name     = ask_required("Extension name",        Some(&default_name));
     let author   = ask_required("Author",                default_author.as_deref());
-    let desc     = ask_required("Description",           None);
-    let homepage = ask("Homepage (optional)",            default_url.as_deref());
+    let desc_raw = ask("Description (optional, '-' to skip)", None);
+    let desc = if desc_raw == "-" { String::new() } else { desc_raw };
+    let homepage_raw = ask("Homepage (optional, '-' to skip)", default_url.as_deref());
+    let homepage = if homepage_raw == "-" { String::new() } else { homepage_raw };
     let url      = ask_required("Download or clone URL", default_url.as_deref());
 
     let is_git = url.ends_with(".git");
@@ -203,10 +205,19 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         .or(if is_git { Some("SNAPSHOT") } else { None });
     let version = ask_required("Version (e.g. 1.0.0 or SNAPSHOT)", default_ver);
 
-    let type_input = ask_required("Library type (adv3 / adv3lite / both)", Some("adv3"));
-    let lib_types: Vec<String> = match type_input.to_lowercase().as_str() {
-        "both" => vec!["adv3".into(), "adv3lite".into()],
-        t      => vec![t.to_string()],
+    let lib_types: Option<Vec<String>> = if system == InteractiveFictionSystem::Tads3 {
+        let type_input = ask("Library type (adv3 / adv3lite / both, '-' to skip)", None);
+        match type_input.to_lowercase().as_str() {
+            "" | "-" => None,
+            "both"   => Some(vec!["adv3".into(), "adv3lite".into()]),
+            t        => Some(vec![t.to_string()]),
+        }
+    } else {
+        let type_input = ask("Library variant, comma-separated (optional, '-' to skip)", None);
+        match type_input.trim() {
+            "" | "-" => None,
+            s        => optional_split(s, ','),
+        }
     };
 
     let makefile_entries = optional_split(&ask("Build file entries, semicolon-separated (optional)", None), ';');
@@ -238,7 +249,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
     };
 
     let new_version = Version {
-        extension_type: Some(lib_types),
+        extension_type: lib_types,
         version: parsed_version,
         url: Some(url.clone()),
         build_entries: makefile_entries,
@@ -290,7 +301,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         data.extensions.push(Extension {
             name: name.clone(),
             author: Some(author.clone()),
-            desc: Some(desc.clone()),
+            desc: (!desc.is_empty()).then_some(desc.clone()),
             homepage: (!homepage.is_empty()).then_some(homepage.clone()),
             tags,
             dependencies,
