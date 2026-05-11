@@ -36,3 +36,8 @@ open         = "5"
 assert_cmd  = "2.2"
 predicates  = "3.1"
 mockall     = "0.13"
+
+# The profile that 'dist' will build with
+[profile.dist]
+inherits = "release"
+lto = "thin"

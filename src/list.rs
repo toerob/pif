@@ -67,7 +67,10 @@ fn list_for_system(
     // println!("file_path: {} ", &config_file.clone().display());
 
     //OLD: let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let extension_data_str = fs::read_to_string(config_file).unwrap();
+    let extension_data_str = match fs::read_to_string(&config_file) {
+        Ok(s) => s,
+        Err(_) => return,
+    };
 
     let data: model::Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
 
