@@ -23,8 +23,6 @@ use list::list_extensions;
 use publish::publish_extension;
 use update::update_extensions;
 
-// TODO: make ifarchive possible without maintaining a specific list
-
 fn main() {
     let conn = get_or_create_table().expect("Could not open registry database");
 

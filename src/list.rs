@@ -14,8 +14,6 @@ use crate::model;
 use std::fs;
 use sublime_fuzzy::FuzzySearch;
 
-//use model::Extensions;
-
 #[warn(unused_attributes)]
 pub fn list_extensions(
     list_options: &args::ListOptions,
@@ -55,7 +53,6 @@ fn list_for_system(
         None => return,
     };
 
-    // TODO: use repo_dir to get the latest json configuration file
     let config_file = dirs_next
         ::data_dir()
         .expect("Could not determine data directory")
@@ -64,10 +61,7 @@ fn list_for_system(
         .join(&file_path)
         .clone();
 
-    // println!("file_path: {} ", &config_file.clone().display());
-
-    //OLD: let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let extension_data_str = match fs::read_to_string(&config_file) {
+        let extension_data_str = match fs::read_to_string(&config_file) {
         Ok(s) => s,
         Err(_) => return,
     };
@@ -145,10 +139,6 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
     let verbosity_level = global_options.verbose.unwrap();
     let use_colors = if Color::Never == global_options.color { false } else { true };
 
-    //for version in e.versions.to_owned() {
-    //    print!("{:?}", &version.version);
-    //}
-    //println!();
     let mut extension_versions = e.versions.to_owned();
     extension_versions.sort_by_key(|v| v.to_owned().version.unwrap_or(semver::Version::new(0, 0, 0)));
 
@@ -189,19 +179,3 @@ fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptio
         }
     };
 }
-
-/*
-//let filteredData = filter_by_author(listOptions.author.as_ref().unwrap().to_owned(), &extensions);
-
-fn filter_by_author(author: String, data: &Vec<Extension>) -> Vec<&Extension> {
-    println!("Filter by author *{}*", author);
-    return data
-        .iter()
-        .filter(|e| e.author.as_ref().unwrap().eq_ignore_ascii_case(&author))
-        .collect();
-}
- */
-
-//let filtered: Vec<Extension> = data.extensions.iter().filter_map(|f| *f.name == "").collect();
-//let finally_working_save_this = &listOptions.author.to_owned().unwrap_or_else(||"...".to_string());
-//let x = listOptions.author. or_else("");

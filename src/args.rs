@@ -115,7 +115,7 @@ pub struct GlobalOptions {
     #[clap(long, value_enum, global = true, default_value_t = Color::Auto)]
     pub color: Color,
 
-    /// Verbosity level 1-3 (TODO)
+    /// Verbosity level 1-3
     #[clap(short, long, global = true, default_value = "2")]
     pub verbose: Option<usize>,
 }

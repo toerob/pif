@@ -20,7 +20,6 @@ use crate::{
 
 pub fn install_extensions(
     names: &Vec<String>,
-    //install_version: &String,
     install_options: &InstallOptions,
     global_options: &GlobalOptions,
     update_needed: bool
@@ -30,12 +29,6 @@ pub fn install_extensions(
     }
 
     let use_colours = Color::Never != global_options.color;
-
-    /*// TODO: 5 'r placeholder?
-    if !check(Some(5)).is_ok() {
-        print_warning_msg(use_colours, "No internet connection. Aborting. \n".to_string());
-        exit(0);
-    }*/
 
     if names.len() == 0 {
         println!(
@@ -75,15 +68,6 @@ pub fn install_extensions(
             return;
         }
     };
-
-    // TODO: extract version part from name@version if present
-    //let lower_case_names: Vec<String> = names.iter()
-    //    .map(|n| n.split("@").to_lowercase()).collect();
-
-    /*let lower_case_names: Vec<String> = names
-        .iter()
-        .map(|n| n.to_lowercase())
-        .collect();*/
 
     let name_version_map: HashMap<String, String> = names
         .iter()
@@ -142,7 +126,7 @@ pub fn install_extensions(
                 .clone()
                 .into_iter()
                 .filter(|e| {
-                    FuzzySearch::new(&name, &e.name.to_lowercase()) // TODO: should not be fuzzy during intall?
+                    FuzzySearch::new(&name, &e.name.to_lowercase()) 
                         .case_insensitive()
                         .best_match()
                         .is_some()
@@ -156,17 +140,6 @@ pub fn install_extensions(
         }
         return;
     }
-
-    //type Result<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
-
-    // TODO: ensure the extension folder exists or is created first
-
-    /*
-    if install_options.installation_directory.is_some() {
-        let dir = install_options.installation_directory.as_ref().unwrap().to_owned();
-    } else {
-        println!("\nNo default value for!!!****");
-    }*/
 
     let library_path = install_options.installation_directory.as_deref().unwrap_or("");
 
@@ -192,12 +165,8 @@ pub fn install_extensions(
         println!("installation {path}");
 
 
-        // TODO: 
         let found_matching_version: Option<Version>;
         let version_asked_for = name_version_map.get(&extension.name.to_lowercase()).unwrap(); //.unwrap_or_else('');
-        
-        //extension.versions.sort_by_key(|x|x.version);
-
         let mut versions = extension.versions.clone();
 
         if version_asked_for.to_lowercase() == "latest" {
@@ -218,13 +187,6 @@ pub fn install_extensions(
                 .find(|x| x.version.as_ref().map_or(false, |v| version_req.matches(v)));
         }
 
-
-        /* 
-        let text = match colour {
-            Some(c) => format!("{}", c.paint(msg).to_owned()),
-            None => msg.to_owned(),
-        };*/
-
         match &found_matching_version {
             Some(x) => {
                 let v = x.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".to_string());
@@ -237,7 +199,6 @@ pub fn install_extensions(
         }
 
         let latest_version = &found_matching_version.unwrap();
-        //let latest_version = extension.versions.get(0).unwrap();
 
         let url = latest_version.url.as_ref().unwrap().as_str();
         let is_git_repo = latest_version.branch.is_some();
@@ -317,40 +278,7 @@ pub fn install_extensions(
     });
 }
 
-/*
-        // This below is for animation purpose, spawn a thread to print to stdout every nth millisecond
-
-        print!("Installing {}, progress: ", &extension.name);
-        // Shared progress counter
-        let progress = Arc::from(Mutex::from(0 as usize));
-
-        // TODO: generalize and reuse for regular installation as well (IF using this at all.)
-        // copy of progress counter for animation thread
-        let progress_t = progress.clone();
-        let animation_process_handle = spawn(move || {
-            stdout().flush().unwrap();
-            loop {
-                {
-                    let mut val = progress_t.lock().unwrap();
-                    if *val >= 100 {
-                        stdout().flush().unwrap();
-                        break;
-                    }
-                    *val = *val + 1;
-                    stdout().write_all(".".as_bytes()).unwrap();
-                    stdout().flush().unwrap();
-                }
-                sleep(Duration::from_millis(40));
-            }
-        });
-
-        // Make sure to stop the thread.
-        *progress.lock().unwrap() = 100; // Trigger 100% and cause the animation to end
-        animation_process_handle.join().unwrap();
-         */
-
 fn add_data_record(name: &str, path: &str, use_colours: bool) {
-    // TODO:  egen metod och återanvänd
     match get_or_create_table() {
         Ok(conn) => {
             record_installation(&conn, &name, &path);
