@@ -8,24 +8,24 @@ extensions:
       - last-modified: "2007-07-08"
         type:
           - adv3
-        makefile-entries:
-          - ConSpace2/ConSpace.tl
+        build-entries:
+          - -lib ConSpace2/ConSpace
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip
         ext: zip
         version: 2.1.0
       - last-modified: "2009-07-08"
         type:
           - adv3
-        makefile-entries:
-          - ConSpace2/ConSpace.tl
+        build-entries:
+          - -lib ConSpace2/ConSpace
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip
         ext: zip
         version: 2.1.1
       - last-modified: "2018-06-08"
         type:
           - adv3
-        makefile-entries:
-          - ConSpace2/ConSpace.tl
+        build-entries:
+          - -lib ConSpace2/ConSpace
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ConSpace.zip
         ext: zip
         version: 2.2.1
@@ -36,8 +36,8 @@ extensions:
       - last-modified: "2004-09-19"
         type:
           - adv3
-        makefile-entries:
-          - ContWithLid.t
+        build-entries:
+          - -source ContWithLid
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ContWithLid.t
         ext: t
         version: 1.0.0
@@ -48,8 +48,8 @@ extensions:
       - last-modified: "2008-08-04"
         type:
           - adv3
-        makefile-entries:
-          - dstrucs/lib/dstruc.tl
+        build-entries:
+          - -lib dstrucs/lib/dstruc
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/Dstrucs.zip
         ext: zip
         version: 2.0.1
@@ -60,8 +60,8 @@ extensions:
       - last-modified: "2008-08-04"
         type:
           - adv3
-        makefile-entries:
-          - DupDobj.t
+        build-entries:
+          - -source DupDobj
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/DupDobj.t
         ext: t
         version: 1.2.0
@@ -72,8 +72,8 @@ extensions:
       - last-modified: "2005-10-16"
         type:
           - adv3
-        makefile-entries:
-          - lookDir.t
+        build-entries:
+          - -source lookDir
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/LookDir.zip
         ext: zip
         version: 4.0.0
@@ -84,8 +84,8 @@ extensions:
       - last-modified: "2010-04-29"
         type:
           - adv3
-        makefile-entries:
-          - TADS 3 Component/MazeClass.t
+        build-entries:
+          - -source TADS 3 Component/MazeClass
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MazeGenerator.zip
         ext: zip
         version: 1.0.0
@@ -96,8 +96,8 @@ extensions:
       - last-modified: "2003-05-15"
         type:
           - adv3
-        makefile-entries:
-          - MultiMorphic/multi_morphic.t
+        build-entries:
+          - -source MultiMorphic/multi_morphic
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/MultiMorphic.zip
         ext: zip
         version: 1.0.0
@@ -108,8 +108,8 @@ extensions:
       - last-modified: "2004-09-19"
         type:
           - adv3
-        makefile-entries:
-          - OccludingConnector.t
+        build-entries:
+          - -source OccludingConnector
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/OccludingConnector.t
         ext: t
         version: 1.0.0
@@ -129,8 +129,8 @@ extensions:
       - last-modified: "2007-07-08"
         type:
           - adv3
-        makefile-entries:
-          - SayQuery/SayQuery.tl
+        build-entries:
+          - -lib SayQuery/SayQuery
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SayQuery.zip
         ext: zip
         version: 1.0.0
@@ -141,8 +141,8 @@ extensions:
       - last-modified: "2006-03-22"
         type:
           - adv3
-        makefile-entries:
-          - SpellingCorrector.t
+        build-entries:
+          - -source SpellingCorrector
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/SpellingCorrector.t
         ext: t
         version: 1.1.0
@@ -172,8 +172,8 @@ extensions:
       - last-modified: "2007-07-08"
         type:
           - adv3
-        makefile-entries:
-          - TCommand/TCommand.t
+        build-entries:
+          - -source TCommand/TCommand
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/TCommand.zip
         ext: zip
         version: 3.0.0
@@ -184,8 +184,6 @@ extensions:
       - last-modified: "2019-08-13"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/achievement.zip
         ext: zip
         version: 1.0.0
@@ -196,8 +194,6 @@ extensions:
       - last-modified: "2023-03-17"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/adv3Lite.zip
         ext: zip
         version: 1.6.1
@@ -218,8 +214,6 @@ extensions:
       - last-modified: "2008-11-23"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/autosave.zip
         ext: zip
         version: 0.0.0-nov23-2008
@@ -230,8 +224,6 @@ extensions:
       - last-modified: "2007-06-06"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/combine.zip
         ext: zip
         version: 4.0.0
@@ -242,8 +234,6 @@ extensions:
       - last-modified: "2006-11-24"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/compass.zip
         ext: zip
         version: 3.0.0
@@ -254,8 +244,6 @@ extensions:
       - last-modified: "2005-01-29"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/contaction.zip
         ext: zip
         version: 2.6.0
@@ -276,8 +264,6 @@ extensions:
       - last-modified: "2004-12-29"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/csc.zip
         ext: zip
         version: 1.2.0
@@ -308,8 +294,6 @@ extensions:
       - last-modified: "2005-05-02"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/flags.zip
         ext: zip
         version: 2.0.0
@@ -320,8 +304,6 @@ extensions:
       - last-modified: "2006-11-14"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/hypoTester.zip
         ext: zip
         version: 4.0.0
@@ -363,8 +345,6 @@ extensions:
       - last-modified: "2005-01-11"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/londoncabs.zip
         ext: zip
         version: 1.0.2
@@ -375,8 +355,8 @@ extensions:
       - last-modified: "2006-10-10"
         type:
           - adv3
-        makefile-entries:
-          - match/match.tl
+        build-entries:
+          - -lib match/match
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/match.zip
         ext: zip
         version: 3.0.0
@@ -387,8 +367,8 @@ extensions:
       - last-modified: "2007-04-28"
         type:
           - adv3
-        makefile-entries:
-          - megatads/megatads.tl
+        build-entries:
+          - -lib megatads/megatads
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/megatads.zip
         ext: zip
         version: 1.0.0
@@ -399,8 +379,8 @@ extensions:
       - last-modified: "2004-09-19"
         type:
           - adv3
-        makefile-entries:
-          - memory.t
+        build-entries:
+          - -source memory
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/memory.t
         ext: t
         version: 1.0.0
@@ -411,8 +391,8 @@ extensions:
       - last-modified: "2019-05-18"
         type:
           - adv3
-        makefile-entries:
-          - msg_custom.t
+        build-entries:
+          - -source msg_custom
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/msg_custom.t
         ext: t
         version: 2.2.0
@@ -425,8 +405,8 @@ extensions:
       - last-modified: "2004-07-10"
         type:
           - adv3
-        makefile-entries:
-          - ncDebugActions.t
+        build-entries:
+          - -source ncDebugActions
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/ncDebugActions.t
         ext: t
         version: 1.1.0
@@ -446,8 +426,6 @@ extensions:
       - last-modified: "2004-09-19"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/optimizations.zip
         ext: zip
         version: 1.0.0
@@ -458,8 +436,6 @@ extensions:
       - last-modified: "2016-12-08"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/padlock.zip
         ext: zip
         version: 1.0.0
@@ -470,8 +446,6 @@ extensions:
       - last-modified: "2004-11-14"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/proteus.zip
         ext: zip
         version: 1.1.5
@@ -482,8 +456,6 @@ extensions:
       - last-modified: "2007-10-29"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/qtalk.zip
         ext: zip
         version: 2.0.0
@@ -504,8 +476,6 @@ extensions:
       - last-modified: "2006-10-11"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/relation.zip
         ext: zip
         version: 3.0.0
@@ -516,8 +486,6 @@ extensions:
       - last-modified: "2005-04-24"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rextok.zip
         ext: zip
         version: 2.0.0
@@ -528,8 +496,6 @@ extensions:
       - last-modified: "2008-02-05"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/rulebooks.zip
         ext: zip
         version: 1.1.0
@@ -550,8 +516,6 @@ extensions:
       - last-modified: "2005-03-07"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/splitgame.zip
         ext: zip
         version: 0.9.0
@@ -575,13 +539,13 @@ extensions:
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/t3RAP.zip
         ext: zip
         version: 1.2.0
-        makefile-entries:
-          - t3RAP/t3rapKer
-          - t3RAP/t3rapPlan
-          - t3RAP/t3rapTest
-          - t3RAP/t3rapOrder
-          - t3RAP/t3rapGoto
-          - t3RAP/t3knowledge
+        build-entries:
+          - -lib t3RAP/t3rapKer
+          - -lib t3RAP/t3rapPlan
+          - -lib t3RAP/t3rapTest
+          - -lib t3RAP/t3rapOrder
+          - -lib t3RAP/t3rapGoto
+          - -lib t3RAP/t3rapKnowledge
   - name: tests
     author: Ben Cressey and Eric Eve
     desc: An implementation of easy-to-use Inform-7-style "test me" script playback, where test scripts defined in the source can be invoked during play-testing. Written by Ben Cressey and Eric Eve.
@@ -589,8 +553,8 @@ extensions:
       - last-modified: "2012-01-02"
         type:
           - adv3
-        makefile-entries:
-          - tests.t
+        build-entries:
+          - -source tests
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests.t
         ext: t
   - name: tests2
@@ -600,8 +564,6 @@ extensions:
       - last-modified: "2013-01-08"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tests2.zip
         ext: zip
   - name: timepasses
@@ -620,8 +582,6 @@ extensions:
       - last-modified: "2005-10-23"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/timesys.zip
         ext: zip
         version: 3.0.3
@@ -632,8 +592,6 @@ extensions:
       - last-modified: "2006-11-14"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tips.zip
         ext: zip
         version: 1.0.0
@@ -644,8 +602,6 @@ extensions:
       - last-modified: "2004-11-14"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/toksync.zip
         ext: zip
         version: 1.1.0
@@ -656,8 +612,8 @@ extensions:
       - last-modified: "2005-10-11"
         type:
           - adv3
-        makefile-entries:
-          - tsp/lib/tsp.tl
+        build-entries:
+          - -lib tsp/lib/tsp
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/tsp.zip
         ext: zip
         version: 1.0.2
@@ -668,8 +624,6 @@ extensions:
       - last-modified: "2006-10-14"
         type:
           - adv3
-        makefile-entries:
-          - TODO
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/xactor.zip
         ext: zip
         version: 1.0.5
@@ -680,8 +634,8 @@ extensions:
       - last-modified: "2022-10-25"
         type:
           - adv3
-        makefile-entries:
-          - textMenu/textMenu.tl
+        build-entries:
+          - -lib textMenu/textMenu
         url: https://github.com/diegesisandmimesis/textMenu.git
         branch: master
         version: 1.0.0
@@ -692,8 +646,8 @@ extensions:
       - last-modified: "2023-04-05"
         type:
           - adv3
-        makefile-entries:
-          - notReallyRandom/notReallyRandom.tl
+        build-entries:
+          - -lib notReallyRandom/notReallyRandom
         url: https://github.com/diegesisandmimesis/notReallyRandom.git
         branch: master
         version: 1.0.0
@@ -704,8 +658,8 @@ extensions:
       - last-modified: "2023-04-22"
         type:
           - adv3
-        makefile-entries:
-          - intMath/intMath.tl
+        build-entries:
+          - -lib intMath/intMath
         url: https://github.com/diegesisandmimesis/intMath.git
         branch: master
         version: 1.0.0
@@ -718,8 +672,8 @@ extensions:
       - last-modified: "2023-04-10"
         type:
           - adv3
-        makefile-entries:
-          - routeTable/routeTable.tl
+        build-entries:
+          - -lib routeTable/routeTable
         url: https://github.com/diegesisandmimesis/routeTable.git
         branch: master
         version: 1.0.0
@@ -730,8 +684,8 @@ extensions:
       - last-modified: "2023-04-07"
         type:
           - adv3
-        makefile-entries:
-          - simpleGraph/simpleGraph.tl
+        build-entries:
+          - -lib simpleGraph/simpleGraph
         url: https://github.com/diegesisandmimesis/simpleGraph.git
         branch: master
         version: 1.0.0
@@ -742,8 +696,8 @@ extensions:
       - last-modified: "2023-04-05"
         type:
           - adv3
-        makefile-entries:
-          - statTest/statTest.tl
+        build-entries:
+          - -lib statTest/statTest
         url: https://github.com/diegesisandmimesis/statTest.git
         branch: master
         version: 1.0.0
@@ -754,8 +708,8 @@ extensions:
       - last-modified: "2023-03-18"
         type:
           - adv3
-        makefile-entries:
-          - autoTest/autoTest.tl
+        build-entries:
+          - -lib autoTest/autoTest
         url: https://github.com/diegesisandmimesis/autoTest.git
         branch: master
         version: 1.0.0
@@ -766,8 +720,8 @@ extensions:
       - last-modified: "2023-03-11"
         type:
           - adv3
-        makefile-entries:
-          - remoteView/remoteView.tl
+        build-entries:
+          - -lib remoteView/remoteView
         url: https://github.com/diegesisandmimesis/remoteView.git
         branch: master
         version: 1.0.0
@@ -780,8 +734,8 @@ extensions:
       - last-modified: "2023-03-16"
         type:
           - adv3
-        makefile-entries:
-          - debugTool/debugTool.tl
+        build-entries:
+          - -lib debugTool/debugTool
         url: https://github.com/diegesisandmimesis/debugTool.git
         branch: master
         version: 1.0.0
@@ -792,8 +746,8 @@ extensions:
       - last-modified: "2023-04-25"
         type:
           - adv3
-        makefile-entries:
-          - nounAsVerb/nounAsVerb.tl
+        build-entries:
+          - -lib nounAsVerb/nounAsVerb
         url: https://github.com/diegesisandmimesis/nounAsVerb.git
         branch: master
         version: 1.0.0
@@ -806,8 +760,8 @@ extensions:
       - last-modified: "2023-02-28"
         type:
           - adv3
-        makefile-entries:
-          - debugToolLite/debugToolLite.tl
+        build-entries:
+          - -lib debugToolLite/debugToolLite
         url: https://github.com/diegesisandmimesis/debugToolLite.git
         branch: master
         version: 1.0.0
@@ -818,8 +772,8 @@ extensions:
       - last-modified: "2023-02-28"
         type:
           - adv3
-        makefile-entries:
-          - bufferedOutputFilter/bufferedOutputFilter.tl
+        build-entries:
+          - -lib bufferedOutputFilter/bufferedOutputFilter
         url: https://github.com/diegesisandmimesis/bufferedOutputFilter.git
         branch: master
         version: 1.0.0
@@ -830,8 +784,8 @@ extensions:
       - last-modified: "2023-02-01"
         type:
           - adv3
-        makefile-entries:
-          - dynamicWord/dynamicWord.tl
+        build-entries:
+          - -lib dynamicWord/dynamicWord
         url: https://github.com/diegesisandmimesis/dynamicWord.git
         branch: master
         version: 1.0.0
@@ -842,8 +796,8 @@ extensions:
       - last-modified: "2023-01-31"
         type:
           - adv3
-        makefile-entries:
-          - patchLoader/patchLoader.tl
+        build-entries:
+          - -lib patchLoader/patchLoader
         url: https://github.com/diegesisandmimesis/patchLoader.git
         branch: master
         version: 1.0.0
@@ -854,8 +808,8 @@ extensions:
       - last-modified: "2023-01-21"
         type:
           - adv3
-        makefile-entries:
-          - eventHandler/eventHandler.tl
+        build-entries:
+          - -lib eventHandler/eventHandler
         url: https://github.com/diegesisandmimesis/eventHandler.git
         branch: master
         version: 1.0.0
@@ -866,8 +820,8 @@ extensions:
       - last-modified: "2023-01-21"
         type:
           - adv3
-        makefile-entries:
-          - dynamicThing/dynamicThing.tl
+        build-entries:
+          - -lib dynamicThing/dynamicThing
         url: https://github.com/diegesisandmimesis/dynamicThing.git
         branch: master
         version: 1.0.0
@@ -878,8 +832,8 @@ extensions:
       - last-modified: "2023-01-18"
         type:
           - adv3
-        makefile-entries:
-          - newActorCommand/newActorCommand.tl
+        build-entries:
+          - -lib newActorCommand/newActorCommand
         url: https://github.com/diegesisandmimesis/newActorCommand.git
         branch: master
         version: 1.0.0
@@ -890,8 +844,8 @@ extensions:
       - last-modified: "2023-01-05"
         type:
           - adv3
-        makefile-entries:
-          - absentActor/absentActor.tl
+        build-entries:
+          - -lib absentActor/absentActor
         url: https://github.com/diegesisandmimesis/absentActor.git
         branch: main
         version: 1.0.0
@@ -902,16 +856,16 @@ extensions:
       - last-modified: "2022-06-10"
         type:
           - adv3
-        makefile-entries:
-          - lastTyped/lastTyped.tl
+        build-entries:
+          - -lib lastTyped/lastTyped
         url: https://www.ifarchive.org/if-archive/programming/tads3/library/contributions/lastTyped.zip
         ext: zip
         version: 1.0.0
       - last-modified: "2022-01-30"
         type:
           - adv3
-        makefile-entries:
-          - lastTyped/lastTyped.tl
+        build-entries:
+          - -lib lastTyped/lastTyped
         url: https://github.com/diegesisandmimesis/lastTyped.git
         branch: main
         version: 1.0.0
@@ -923,8 +877,8 @@ extensions:
         type:
           - adv3
           - adv3lite
-        makefile-entries:
-          - t3cartographer/cartographer.tl
+        build-entries:
+          - -lib t3cartographer/cartographer
         url: https://github.com/toerob/t3cartographer.git
         branch: master
         version: SNAPSHOT
@@ -932,8 +886,8 @@ extensions:
         type:
           - adv3
           - adv3lite
-        makefile-entries:
-          - t3cartographer/cartographer.tl
+        build-entries:
+          - -lib t3cartographer/cartographer
         url: https://github.com/toerob/t3cartographer/archive/refs/tags/v0.7-beta.1.zip
         ext: zip
         version: 0.7.0
@@ -957,3 +911,16 @@ extensions:
         url: https://github.com/mikawa/G-TADS.git
         branch: master
         version: 1.0.0
+  - name: se-tads3
+    author: Tomas Öberg
+    desc: A swedish translation of adv3
+    homepage: https://github.com/toerob/se-tads3
+    versions:
+      - last-modified: "2026-05-11"
+        type:
+          - adv3
+        version: 0.9.3-beta
+        url: git@github.com:toerob/se-tads3.git
+        branch: main
+        build-entries:
+          - -D LANGUAGE=sv_se
