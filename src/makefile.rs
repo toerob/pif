@@ -8,28 +8,21 @@ enum EntryKind {
     Define { key: String, directive: String },
     Lib(String),
     Source(String),
+    Unknown(String),
 }
 
 fn classify(entry: &str) -> EntryKind {
-    if entry.ends_with(".tl") {
-        return EntryKind::Lib(format!("-lib {}", entry));
-    }
-    if entry.ends_with(".t") {
-        return EntryKind::Source(format!("-source {}", entry));
-    }
     if entry.starts_with("-lib ") {
         return EntryKind::Lib(entry.to_string());
     }
     if entry.starts_with("-source ") {
         return EntryKind::Source(entry.to_string());
     }
-    // "-D KEY=VALUE" or "-D FLAG" — key is everything up to '='
     if entry.starts_with("-D ") {
         let key = entry[3..].split('=').next().unwrap_or("").trim().to_string();
         return EntryKind::Define { key, directive: entry.to_string() };
     }
-    // Fallback: treat as a define-style flag (insert before lib block)
-    EntryKind::Define { key: entry.to_string(), directive: entry.to_string() }
+    EntryKind::Unknown(entry.to_string())
 }
 
 // Returns the index of the last line starting with "-D ", or None.
@@ -69,6 +62,13 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, build_entries: Ve
     let mut lines: Vec<String> = contents.lines().map(|s| s.to_string()).collect();
     let mut diff_lines = lines.clone();
     let mut any_change = false;
+
+    // Warn about entries that don't follow the required format.
+    for entry in &build_entries {
+        if let EntryKind::Unknown(e) = classify(entry) {
+            eprintln!("Skipping unrecognised build-entry '{}': must start with -lib, -source, or -D", e);
+        }
+    }
 
     // Pass 1: -D defines — replace in-place or insert before the lib block.
     for entry in &build_entries {

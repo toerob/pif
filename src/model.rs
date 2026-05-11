@@ -36,6 +36,20 @@ impl Extensions {
                         i
                     ));
                 }
+                for entry in v.build_entries.iter().flatten() {
+                    if !entry.starts_with("-lib ")
+                        && !entry.starts_with("-source ")
+                        && !entry.starts_with("-D ")
+                    {
+                        warnings.push(format!(
+                            "{} version {} (index {}): build-entry '{}' must start with -lib, -source, or -D.",
+                            ext.name,
+                            v.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".into()),
+                            i,
+                            entry
+                        ));
+                    }
+                }
             }
         }
         warnings

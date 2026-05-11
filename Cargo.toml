@@ -1,45 +1,38 @@
 [package]
 name = "pif"
 version = "0.1.0"
-authors = ["Tomas Öberg"]
+authors = ["Tomas Öberg <tomaserikoberg@gmail.com>"]
 description = "PIF - A CLI package manager for interactive fiction languages"
-
+license = "MIT"
+repository = "https://github.com/toerob/pif"
+homepage = "https://github.com/toerob/pif"
+keywords = ["interactive-fiction", "tads3", "dialog", "inform", "package-manager"]
+categories = ["command-line-utilities"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+rust-version = "1.70"
 
 [dependencies]
-clap = { version = "4.2.7", features = ["derive"] }
-
-http = "0.2.9"
-reqwest = { version = "0.11.17", features = ["blocking"] }
-ansi_term = "0.12"
-
-serde = { version = "1.0.115", features = ["derive"] }
-serde_json = "1.0.57"
-git2 = "0.17.1"
-zip-extract = "0.1.2"
-sublime_fuzzy = "0.7.0"
-glob = "0.3.1"
-globwalk = "0.8.1"
-dotenv = "0.15.0"
-home = "0.5.5"
-semver = { version = "1.0.17" , features = ["serde"] }
-online = "4.0.1"
-regex = "1.10.5"
-lazy_static = "1.5.0"
-dirs-next = "2.0.0"
-config = "0.14.1"
-log = { version = "0.4", features = ["std", "serde"] }
-rusqlite = "0.32.1"
-serde_yaml = "0.9.34"
-chrono = "0.4"
-dialoguer = "0.11"
-open = "5"
-
-#tui = { version = "0.19.0" }
+clap         = { version = "4.6",  features = ["derive"] }
+reqwest      = { version = "0.12", features = ["blocking"] }
+ansi_term    = "0.12"
+serde        = { version = "1.0",  features = ["derive"] }
+git2         = "0.20"
+zip-extract  = "0.2"
+sublime_fuzzy = "0.7"
+glob         = "0.3"
+globwalk     = "0.9"
+semver       = { version = "1.0",  features = ["serde"] }
+regex        = "1.12"
+lazy_static  = "1.5"
+dirs-next    = "2.0"
+config       = "0.15"
+rusqlite     = "0.32"
+serde_yaml   = "0.9"
+chrono       = "0.4"
+dialoguer    = "0.11"
+open         = "5"
 
 [dev-dependencies]
-assert_cmd = "2.0"
-predicates = "2.1"
-mockall = "0.11.4"
+assert_cmd  = "2.2"
+predicates  = "3.1"
+mockall     = "0.13"
