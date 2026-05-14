@@ -2,6 +2,8 @@ use ansi_term::Colour::*;
 use std::{fs::{self, File}, io::{Cursor, Write}, path::Path, process::exit};
 use sublime_fuzzy::FuzzySearch;
 
+use std::path::PathBuf;
+
 use crate::{
     args::{Color, GlobalOptions, InstallOptions, InteractiveFictionSystem},
     color::{print_success_msg, print_warning_msg},
@@ -33,15 +35,16 @@ pub fn install_extensions(
         return;
     }
 
-    let (system_type, makefile) = if global_options.system == InteractiveFictionSystem::Auto {
-        detect_system()
-    } else {
-        (global_options.system.clone(), None)
-    };
+    let (system_type, makefile): (InteractiveFictionSystem, Option<PathBuf>) =
+        if global_options.system == InteractiveFictionSystem::Auto {
+            detect_system()
+        } else {
+            (global_options.system.clone(), None)
+        };
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
     if let Some(ref mf) = makefile {
-        println!("{}", Yellow.paint(format!("Makefile: {}", mf.path().display())));
+        println!("{}", Yellow.paint(format!("Makefile: {}", mf.display())));
     }
 
     let system_filter = system_to_dir(&system_type);
@@ -139,7 +142,7 @@ pub fn install_extensions(
                 if let Some(build) = &loaded.release.build {
                     let flags = build_entries_to_flags(build.exports.as_deref().unwrap_or(&[]));
                     if !flags.is_empty() {
-                        add_make_file_entry(entry.package.name.clone(), mf, flags);
+                        add_make_file_entry(entry.package.name.clone(), mf.as_path(), flags);
                     }
                 }
             }

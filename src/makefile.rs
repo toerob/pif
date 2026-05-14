@@ -1,5 +1,5 @@
 use std::fs;
-use globwalk::DirEntry;
+use std::path::Path;
 
 use crate::common::yes_or_no;
 use ansi_term::Colour::*;
@@ -56,8 +56,8 @@ fn last_source_line(lines: &[String]) -> usize {
         .unwrap_or(0)
 }
 
-pub fn add_make_file_entry(_name: String, makefile: &DirEntry, build_entries: Vec<String>) {
-    let contents = fs::read_to_string(&makefile.path()).expect("Could not read the makefile");
+pub fn add_make_file_entry(_name: String, makefile: &Path, build_entries: Vec<String>) {
+    let contents = fs::read_to_string(makefile).expect("Could not read the makefile");
 
     let mut lines: Vec<String> = contents.lines().map(|s| s.to_string()).collect();
     let mut diff_lines = lines.clone();
@@ -134,8 +134,8 @@ pub fn add_make_file_entry(_name: String, makefile: &DirEntry, build_entries: Ve
     print!("{}\n\n", diff_lines.join("\n"));
 
     if yes_or_no("Apply above changes?", true) {
-        if makefile.path().exists() {
-            fs::write(&makefile.path(), lines.join("\n"))
+        if makefile.exists() {
+            fs::write(makefile, lines.join("\n"))
                 .expect("Makefile could not be found. Skipping. ");
             println!("Changes applied");
         }
