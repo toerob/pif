@@ -48,10 +48,6 @@ pub fn install_extensions(
     }
 
     let system_filter = system_to_dir(&system_type);
-    if system_filter.is_none() {
-        print_warning_msg(use_colours, "Could not detect IF system. Use --system tads3|inform6|inform7.\n".into());
-        return;
-    }
 
     let registry_root = get_registry_root();
 
@@ -69,7 +65,9 @@ pub fn install_extensions(
         (name, ver)
     }).collect();
 
-    let library_path = install_options.installation_directory.as_deref().unwrap_or(".");
+    let explicit_library_path: Option<PathBuf> = install_options.installation_directory
+        .as_deref()
+        .map(PathBuf::from);
 
     for (req_name, req_version) in &requests {
         let found = entries.iter().find(|e| {
@@ -112,7 +110,20 @@ pub fn install_extensions(
             }
         };
 
-        let install_path = Path::new(library_path).join(&entry.package.name);
+        let is_inform = entry.system == "inform";
+        let library_path = explicit_library_path.clone()
+            .or_else(|| if is_inform { inform_extensions_dir() } else { None })
+            .unwrap_or_else(|| PathBuf::from("."));
+
+        if is_inform {
+            println!("{}", Yellow.paint(format!("Installing into: {}", library_path.display())));
+        }
+
+        let install_path = if is_inform {
+            library_path.join(&entry.package.author)
+        } else {
+            library_path.join(&entry.package.name)
+        };
         let install_path_str = install_path.to_str().unwrap().to_owned();
 
         if !install_path.exists() {
@@ -123,9 +134,13 @@ pub fn install_extensions(
         }
 
         let ok = match source.format.as_str() {
-            "zip" => install_zip(&source.url, &install_path, use_colours),
+            "zip" => install_zip(&source.url, &install_path, !is_inform, use_colours),
             "git" => install_git(&source.url, source.branch.as_deref(), &install_path, use_colours),
-            fmt => install_raw_file(&source.url, &install_path, fmt, use_colours),
+            fmt   => install_raw_file(
+                &source.url, &install_path, fmt,
+                if is_inform { Some(&entry.package.name) } else { None },
+                use_colours,
+            ),
         };
 
         if !ok { continue; }
@@ -155,7 +170,7 @@ fn resolve_version<'a>(releases: &'a [LoadedRelease], version: &str) -> Option<&
     releases.iter().find(|r| r.version == version)
 }
 
-fn install_zip(url: &str, dest: &Path, use_colours: bool) -> bool {
+fn install_zip(url: &str, dest: &Path, strip_toplevel: bool, use_colours: bool) -> bool {
     let response = match reqwest::blocking::get(url) {
         Ok(r) => r,
         Err(e) => {
@@ -167,7 +182,7 @@ fn install_zip(url: &str, dest: &Path, use_colours: bool) -> bool {
         Ok(b) => b,
         Err(e) => { print_warning_msg(use_colours, format!("Invalid response: {}\n", e)); return false; }
     };
-    zip_extract::extract(Cursor::new(bytes), dest, true)
+    zip_extract::extract(Cursor::new(bytes), dest, strip_toplevel)
         .map_err(|e| print_warning_msg(use_colours, format!("Extraction failed: {}\n", e)))
         .is_ok()
 }
@@ -186,12 +201,13 @@ fn install_git(url: &str, branch: Option<&str>, dest: &Path, use_colours: bool) 
 }
 
 /// Download a single file. GitHub blob URLs are converted to raw.githubusercontent.com.
-fn install_raw_file(url: &str, dest: &Path, ext: &str, use_colours: bool) -> bool {
+/// If `name_override` is given it is used as the filename stem instead of the URL-derived name.
+fn install_raw_file(url: &str, dest: &Path, ext: &str, name_override: Option<&str>, use_colours: bool) -> bool {
     let raw_url = to_raw_github_url(url);
-    let filename = raw_url.rsplit('/').next().unwrap_or("extension");
-    let file_path = dest.join(filename).with_extension(ext);
+    let stem = name_override.unwrap_or_else(|| raw_url.rsplit('/').next().unwrap_or("extension"));
+    let file_path = dest.join(stem).with_extension(ext);
 
-    let response = match reqwest::blocking::get(&raw_url) {
+    let response = match reqwest::blocking::get(raw_url.as_str()) {
         Ok(r) => r,
         Err(e) => { print_warning_msg(use_colours, format!("Download failed: {}\n", e)); return false; }
     };
@@ -238,6 +254,15 @@ fn record_entry(name: &str, path: &str, version: &str, use_colours: bool) {
     } else {
         print_warning_msg(use_colours, "Could not access install registry db\n".into());
     }
+}
+
+fn inform_extensions_dir() -> Option<PathBuf> {
+    #[cfg(target_os = "macos")]
+    return dirs_next::home_dir().map(|h| h.join("Library/Inform/Extensions"));
+    #[cfg(target_os = "windows")]
+    return dirs_next::document_dir().map(|d| d.join("Inform/Extensions"));
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    return dirs_next::home_dir().map(|h| h.join("Inform/Extensions"));
 }
 
 fn version_ord(v: &str) -> (u64, u64, u64) {
