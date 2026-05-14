@@ -1,4 +1,4 @@
-use rusqlite::{Connection, ErrorCode, Result, params};
+use rusqlite::{Connection, Result, params};
 use std::path::Path;
 
 #[derive(Debug, Clone)]
@@ -7,6 +7,7 @@ pub struct Installation {
     pub id: i32,
     pub name: String,
     pub path: String,
+    pub version: Option<String>,
     pub active: bool,
     pub installed_at: Option<String>,
 }
@@ -30,10 +31,16 @@ fn create_tables(conn: &Connection) -> Result<()> {
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             name         TEXT NOT NULL,
             path         TEXT NOT NULL UNIQUE,
+            version      TEXT,
             active       BOOLEAN NOT NULL DEFAULT 1,
             installed_at TEXT
         );"
     )?;
+
+    // Migrate existing databases that predate the version column.
+    let _ = conn.execute(
+        "ALTER TABLE installations ADD COLUMN version TEXT", []
+    );
 
     let count: i64 = conn.query_row(
         "SELECT COUNT(*) FROM schema_version", [], |r| r.get(0)
@@ -52,25 +59,21 @@ pub fn get_or_create_table() -> Result<Connection> {
     Ok(conn)
 }
 
-pub fn record_installation(conn: &Connection, name: &str, installation_path: &str) {
+pub fn record_installation(conn: &Connection, name: &str, installation_path: &str, version: &str) {
     let now = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     match conn.execute(
-        "INSERT INTO installations (name, path, active, installed_at) VALUES (?1, ?2, 1, ?3)",
-        params![name, installation_path, now]
+        "INSERT INTO installations (name, path, version, active, installed_at) VALUES (?1, ?2, ?3, 1, ?4)
+         ON CONFLICT(path) DO UPDATE SET name=excluded.name, version=excluded.version, active=1, installed_at=excluded.installed_at",
+        params![name, installation_path, version, now]
     ) {
         Ok(_) => {}
-        Err(e) => {
-            if e.sqlite_error_code() == Some(ErrorCode::ConstraintViolation) {
-                return;
-            }
-            eprintln!("Error recording installation: {:?}", e);
-        }
+        Err(e) => eprintln!("Error recording installation: {:?}", e),
     }
 }
 
 pub fn list_installations(conn: &Connection) -> Result<Vec<Installation>> {
     let mut stmt = conn.prepare(
-        "SELECT id, name, path, active, installed_at FROM installations ORDER BY name, path"
+        "SELECT id, name, path, version, active, installed_at FROM installations ORDER BY name, path"
     )?;
     let rows = stmt
         .query_map([], |row| {
@@ -78,8 +81,9 @@ pub fn list_installations(conn: &Connection) -> Result<Vec<Installation>> {
                 id: row.get(0)?,
                 name: row.get(1)?,
                 path: row.get(2)?,
-                active: row.get(3)?,
-                installed_at: row.get(4)?,
+                version: row.get(3)?,
+                active: row.get(4)?,
+                installed_at: row.get(5)?,
             })
         })?
         .filter_map(|r| r.ok())
@@ -120,11 +124,12 @@ pub fn print_installations(conn: &Connection) -> Result<()> {
         println!("No installations recorded in the registry.");
         return Ok(());
     }
-    println!("{:<30} {}", "Name", "Path");
-    println!("{}", "-".repeat(72));
+    println!("{:<30} {:<12} {}", "Name", "Version", "Path");
+    println!("{}", "-".repeat(80));
     for i in &installations {
         let marker = if Path::new(&i.path).exists() { "" } else { "  [missing]" };
-        println!("{:<30} {}{}", i.name, i.path, marker);
+        let ver = i.version.as_deref().unwrap_or("-");
+        println!("{:<30} {:<12} {}{}", i.name, ver, i.path, marker);
     }
     Ok(())
 }

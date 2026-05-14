@@ -154,18 +154,12 @@ fn load_releases(releases_dir: &Path) -> Result<Vec<LoadedRelease>, Box<dyn std:
     paths.sort();
 
     for path in paths {
-        let stem = path
+        let version = path
             .file_stem()
             .and_then(|s| s.to_str())
             .unwrap_or("")
-            .trim_start_matches('v');
-
-        // Strip inform branch suffix: "16-i10.1" → "16"
-        let version = match stem.find("-i") {
-            Some(pos) => &stem[..pos],
-            None => stem,
-        }
-        .to_string();
+            .trim_start_matches('v')
+            .to_string();
 
         let release: Release = serde_yaml::from_str(&fs::read_to_string(&path)?)?;
         releases.push(LoadedRelease { version, release });

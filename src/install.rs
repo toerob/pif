@@ -130,7 +130,7 @@ pub fn install_extensions(
 
         if !ok { continue; }
 
-        record_entry(&entry.package.name, &install_path_str, use_colours);
+        record_entry(&entry.package.name, &install_path_str, &loaded.version, use_colours);
         print_success_msg(use_colours, format!(
             " ==> {} v{} installed into {}\n", entry.package.name, loaded.version, install_path_str
         ));
@@ -232,9 +232,9 @@ fn build_entries_to_flags(entries: &[BuildEntry]) -> Vec<String> {
     }).collect()
 }
 
-fn record_entry(name: &str, path: &str, use_colours: bool) {
+fn record_entry(name: &str, path: &str, version: &str, use_colours: bool) {
     if let Ok(conn) = get_or_create_table() {
-        record_installation(&conn, name, path);
+        record_installation(&conn, name, path, version);
     } else {
         print_warning_msg(use_colours, "Could not access install registry db\n".into());
     }
