@@ -145,7 +145,7 @@ fn cache_registry_location(loc: &RegistryLocation) {
     }
 }
 
-fn load_cached_registry_location() -> Option<RegistryLocation> {
+pub fn load_cached_registry_location() -> Option<RegistryLocation> {
     let text = fs::read_to_string(cache_path()).ok()?;
     serde_yaml::from_str(&text).ok()
 }

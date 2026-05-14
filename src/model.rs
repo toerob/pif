@@ -24,7 +24,9 @@ pub struct Package {
     pub id: String,
     pub name: String,
     pub author: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
 }
 
@@ -32,18 +34,27 @@ pub struct Package {
 pub struct Release {
     #[serde(rename = "schema-version")]
     pub schema_version: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maintainer: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub channel: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub date: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub compatibility: Option<HashMap<String, CompatibilityConstraint>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub dependencies: Option<Vec<Dependency>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub source: Option<Source>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub build: Option<Build>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct CompatibilityConstraint {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub constraint: Option<String>,
 }
 
@@ -51,12 +62,15 @@ pub struct CompatibilityConstraint {
 pub struct Source {
     pub url: String,
     pub format: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub branch: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Build {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub exports: Option<Vec<BuildEntry>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub private: Option<Vec<BuildEntry>>,
 }
 
@@ -64,13 +78,16 @@ pub struct Build {
 pub struct BuildEntry {
     #[serde(rename = "type")]
     pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub value: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Dependency {
     pub id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub constraint: Option<String>,
 }
 
