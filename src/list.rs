@@ -1,26 +1,18 @@
-extern crate ansi_term;
-extern crate clap;
-extern crate serde;
-
-use crate::args;
-use crate::{
-    args::{ Color, GlobalOptions, InteractiveFictionSystem, SortProperty },
-    detect::{ detect_system, get_extension_path },
-    update::{ update_extensions },
-};
 use ansi_term::Colour::*;
-use crate::model;
-
-use std::fs;
 use sublime_fuzzy::FuzzySearch;
 
-#[warn(unused_attributes)]
-pub fn list_extensions(
-    list_options: &args::ListOptions,
-    global_options: &args::GlobalOptions,
-    update_needed: bool
-) -> () {
+use crate::{
+    args::{Color, GlobalOptions, InteractiveFictionSystem, ListOptions, ListPresentation, SortProperty},
+    detect::detect_system,
+    model::{load_registry, PackageEntry},
+    update::update_extensions,
+};
 
+pub fn list_extensions(
+    list_options: &ListOptions,
+    global_options: &GlobalOptions,
+    update_needed: bool,
+) {
     if update_needed {
         update_extensions(global_options);
     }
@@ -31,151 +23,99 @@ pub fn list_extensions(
         global_options.system.clone()
     };
 
-    println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
-    let systems: Vec<InteractiveFictionSystem> = if system_type == InteractiveFictionSystem::Unknown {
-        vec![InteractiveFictionSystem::Tads3, InteractiveFictionSystem::Dialog, InteractiveFictionSystem::Inform6]
-    } else {
-        vec![system_type]
-    };
+    println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
 
-    for system_type in systems {
-        list_for_system(system_type, list_options, global_options);
-    }
-}
-
-fn list_for_system(
-    system_type: InteractiveFictionSystem,
-    list_options: &args::ListOptions,
-    global_options: &args::GlobalOptions,
-) {
-    let file_path = match get_extension_path(system_type.clone()) {
-        Some(p) => p,
-        None => return,
-    };
-
-    let config_file = dirs_next
-        ::data_dir()
+    let registry_root = dirs_next::data_dir()
         .expect("Could not determine data directory")
         .join("pif")
         .join("repo")
-        .join(&file_path)
-        .clone();
+        .join("registry");
 
-        let extension_data_str = match fs::read_to_string(&config_file) {
-        Ok(s) => s,
-        Err(_) => return,
+    let system_filter = system_to_dir(&system_type);
+
+    let mut entries = match load_registry(&registry_root, system_filter) {
+        Ok(e) => e,
+        Err(e) => { eprintln!("Could not load registry: {}", e); return; }
     };
 
-    let data: model::Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
-
-    for warning in data.validate() {
-        eprintln!("Schema warning: {}", warning);
+    if let Some(author) = &list_options.author {
+        let q = author.to_lowercase();
+        entries.retain(|e| {
+            FuzzySearch::new(&q, &e.package.author.to_lowercase())
+                .case_insensitive().best_match().is_some()
+        });
     }
-
-    let mut extensions = data.extensions;
-
-    if list_options.author.is_some() {
-        let author = list_options.author.as_ref().unwrap().to_owned().to_lowercase();
-
-        extensions = extensions
-            .into_iter()
-            .filter(|e| {
-                FuzzySearch::new(&author, &e.author.as_ref().unwrap().to_lowercase())
-                    .case_insensitive()
-                    .best_match()
-                    .is_some()
-            })
-            .collect();
-    }
-    if list_options.keyword.is_some() {
-        let keyword = list_options.keyword.as_ref().unwrap().to_owned().to_lowercase();
-
-        extensions = extensions
-            .into_iter()
-            .filter(|e| {
-                FuzzySearch::new(&keyword, &e.name.to_lowercase())
-                    .case_insensitive()
-                    .best_match()
-                    .is_some()
-            })
-            .collect();
-    }
-
-    // TODO: implement OrderingDirection -> SortOrderDir
-
-    if SortProperty::Name == list_options.sort_property {
-        extensions.sort_by_key(|e| e.to_owned().name);
-    } else if SortProperty::Author == list_options.sort_property {
-        extensions.sort_by_key(|e| e.to_owned().author);
-    } else if SortProperty::Date == list_options.sort_property {
-        // TODO: compare the version's version number (semver wise) to find out the latest version to compare with
-
-        extensions.sort_by_key(|e| {
-            match &e.versions.get(0) {
-                Some(v) => v.last_modified.to_owned(),
-                _ => Some(String::from("0")),
-            }
+    if let Some(keyword) = &list_options.keyword {
+        let q = keyword.to_lowercase();
+        entries.retain(|e| {
+            FuzzySearch::new(&q, &e.package.name.to_lowercase())
+                .case_insensitive().best_match().is_some()
         });
     }
 
-    let delimiter = if list_options.presentation == args::ListPresentation::Comma {
-        ","
-    } else {
-        "\n"
-    };
+    match list_options.sort_property {
+        SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
+        SortProperty::Author => entries.sort_by(|a, b| a.package.author.cmp(&b.package.author)),
+        SortProperty::Date   => entries.sort_by_key(|e| {
+            e.releases.iter()
+                .filter_map(|r| r.release.date.clone())
+                .max()
+                .unwrap_or_default()
+        }),
+    }
 
-    let na: Vec<_> = extensions
-        .iter()
-        .map(|e| create_presentation(e, global_options))
-        .collect();
-
-    let str = na.join(delimiter);
-    println!("{}", str);
-    println!("");
+    let delimiter = if list_options.presentation == ListPresentation::Comma { "," } else { "\n" };
+    let lines: Vec<_> = entries.iter().map(|e| present(e, global_options)).collect();
+    println!("{}", lines.join(delimiter));
+    println!();
     println!("[Filter by -a / --author, -k / --keyword]");
 }
 
-fn create_presentation(e: &crate::model::Extension, global_options: &GlobalOptions) -> String {
-    let verbosity_level = global_options.verbose.unwrap();
-    let use_colors = if Color::Never == global_options.color { false } else { true };
+fn present(e: &PackageEntry, global_options: &GlobalOptions) -> String {
+    let verbosity  = global_options.verbose.unwrap_or(2);
+    let use_colors = global_options.color != Color::Never;
 
-    let mut extension_versions = e.versions.to_owned();
-    extension_versions.sort_by_key(|v| v.to_owned().version.unwrap_or(semver::Version::new(0, 0, 0)));
+    let latest_version = e.releases.iter()
+        .max_by(|a, b| version_ord(&a.version).cmp(&version_ord(&b.version)))
+        .map(|r| r.version.as_str())
+        .unwrap_or("?");
 
-    let latest_version = extension_versions.last().unwrap();
-    let version = match &latest_version.version {
-        Some(v) if v.major == 0 && v.minor == 0 && v.patch == 0 && v.pre.as_str() == "SNAPSHOT" => {
-            "SNAPSHOT".to_string()
-        }
-        Some(v) => v.to_string(),
-        None => "LATEST".to_string(),
-    };
-
-    let name = if use_colors {
-        Green.paint(format!("{} {} ", e.name.as_str(), &version)).to_string()
+    let name_ver = if use_colors {
+        Green.paint(format!("{} {}", e.package.name, latest_version)).to_string()
     } else {
-        e.name.as_str().to_owned()
+        format!("{} {}", e.package.name, latest_version)
     };
 
-    return match verbosity_level {
-        1 => name,
-        2 => {
-            name +
-                " (" +
-                latest_version.last_modified.as_ref().unwrap().to_owned().as_str() +
-                ")" +
-                " by " +
-                e.author.as_ref().unwrap().to_owned().as_str()
-        }
+    match verbosity {
+        1 => name_ver,
+        2 => format!("{} by {}", name_ver, e.package.author),
         _ => {
-            name +
-                " (" +
-                latest_version.last_modified.as_ref().unwrap().to_owned().as_str() +
-                ")" +
-                " by " +
-                e.author.as_ref().unwrap().to_owned().as_str().trim_end() +
-                " - " +
-                e.desc.as_ref().unwrap().to_owned().as_str()
+            let desc = e.package.description.as_deref()
+                .unwrap_or("");
+            format!("{} by {} - {}", name_ver, e.package.author, desc)
         }
-    };
+    }
+}
+
+/// Parse a version string into a comparable tuple, best-effort.
+/// "16" → (16,0,0), "2.1.0" → (2,1,0), unparseable → (0,0,0)
+fn version_ord(v: &str) -> (u64, u64, u64) {
+    let parts: Vec<u64> = v.split('.')
+        .map(|p| p.parse().unwrap_or(0))
+        .collect();
+    (
+        parts.first().copied().unwrap_or(0),
+        parts.get(1).copied().unwrap_or(0),
+        parts.get(2).copied().unwrap_or(0),
+    )
+}
+
+pub fn system_to_dir(system: &InteractiveFictionSystem) -> Option<&'static str> {
+    match system {
+        InteractiveFictionSystem::Tads3                                        => Some("tads3"),
+        InteractiveFictionSystem::Inform   => Some("inform"),
+        InteractiveFictionSystem::Inform6  => Some("inform6"),
+        InteractiveFictionSystem::Dialog                                        => Some("dialog"),
+        _                                                                        => None,
+    }
 }

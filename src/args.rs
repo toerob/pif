@@ -124,10 +124,11 @@ pub struct GlobalOptions {
 #[derive(Debug, Clone, ValueEnum, PartialEq, Eq)]
 pub enum InteractiveFictionSystem {
     Auto,
+    All,
     Tads3,
     Dialog,
+    Inform,
     Inform6,
-    Inform7,
     Unknown,
 }
 

@@ -1,136 +1,181 @@
+use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
+
 use serde::{Deserialize, Serialize};
 
-fn is_none_or_empty<T>(v: &Option<Vec<T>>) -> bool {
-    v.as_ref().map_or(true, |vec| vec.is_empty())
-}
-
+// ── YAML-mapped structs ────────────────────────────────────────────────────
 
 #[derive(Deserialize, Serialize, Debug, Clone)]
-pub struct Extensions {
-    #[serde(rename = "schema-version", skip_serializing_if = "Option::is_none")]
-    pub schema_version: Option<u32>,
-    pub extensions: Vec<Extension>,
-}
-
-impl Extensions {
-    /// Returns a list of human-readable warnings for malformed entries.
-    /// Call this after deserialization and print any warnings to the user.
-    pub fn validate(&self) -> Vec<String> {
-        let mut warnings = Vec::new();
-        for ext in &self.extensions {
-            for (i, v) in ext.versions.iter().enumerate() {
-                if v.branch.is_some() && v.ext.is_some() {
-                    warnings.push(format!(
-                        "{} version {} (index {}): has both `branch` (git) and `ext` (archive) — \
-                         these are mutually exclusive. `ext` will be ignored.",
-                        ext.name,
-                        v.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".into()),
-                        i
-                    ));
-                }
-                if v.url.is_none() {
-                    warnings.push(format!(
-                        "{} version {} (index {}): missing `url`.",
-                        ext.name,
-                        v.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".into()),
-                        i
-                    ));
-                }
-                for entry in v.build_entries.iter().flatten() {
-                    if !entry.starts_with("-lib ")
-                        && !entry.starts_with("-source ")
-                        && !entry.starts_with("-D ")
-                    {
-                        warnings.push(format!(
-                            "{} version {} (index {}): build-entry '{}' must start with -lib, -source, or -D.",
-                            ext.name,
-                            v.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".into()),
-                            i,
-                            entry
-                        ));
-                    }
-                }
-            }
-        }
-        warnings
-    }
-}
-
-#[derive(Deserialize, Serialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
-pub struct Extension {
+pub struct Package {
+    #[serde(rename = "schema-version")]
+    pub schema_version: u32,
+    pub id: String,
     pub name: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub author: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub desc: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub homepage: Option<String>,
-    #[serde(skip_serializing_if = "is_none_or_empty")]
+    pub author: String,
+    pub description: Option<String>,
     pub tags: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "is_none_or_empty")]
-    pub dependencies: Option<Vec<String>>,
-    pub versions: Vec<Version>,
 }
 
-#[derive(Deserialize, Serialize, PartialOrd, Ord, Debug, Clone, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct Version {
-    // last-modified first so it appears at the top of each version block in the YAML output
-    #[serde(rename = "last-modified", skip_serializing_if = "Option::is_none")]
-    pub last_modified: Option<String>,
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Release {
+    #[serde(rename = "schema-version")]
+    pub schema_version: u32,
+    pub maintainer: Option<String>,
+    pub channel: Option<String>,
+    pub date: Option<String>,
+    pub description: Option<String>,
+    pub compatibility: Option<HashMap<String, CompatibilityConstraint>>,
+    pub dependencies: Option<Vec<Dependency>>,
+    pub source: Option<Source>,
+    pub build: Option<Build>,
+}
 
-    #[serde(rename = "type", skip_serializing_if = "is_none_or_empty")]
-    pub extension_type: Option<Vec<String>>,
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct CompatibilityConstraint {
+    pub constraint: Option<String>,
+}
 
-    #[serde(
-        deserialize_with = "deserialize_version",
-        serialize_with = "serialize_version",
-        skip_serializing_if = "Option::is_none",
-        default
-    )]
-    pub version: Option<semver::Version>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub url: Option<String>,
-
-    #[serde(rename = "build-entries", skip_serializing_if = "is_none_or_empty")]
-    pub build_entries: Option<Vec<String>>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub ext: Option<String>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Source {
+    pub url: String,
+    pub format: String,
     pub branch: Option<String>,
 }
 
-fn deserialize_version<'de, D>(deserializer: D) -> Result<Option<semver::Version>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let version_str: String = String::deserialize(deserializer)?;
-    let bare = version_str.trim_start_matches(|c| c == 'v' || c == 'V');
-    let normalized = if version_str.eq_ignore_ascii_case("SNAPSHOT") {
-        "0.0.0-SNAPSHOT".to_string()
-    } else if bare.matches('.').count() == 1 {
-        format!("{}.0", bare)
-    } else {
-        bare.to_string()
-    };
-    semver::Version::parse(&normalized).map(Some).map_err(serde::de::Error::custom)
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Build {
+    pub exports: Option<Vec<BuildEntry>>,
+    pub private: Option<Vec<BuildEntry>>,
 }
 
-fn serialize_version<S>(v: &Option<semver::Version>, s: S) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-{
-    match v {
-        Some(ver)
-            if ver.major == 0 && ver.minor == 0 && ver.patch == 0
-                && ver.pre.as_str() == "SNAPSHOT" =>
-        {
-            s.serialize_str("SNAPSHOT")
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct BuildEntry {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub path: Option<String>,
+    pub value: Option<String>,
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct Dependency {
+    pub id: String,
+    pub constraint: Option<String>,
+}
+
+// ── Derived structs ────────────────────────────────────────────────────────
+
+/// A release loaded from disk, with the version string parsed from its filename.
+/// For Inform releases the filename is `v{version}-i{branch}.yaml`; the branch
+/// suffix is stripped so `version` holds only the version part (e.g. "16").
+#[derive(Debug, Clone)]
+pub struct LoadedRelease {
+    pub version: String,
+    pub release: Release,
+}
+
+/// A fully loaded package together with all its releases.
+#[derive(Debug, Clone)]
+pub struct PackageEntry {
+    pub system: String,
+    pub namespace: String,
+    pub package: Package,
+    pub releases: Vec<LoadedRelease>,
+}
+
+// ── Registry loader ────────────────────────────────────────────────────────
+
+/// Walk `registry_root` and return every package entry found.
+/// Pass `system_filter` to restrict to a single system (e.g. `"tads3"` or `"inform"`).
+pub fn load_registry(
+    registry_root: &Path,
+    system_filter: Option<&str>,
+) -> Result<Vec<PackageEntry>, Box<dyn std::error::Error>> {
+    let mut entries = Vec::new();
+
+    for system_entry in sorted_dirs(registry_root)? {
+        let system = dir_name(&system_entry);
+        if let Some(filter) = system_filter {
+            if system != filter {
+                continue;
+            }
         }
-        Some(ver) => s.serialize_str(&ver.to_string()),
-        None => unreachable!("skip_serializing_if guards None"),
+
+        for ns_entry in sorted_dirs(&system_entry)? {
+            let namespace = dir_name(&ns_entry);
+
+            for pkg_entry in sorted_dirs(&ns_entry)? {
+                let package_path = pkg_entry.join("package.yaml");
+                if !package_path.exists() {
+                    continue;
+                }
+
+                let package: Package =
+                    serde_yaml::from_str(&fs::read_to_string(&package_path)?)?;
+
+                let releases = load_releases(&pkg_entry.join("releases"))?;
+
+                entries.push(PackageEntry {
+                    system: system.clone(),
+                    namespace: namespace.clone(),
+                    package,
+                    releases,
+                });
+            }
+        }
     }
+
+    Ok(entries)
+}
+
+fn load_releases(releases_dir: &Path) -> Result<Vec<LoadedRelease>, Box<dyn std::error::Error>> {
+    if !releases_dir.exists() {
+        return Ok(Vec::new());
+    }
+
+    let mut releases = Vec::new();
+
+    let mut paths: Vec<_> = fs::read_dir(releases_dir)?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.extension().and_then(|s| s.to_str()) == Some("yaml"))
+        .collect();
+    paths.sort();
+
+    for path in paths {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .trim_start_matches('v');
+
+        // Strip inform branch suffix: "16-i10.1" → "16"
+        let version = match stem.find("-i") {
+            Some(pos) => &stem[..pos],
+            None => stem,
+        }
+        .to_string();
+
+        let release: Release = serde_yaml::from_str(&fs::read_to_string(&path)?)?;
+        releases.push(LoadedRelease { version, release });
+    }
+
+    Ok(releases)
+}
+
+fn sorted_dirs(parent: &Path) -> Result<Vec<std::path::PathBuf>, std::io::Error> {
+    let mut dirs: Vec<_> = fs::read_dir(parent)?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| p.is_dir())
+        .collect();
+    dirs.sort();
+    Ok(dirs)
+}
+
+fn dir_name(path: &Path) -> String {
+    path.file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_string()
 }

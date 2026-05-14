@@ -10,7 +10,6 @@ use crate::{
     color::{print_success_msg, print_warning_msg},
     detect::{detect_system, get_extension_path},
     gitops::latest_semver_tag,
-    model::{Extension, Extensions, Version},
     settings::get_main_config_file,
     update::update_extensions,
 };
@@ -120,7 +119,13 @@ fn load_index_config() -> (String, String) {
 /// 7. **Push** — attempts to push the branch to `origin`. On success it prints a
 ///    GitHub compare URL for opening a pull request. On failure it prints manual
 ///    instructions instead.
-pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
+pub fn publish_extension(_dir: &str, _global_options: &GlobalOptions) {
+    // TODO: redesign for the new directory-based registry format
+    eprintln!("publish is not yet implemented for the new registry format.");
+}
+
+/*
+fn publish_extension_old(dir: &str, global_options: &GlobalOptions) {
     let use_colours = Color::Never != global_options.color;
 
     let target_dir = fs::canonicalize(dir)
@@ -157,6 +162,7 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         match s.to_lowercase().as_str() {
             "tads3"   => InteractiveFictionSystem::Tads3,
             "dialog"  => InteractiveFictionSystem::Dialog,
+            "inform"  => InteractiveFictionSystem::Inform,
             "inform6" => InteractiveFictionSystem::Inform6,
             other => {
                 eprintln!("Unknown system '{}'. Aborting.", other);
@@ -402,3 +408,4 @@ pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {
         }
     }
 }
+*/

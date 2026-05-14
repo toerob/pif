@@ -1,44 +1,35 @@
 use ansi_term::Colour::*;
-
-use std::{ collections::HashMap, fs::{ self, File }, io::{ Cursor, Write }, path::Path, process::exit };
+use std::{fs::{self, File}, io::{Cursor, Write}, path::Path, process::exit};
 use sublime_fuzzy::FuzzySearch;
-use std::env::{current_dir};
 
 use crate::{
-    args::InteractiveFictionSystem,
-    color::{ print_success_msg, print_warning_msg },
-    model::{ Extension, Extensions, Version },
-};
-use crate::{
-    args::{ Color, GlobalOptions, InstallOptions },
-    detect::{ detect_system, get_extension_path },
+    args::{Color, GlobalOptions, InstallOptions, InteractiveFictionSystem},
+    color::{print_success_msg, print_warning_msg},
+    detect::detect_system,
+    gitops::{get_or_create_repo_dir, clone_or_pull_repo},
+    list::system_to_dir,
     makefile::add_make_file_entry,
-    gitops::{ get_or_create_repo_dir, clone_or_pull_repo, latest_semver_tag, checkout_tag },
-    update::{ update_extensions },
-    db::{ get_or_create_table, record_installation },
+    model::{load_registry, BuildEntry, LoadedRelease},
+    update::update_extensions,
+    db::{get_or_create_table, record_installation},
 };
 
 pub fn install_extensions(
     names: &Vec<String>,
     install_options: &InstallOptions,
     global_options: &GlobalOptions,
-    update_needed: bool
-) -> () {
+    update_needed: bool,
+) {
     if update_needed {
         update_extensions(global_options);
     }
 
     let use_colours = Color::Never != global_options.color;
 
-    if names.len() == 0 {
-        println!(
-            "{}",
-            Red.paint(
-                format!(
-                    "No packages specified. Command usage examples: \n  \"pif install abc \"\n  \"pif install abc def\""
-                )
-            )
-        );
+    if names.is_empty() {
+        println!("{}", Red.paint(
+            "No packages specified. Example:\n  pif install smarter-parser\n  pif install smarter-parser:16"
+        ));
         return;
     }
 
@@ -48,246 +39,211 @@ pub fn install_extensions(
         (global_options.system.clone(), None)
     };
 
-    println!("{}", Yellow.paint(format!("System: {:?}", system_type)).to_string());
-    if makefile.is_some() {
-        println!(
-            "{}",
-            Yellow.paint(
-                format!(
-                    "Makefile detected: {:?}",
-                    makefile.as_ref().unwrap().to_owned().path().display()
-                )
-            ).to_string()
-        );
+    println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
+    if let Some(ref mf) = makefile {
+        println!("{}", Yellow.paint(format!("Makefile: {}", mf.path().display())));
     }
 
-    let file_path_end = match get_extension_path(system_type) {
-        Some(p) => p,
-        None => {
-            print_warning_msg(use_colours, "Could not detect IF system. Use --system tads3|dialog|inform6.\n".to_string());
-            return;
-        }
-    };
-
-    let name_version_map: HashMap<String, String> = names
-        .iter()
-        .map(|x|{
-            let lowercased = x.to_lowercase();
-            let splitted: Vec<&str> = lowercased.split(':').collect();
-            if splitted.len() == 2 {
-                (splitted[0].to_string(), splitted[1].to_string())
-            } else {
-                (splitted[0].to_string(), "LATEST".to_string())
-            }
-        })
-        .collect();
-
-    
-    let lower_case_names : Vec<String> = name_version_map
-        .keys()
-        .map(|x|x.to_string())
-        .collect();
-
-    let file_path = dirs_next
-        ::data_dir()
-        .expect("Could not determine data directory")
-        .join("pif")
-        .join("repo")
-        .join(file_path_end)
-        .clone();
-
-    let _file_path_str = file_path.as_path().to_str().clone().unwrap();
-    print!("Trying: {}", &_file_path_str);
-
-    let extension_data_str = fs::read_to_string(file_path).unwrap();
-    let data: Extensions = serde_yaml::from_str(&extension_data_str).unwrap();
-
-    for warning in data.validate() {
-        print_warning_msg(use_colours, format!("Schema warning: {}\n", warning));
-    }
-
-    let installable_extensions: Vec<Extension> = data.extensions
-        .clone()
-        .into_iter()
-        .filter(|e| {
-            lower_case_names.contains(&e.name.to_lowercase())            
-        })
-        .collect();
-
-    if installable_extensions.is_empty() {
-        print_warning_msg(
-            use_colours,
-            format!("No extension(s) found by the name: \"{}\"\n", &names.join(", "))
-        );
-
-        let mut all_results: Vec<String> = Vec::new();
-        for name in names.iter() {
-            data.extensions
-                .clone()
-                .into_iter()
-                .filter(|e| {
-                    FuzzySearch::new(&name, &e.name.to_lowercase()) 
-                        .case_insensitive()
-                        .best_match()
-                        .is_some()
-                })
-                .map(|e| e.name)
-                .for_each(|local_result| all_results.push(local_result));
-        }
-        if !all_results.is_empty() {
-            print!("You may have meant to type: ");
-            println!("{}", Yellow.paint(format!("{} ", all_results.join(", "))));
-        }
+    let system_filter = system_to_dir(&system_type);
+    if system_filter.is_none() {
+        print_warning_msg(use_colours, "Could not detect IF system. Use --system tads3|inform6|inform7.\n".into());
         return;
     }
 
-    let library_path = install_options.installation_directory.as_deref().unwrap_or("");
+    let registry_root = dirs_next::data_dir()
+        .expect("Could not determine data directory")
+        .join("pif").join("repo").join("registry");
 
-    // Ensure directory exists:
-    if !std::path::Path::new(&library_path).exists() {
-        match fs::create_dir_all(library_path) {
-            Ok(_p) => {}
-            Err(e) => {
-                print_warning_msg(
-                    use_colours,
-                    format!("Could not create directory {}, beacuse: {} ", library_path, e)
-                );
-                return;
-            }
-        }
-    }
+    let entries = match load_registry(&registry_root, system_filter) {
+        Ok(e) => e,
+        Err(e) => { eprintln!("Could not load registry: {}", e); return; }
+    };
 
-    installable_extensions.iter().for_each(|extension| {
-        let current_dir = current_dir().unwrap();
-        let os_path = Path::new(&current_dir).join(library_path).join(&extension.name);
-        let path = os_path.to_str().unwrap();
+    // Parse "name:version" pairs
+    let requests: Vec<(String, String)> = names.iter().map(|x| {
+        let lower = x.to_lowercase();
+        let mut parts = lower.splitn(2, ':');
+        let name = parts.next().unwrap_or("").to_string();
+        let ver  = parts.next().unwrap_or("latest").to_string();
+        (name, ver)
+    }).collect();
 
-        println!("installation {path}");
+    let library_path = install_options.installation_directory.as_deref().unwrap_or(".");
 
+    for (req_name, req_version) in &requests {
+        let found = entries.iter().find(|e| {
+            e.package.id.to_lowercase() == *req_name
+                || e.package.name.to_lowercase() == *req_name
+        }).or_else(|| {
+            // fuzzy fallback
+            entries.iter().find(|e| {
+                FuzzySearch::new(req_name, &e.package.name.to_lowercase())
+                    .case_insensitive().best_match().is_some()
+            })
+        });
 
-        let found_matching_version: Option<Version>;
-        let version_asked_for = name_version_map.get(&extension.name.to_lowercase()).unwrap(); //.unwrap_or_else('');
-        let mut versions = extension.versions.clone();
-
-        if version_asked_for.to_lowercase() == "latest" {
-            print!("Version asked for is 'LATEST'\n");
-            versions.sort_by_key(|x| x.version.clone().unwrap_or(semver::Version::new(0, 0, 0)));
-            found_matching_version = versions.last().cloned();
-        } else if version_asked_for.to_lowercase() == "snapshot" {
-            print!("Version asked for is 'SNAPSHOT'\n");
-            let version_req = semver::VersionReq::parse("0.0.0-SNAPSHOT").unwrap();
-            found_matching_version = versions
-                .into_iter()
-                .find(|x| x.version.as_ref().map_or(false, |v| version_req.matches(v)));
-        } else {
-            let version_req = semver::VersionReq::parse(version_asked_for)
-                .expect("Not a compatible version format");
-            found_matching_version = versions
-                .into_iter()
-                .find(|x| x.version.as_ref().map_or(false, |v| version_req.matches(v)));
-        }
-
-        match &found_matching_version {
-            Some(x) => {
-                let v = x.version.as_ref().map(|v| v.to_string()).unwrap_or_else(|| "unknown".to_string());
-                print!("Version asked for: {} found -> {}", version_asked_for, v);
-            },
+        let entry = match found {
+            Some(e) => e,
             None => {
-                print!("No version found\n");
+                print_warning_msg(use_colours, format!("No extension found for '{}'\n", req_name));
+                continue;
+            }
+        };
+
+        let release = resolve_version(&entry.releases, req_version);
+        let loaded = match release {
+            Some(r) => r,
+            None => {
+                print_warning_msg(use_colours, format!(
+                    "No matching version '{}' for '{}'\n", req_version, entry.package.name
+                ));
                 exit(0);
             }
+        };
+
+        let source = match &loaded.release.source {
+            Some(s) => s,
+            None => {
+                print_warning_msg(use_colours, format!(
+                    "'{}' has no source URL\n", entry.package.name
+                ));
+                continue;
+            }
+        };
+
+        let install_path = Path::new(library_path).join(&entry.package.name);
+        let install_path_str = install_path.to_str().unwrap().to_owned();
+
+        if !install_path.exists() {
+            if let Err(e) = fs::create_dir_all(&install_path) {
+                print_warning_msg(use_colours, format!("Could not create {}: {}\n", install_path_str, e));
+                continue;
+            }
         }
 
-        let latest_version = &found_matching_version.unwrap();
+        let ok = match source.format.as_str() {
+            "zip" => install_zip(&source.url, &install_path, use_colours),
+            "git" => install_git(&source.url, source.branch.as_deref(), &install_path, use_colours),
+            fmt => install_raw_file(&source.url, &install_path, fmt, use_colours),
+        };
 
-        let url = latest_version.url.as_ref().unwrap().as_str();
-        let is_git_repo = latest_version.branch.is_some();
+        if !ok { continue; }
 
-        if !is_git_repo {
-            let response = reqwest::blocking::get(url).expect("Request did fail");
-            let file_data = response.bytes().expect("Bytes are invalid");
-            let file_extension = latest_version.ext.as_ref().to_owned().unwrap();
-            if file_extension == "zip" {
-                let target_dir = Path::new(os_path.as_path());
-                zip_extract
-                    ::extract(Cursor::new(file_data), &target_dir, true)
-                    .expect("Failed extract file. ");
-            } else {
-                let file_name: String = path.to_owned() + "." + file_extension;
-                let mut file = File::create(file_name).expect("failed to create file. ");
-                file.write_all(&file_data).expect("Failed to write to binary file. ");
-            }
+        record_entry(&entry.package.name, &install_path_str, use_colours);
+        print_success_msg(use_colours, format!(
+            " ==> {} v{} installed into {}\n", entry.package.name, loaded.version, install_path_str
+        ));
 
-            add_data_record(&extension.name, &path, use_colours);
-
-            let text = format!(" ==> {} installed into directory {}", &extension.name, &os_path.display());
-            if use_colours { println!("{}", Green.paint(text)); } else { println!("{}", text); }
-
-            if makefile.is_some() && latest_version.build_entries.is_some() {
-                add_make_file_entry(
-                    extension.name.clone(),
-                    makefile.as_ref().unwrap(),
-                    latest_version.build_entries.as_ref().unwrap().to_owned()
-                );
-            }
-            return;
-        }
-
-        // Git repo: clone/pull, then resolve to latest release tag unless SNAPSHOT was requested.
-        let branch_name = latest_version.branch.as_deref().unwrap_or("master");
-        let is_snapshot = version_asked_for.to_lowercase() == "snapshot";
-
-        match get_or_create_repo_dir(&path) {
-            Ok(repo_path) => {
-                if let Err(e) = clone_or_pull_repo(url, branch_name, &repo_path) {
-                    print_warning_msg(use_colours, format!("Error: {}\n", e));
-                    return;
-                }
-
-                if is_snapshot {
-                    print_success_msg(use_colours, format!("Using branch tip ({})\n", branch_name));
-                } else {
-                    match latest_semver_tag(&repo_path) {
-                        Some(tag) => {
-                            match checkout_tag(&repo_path, &tag) {
-                                Ok(_) => print_success_msg(use_colours, format!("Checked out release {}\n", tag)),
-                                Err(e) => print_warning_msg(use_colours, format!("Could not checkout tag {}: {} — using branch tip\n", tag, e)),
-                            }
-                        }
-                        None => print_success_msg(use_colours, format!("No release tags found, using branch tip ({})\n", branch_name)),
+        if system_type == InteractiveFictionSystem::Tads3 {
+            if let Some(ref mf) = makefile {
+                if let Some(build) = &loaded.release.build {
+                    let flags = build_entries_to_flags(build.exports.as_deref().unwrap_or(&[]));
+                    if !flags.is_empty() {
+                        add_make_file_entry(entry.package.name.clone(), mf, flags);
                     }
                 }
-
-                print_success_msg(use_colours, format!("Extension installed into {}\n", repo_path.display()));
-
-                if makefile.is_some() && latest_version.build_entries.is_some() {
-                    add_make_file_entry(
-                        extension.name.clone(),
-                        makefile.as_ref().unwrap(),
-                        latest_version.build_entries.as_ref().unwrap().to_owned()
-                    );
-                }
             }
-            Err(e) => {
-                eprintln!("Failed to create repository directory: {}", e);
-            }
-        }
-
-        add_data_record(&extension.name, &path, use_colours);
-
-    });
-}
-
-fn add_data_record(name: &str, path: &str, use_colours: bool) {
-    match get_or_create_table() {
-        Ok(conn) => {
-            record_installation(&conn, &name, &path);
-        }
-        Err(e) => {
-            print_warning_msg(
-                use_colours,
-                format!("Something failed when trying to access sqlite db: {}\n", e)
-            );
         }
     }
+}
+
+fn resolve_version<'a>(releases: &'a [LoadedRelease], version: &str) -> Option<&'a LoadedRelease> {
+    if version == "latest" || version.is_empty() {
+        return releases.iter().max_by(|a, b| version_ord(&a.version).cmp(&version_ord(&b.version)));
+    }
+    releases.iter().find(|r| r.version == version)
+}
+
+fn install_zip(url: &str, dest: &Path, use_colours: bool) -> bool {
+    let response = match reqwest::blocking::get(url) {
+        Ok(r) => r,
+        Err(e) => {
+            print_warning_msg(use_colours, format!("Download failed: {}\n", e));
+            return false;
+        }
+    };
+    let bytes = match response.bytes() {
+        Ok(b) => b,
+        Err(e) => { print_warning_msg(use_colours, format!("Invalid response: {}\n", e)); return false; }
+    };
+    zip_extract::extract(Cursor::new(bytes), dest, true)
+        .map_err(|e| print_warning_msg(use_colours, format!("Extraction failed: {}\n", e)))
+        .is_ok()
+}
+
+fn install_git(url: &str, branch: Option<&str>, dest: &Path, use_colours: bool) -> bool {
+    let branch = branch.unwrap_or("master");
+    let dest_str = dest.to_str().unwrap();
+    match get_or_create_repo_dir(dest_str) {
+        Ok(repo_path) => {
+            clone_or_pull_repo(url, branch, &repo_path)
+                .map_err(|e| print_warning_msg(use_colours, format!("Git error: {}\n", e)))
+                .is_ok()
+        }
+        Err(e) => { eprintln!("Could not create directory: {}", e); false }
+    }
+}
+
+/// Download a single file. GitHub blob URLs are converted to raw.githubusercontent.com.
+fn install_raw_file(url: &str, dest: &Path, ext: &str, use_colours: bool) -> bool {
+    let raw_url = to_raw_github_url(url);
+    let filename = raw_url.rsplit('/').next().unwrap_or("extension");
+    let file_path = dest.join(filename).with_extension(ext);
+
+    let response = match reqwest::blocking::get(&raw_url) {
+        Ok(r) => r,
+        Err(e) => { print_warning_msg(use_colours, format!("Download failed: {}\n", e)); return false; }
+    };
+    let bytes = match response.bytes() {
+        Ok(b) => b,
+        Err(e) => { print_warning_msg(use_colours, format!("Invalid response: {}\n", e)); return false; }
+    };
+    let mut file = match File::create(&file_path) {
+        Ok(f) => f,
+        Err(e) => { print_warning_msg(use_colours, format!("Could not create file: {}\n", e)); return false; }
+    };
+    file.write_all(&bytes)
+        .map_err(|e| print_warning_msg(use_colours, format!("Write failed: {}\n", e)))
+        .is_ok()
+}
+
+/// Convert a GitHub blob URL to a raw download URL.
+/// https://github.com/owner/repo/blob/branch/path → https://raw.githubusercontent.com/owner/repo/branch/path
+fn to_raw_github_url(url: &str) -> String {
+    if let Some(rest) = url.strip_prefix("https://github.com/") {
+        if let Some(blob_pos) = rest.find("/blob/") {
+            let (repo, path) = rest.split_at(blob_pos);
+            let path = &path["/blob/".len()..];
+            return format!("https://raw.githubusercontent.com/{}/{}", repo, path);
+        }
+    }
+    url.to_string()
+}
+
+fn build_entries_to_flags(entries: &[BuildEntry]) -> Vec<String> {
+    entries.iter().filter_map(|e| {
+        match e.kind.as_str() {
+            "lib"    => e.path.as_ref().map(|p| format!("-lib {}", p)),
+            "source" => e.path.as_ref().map(|p| format!("-source {}", p)),
+            "define" => e.value.as_ref().map(|v| format!("-D {}", v)),
+            _        => None,
+        }
+    }).collect()
+}
+
+fn record_entry(name: &str, path: &str, use_colours: bool) {
+    if let Ok(conn) = get_or_create_table() {
+        record_installation(&conn, name, path);
+    } else {
+        print_warning_msg(use_colours, "Could not access install registry db\n".into());
+    }
+}
+
+fn version_ord(v: &str) -> (u64, u64, u64) {
+    let parts: Vec<u64> = v.split('.').map(|p| p.parse().unwrap_or(0)).collect();
+    (
+        parts.first().copied().unwrap_or(0),
+        parts.get(1).copied().unwrap_or(0),
+        parts.get(2).copied().unwrap_or(0),
+    )
 }

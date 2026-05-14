@@ -5,6 +5,7 @@ use crate::args::InteractiveFictionSystem;
 pub fn get_extension_path(system_type: InteractiveFictionSystem) -> Option<String> {
     match system_type {
         InteractiveFictionSystem::Tads3  => Some("./tads3-extensions.yaml".to_owned()),
+        InteractiveFictionSystem::Inform  => Some("./inform-extensions.yaml".to_owned()),
         InteractiveFictionSystem::Inform6 => Some("./inform6-extensions.yaml".to_owned()),
         InteractiveFictionSystem::Dialog  => Some("./dialog-extensions.yaml".to_owned()),
         _ => None,
