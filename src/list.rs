@@ -5,7 +5,7 @@ use crate::{
     args::{Color, GlobalOptions, InteractiveFictionSystem, ListOptions, ListPresentation, SortProperty},
     detect::detect_system,
     model::{load_registry, PackageEntry},
-    update::update_extensions,
+    update::{get_registry_root, update_extensions},
 };
 
 pub fn list_extensions(
@@ -25,11 +25,7 @@ pub fn list_extensions(
 
     println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
 
-    let registry_root = dirs_next::data_dir()
-        .expect("Could not determine data directory")
-        .join("pif")
-        .join("repo")
-        .join("registry");
+    let registry_root = get_registry_root();
 
     let system_filter = system_to_dir(&system_type);
 

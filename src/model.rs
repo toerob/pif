@@ -4,6 +4,17 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
+// ── Registry location (pif-index bootstrap) ───────────────────────────────
+
+#[derive(Deserialize, Debug)]
+pub struct RegistryLocation {
+    pub version: u32,
+    pub url: String,
+    pub root: String,
+    pub branch: Option<String>,
+    pub message: Option<String>,
+}
+
 // ── YAML-mapped structs ────────────────────────────────────────────────────
 
 #[derive(Deserialize, Serialize, Debug, Clone)]

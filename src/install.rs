@@ -12,7 +12,7 @@ use crate::{
     list::system_to_dir,
     makefile::add_make_file_entry,
     model::{load_registry, BuildEntry, LoadedRelease},
-    update::update_extensions,
+    update::{get_registry_root, update_extensions},
     db::{get_or_create_table, record_installation},
 };
 
@@ -53,9 +53,7 @@ pub fn install_extensions(
         return;
     }
 
-    let registry_root = dirs_next::data_dir()
-        .expect("Could not determine data directory")
-        .join("pif").join("repo").join("registry");
+    let registry_root = get_registry_root();
 
     let entries = match load_registry(&registry_root, system_filter) {
         Ok(e) => e,

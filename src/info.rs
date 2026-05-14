@@ -6,7 +6,7 @@ use crate::{
     detect::detect_system,
     list::system_to_dir,
     model::{load_registry, PackageEntry},
-    update::update_extensions,
+    update::{get_registry_root, update_extensions},
 };
 
 pub fn extensions_info(
@@ -34,11 +34,7 @@ pub fn extensions_info(
         global_options.system.clone()
     };
 
-    let registry_root = dirs_next::data_dir()
-        .expect("Could not determine data directory")
-        .join("pif")
-        .join("repo")
-        .join("registry");
+    let registry_root = get_registry_root();
 
     // Info always searches all systems — no filter.
     let entries = match load_registry(&registry_root, None) {
