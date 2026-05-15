@@ -52,8 +52,10 @@ pub fn latest_semver_tag(repo_path: &Path) -> Option<String> {
     versions.into_iter().last().map(|(tag, _)| tag)
 }
 
+
 /// Checks out a tag by name. Handles both lightweight and annotated tags by
 /// peeling to the underlying commit.
+#[allow(dead_code)] 
 pub fn checkout_tag(repo_path: &Path, tag_name: &str) -> Result<(), Error> {
     let repo = Repository::open(repo_path)?;
     let obj = repo.revparse_single(&format!("refs/tags/{}", tag_name))?;

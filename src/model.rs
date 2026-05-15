@@ -106,6 +106,7 @@ pub struct LoadedRelease {
 #[derive(Debug, Clone)]
 pub struct PackageEntry {
     pub system: String,
+    #[allow(dead_code)] 
     pub namespace: String,
     pub package: Package,
     pub releases: Vec<LoadedRelease>,

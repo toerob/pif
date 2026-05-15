@@ -42,7 +42,7 @@ pub fn install_extensions(
             (global_options.system.clone(), None)
         };
 
-    println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
+    //println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
     if let Some(ref mf) = makefile {
         println!("{}", Yellow.paint(format!("Makefile: {}", mf.display())));
     }
@@ -115,9 +115,6 @@ pub fn install_extensions(
             .or_else(|| if is_inform { inform_extensions_dir() } else { None })
             .unwrap_or_else(|| PathBuf::from("."));
 
-        if is_inform {
-            println!("{}", Yellow.paint(format!("Installing into: {}", library_path.display())));
-        }
 
         let install_path = if is_inform {
             library_path.join(&entry.package.author)
@@ -147,7 +144,9 @@ pub fn install_extensions(
 
         record_entry(&entry.package.name, &install_path_str, &loaded.version, use_colours);
         print_success_msg(use_colours, format!(
-            " ==> {} v{} installed into {}\n", entry.package.name, loaded.version, install_path_str
+            " ==> {} v{} [{}] installed into {}\n", entry.package.name, loaded.version, 
+            entry.system.to_string(),
+            install_path_str
         ));
 
         if system_type == InteractiveFictionSystem::Tads3 {

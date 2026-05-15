@@ -1,4 +1,4 @@
-use std::{fs, path::Path};
+use std::fs;
 
 use ansi_term::Colour::*;
 use chrono::Local;
