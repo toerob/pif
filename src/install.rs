@@ -110,6 +110,17 @@ pub fn install_extensions(
             }
         };
 
+        if let Some(deps) = &loaded.release.dependencies {
+            if !deps.is_empty() {
+                let list = deps.iter().map(|d| match &d.constraint {
+                    Some(c) => format!("{} ({})", d.id, c),
+                    None    => d.id.clone(),
+                }).collect::<Vec<_>>().join(", ");
+                println!("{}", Yellow.paint(format!("Note: '{}' depends on: {}", entry.package.name, list)));
+                println!("{}", Yellow.paint("      Dependencies are not installed automatically yet."));
+            }
+        }
+
         let is_inform = entry.system == "inform";
         let library_path = explicit_library_path.clone()
             .or_else(|| if is_inform { inform_extensions_dir() } else { None })
