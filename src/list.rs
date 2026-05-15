@@ -23,7 +23,9 @@ pub fn list_extensions(
         global_options.system.clone()
     };
 
-    println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
+    if system_type != InteractiveFictionSystem::Unknown {
+        println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
+    }
 
     let registry_root = get_registry_root();
 
@@ -111,6 +113,41 @@ fn version_ord(v: &str) -> (u64, u64, u64) {
         parts.get(1).copied().unwrap_or(0),
         parts.get(2).copied().unwrap_or(0),
     )
+}
+
+pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
+    if update_needed {
+        update_extensions(global_options);
+    }
+
+    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system().0
+    } else {
+        global_options.system.clone()
+    };
+
+    let registry_root = get_registry_root();
+    let system_filter = system_to_dir(&system_type);
+
+    let entries = match load_registry(&registry_root, system_filter) {
+        Ok(e) => e,
+        Err(e) => { eprintln!("Could not load registry: {}", e); return; }
+    };
+
+    let mut tags: Vec<String> = entries.iter()
+        .flat_map(|e| e.package.tags.as_deref().unwrap_or(&[]).iter().cloned())
+        .collect();
+    tags.sort();
+    tags.dedup();
+
+    if tags.is_empty() {
+        println!("No tags found.");
+        return;
+    }
+
+    for tag in &tags {
+        println!("{}", tag);
+    }
 }
 
 pub fn system_to_dir(system: &InteractiveFictionSystem) -> Option<&'static str> {

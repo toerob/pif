@@ -28,6 +28,9 @@ pub enum MenuSubCommand {
     /// Publish an extension to the pif index
     Publish(PublishCommand),
 
+    /// List all available tags
+    Tags(TagsCommand),
+
     /// Manage the local extension registry
     Registry(RegistryCommand),
 }
@@ -169,6 +172,9 @@ pub enum SortProperty {
     Author,
     Date
 }
+
+#[derive(Debug, Args)]
+pub struct TagsCommand {}
 
 #[derive(Debug, Args)]
 pub struct RegistryCommand {

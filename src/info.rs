@@ -55,11 +55,13 @@ pub fn extensions_info(
         return;
     }
 
-    println!("{}\n", Yellow.paint(format!("[Detected system: {:?}]", detected_system)));
+    if detected_system != InteractiveFictionSystem::Unknown {
+        println!("{}\n", Yellow.paint(format!("[Detected system: {:?}]", detected_system)));
+    }
 
     for entry in matches {
         let detected_dir = system_to_dir(&detected_system);
-        if detected_dir.map_or(true, |d| d != entry.system) {
+        if detected_dir.is_some() && detected_dir.map_or(false, |d| d != entry.system) {
             println!("{}", Yellow.paint(format!(
                 "Note: '{}' is a {} extension, not compatible with the detected system ({:?}).",
                 entry.package.name, entry.system, detected_system
