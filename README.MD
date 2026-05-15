@@ -17,6 +17,11 @@ Written in Rust for platform independence, using [Clap](https://github.com/clap-
 ```sh
 brew install toerob/pif/pif
 ```
+Or tap first for shorter upgrade commands later:
+```sh
+brew tap toerob/pif
+brew install pif
+```
 
 ### macOS / Linux (shell installer)
 ```sh
