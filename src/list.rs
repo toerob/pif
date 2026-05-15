@@ -48,6 +48,13 @@ pub fn list_extensions(
                 .case_insensitive().best_match().is_some()
         });
     }
+    if let Some(tag) = &list_options.tag {
+        let q = tag.to_lowercase();
+        entries.retain(|e| {
+            e.package.tags.as_deref().unwrap_or(&[])
+                .iter().any(|t| t.to_lowercase() == q)
+        });
+    }
 
     match list_options.sort_property {
         SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
@@ -64,7 +71,7 @@ pub fn list_extensions(
     let lines: Vec<_> = entries.iter().map(|e| present(e, global_options)).collect();
     println!("{}", lines.join(delimiter));
     println!();
-    println!("[Filter by -a / --author, -k / --keyword]");
+    println!("[Filter by -a / --author, -k / --keyword, -t / --tag]");
 }
 
 fn present(e: &PackageEntry, global_options: &GlobalOptions) -> String {

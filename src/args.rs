@@ -91,6 +91,10 @@ pub struct ListOptions {
     #[clap(long, short, global = false)]
     pub keyword: Option<String>,
 
+    /// Filter by tag (exact match)
+    #[clap(long, short = 't', global = false)]
+    pub tag: Option<String>,
+
     /// List order direction
     #[clap(long, value_enum, global = true, default_value_t = OrderingDirection::Descending)]
     pub ordering_direction: OrderingDirection,
