@@ -25,6 +25,7 @@ use update::update_extensions;
 
 fn main() {
     let conn = get_or_create_table().expect("Could not open registry database");
+    let _ = clean_stale_installations(&conn);
 
     let repo_dir = dirs_next::data_dir()
         .expect("Could not determine data directory")

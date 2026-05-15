@@ -62,10 +62,10 @@ pub fn update_extensions(global_options: &GlobalOptions) {
 
     match get_or_create_repo_dir(repo_dir.to_str().unwrap()) {
         Ok(repo_path) => {
-            if let Err(e) = clone_or_pull_repo(&location.url, branch, &repo_path) {
-                print_warning_msg(use_colour, format!("Error: {}\n", e));
-            } else {
-                println!("{}", Green.paint("Registry updated."));
+            match clone_or_pull_repo(&location.url, branch, &repo_path) {
+                Ok(true)  => println!("{}", Green.paint("Registry updated.")),
+                Ok(false) => println!("{}", Green.paint("Registry already up to date.")),
+                Err(e)    => print_warning_msg(use_colour, format!("Error: {}\n", e)),
             }
         }
         Err(e) => eprintln!("Failed to create repository directory: {}", e),

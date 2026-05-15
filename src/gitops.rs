@@ -7,7 +7,8 @@ use std::{
 use git2::{Error, ObjectType, Repository};
 use dirs_next::data_dir;
 
-pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<(), String> {
+/// Returns `Ok(true)` if the repo was cloned or updated, `Ok(false)` if already up to date.
+pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> Result<bool, String> {
     let run = |args: &[&str]| -> Result<(), String> {
         let out = Command::new("git")
             .args(args)
@@ -23,15 +24,44 @@ pub fn clone_or_pull_repo(repo_url: &str, branch: &str, repo_path: &PathBuf) -> 
 
     if repo_path.join(".git").exists() {
         println!("Repository exists. Updating {}...", repo_path.display());
-        run(&["fetch", "--tags", "origin", branch])?;
+        let head_before = Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(repo_path)
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string());
+        let current_branch = Command::new("git")
+            .args(["rev-parse", "--abbrev-ref", "HEAD"])
+            .current_dir(repo_path)
+            .output()
+            .ok()
+            .filter(|o| o.status.success())
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string())
+            .filter(|s| !s.is_empty() && s != "HEAD")
+            .unwrap_or_else(|| branch.to_string());
+        run(&["fetch", "--tags", "origin", &current_branch])?;
         run(&["reset", "--hard", "FETCH_HEAD"])?;
-        println!("Updated successfully.");
+        let head_after = Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .current_dir(repo_path)
+            .output()
+            .ok()
+            .and_then(|o| String::from_utf8(o.stdout).ok())
+            .map(|s| s.trim().to_string());
+        if head_before == head_after {
+            println!("Already up to date.");
+            return Ok(false);
+        } else {
+            println!("Updated successfully.");
+        }
     } else {
         println!("Cloning repository from {} to {:?}", repo_url, repo_path);
         run(&["clone", repo_url, "."])?;
         println!("Repository cloned successfully.");
     }
-    Ok(())
+    Ok(true)
 }
 
 /// Returns the name of the highest semver tag in the repo, or None if no semver tags exist.

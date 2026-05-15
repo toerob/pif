@@ -59,6 +59,14 @@ pub fn get_or_create_table() -> Result<Connection> {
     Ok(conn)
 }
 
+pub fn is_installed(conn: &Connection, name: &str, path: &str, version: &str) -> bool {
+    conn.query_row(
+        "SELECT COUNT(*) FROM installations WHERE name = ?1 AND path = ?2 AND version = ?3",
+        params![name, path, version],
+        |r| r.get::<_, i64>(0),
+    ).unwrap_or(0) > 0
+}
+
 pub fn record_installation(conn: &Connection, name: &str, installation_path: &str, version: &str) {
     let now = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     match conn.execute(

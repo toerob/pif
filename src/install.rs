@@ -8,12 +8,12 @@ use crate::{
     args::{Color, GlobalOptions, InstallOptions, InteractiveFictionSystem},
     color::{print_success_msg, print_warning_msg},
     detect::detect_system,
-    gitops::{get_or_create_repo_dir, clone_or_pull_repo},
+    gitops::clone_or_pull_repo,
     list::system_to_dir,
     makefile::add_make_file_entry,
     model::{load_registry, BuildEntry, LoadedRelease},
     update::{get_registry_root, update_extensions},
-    db::{get_or_create_table, record_installation},
+    db::{self, get_or_create_table, record_installation},
 };
 
 pub fn install_extensions(
@@ -132,31 +132,50 @@ pub fn install_extensions(
         } else {
             library_path.join(&entry.package.name)
         };
-        let install_path_str = install_path.to_str().unwrap().to_owned();
 
         if !install_path.exists() {
             if let Err(e) = fs::create_dir_all(&install_path) {
-                print_warning_msg(use_colours, format!("Could not create {}: {}\n", install_path_str, e));
+                print_warning_msg(use_colours, format!("Could not create {}: {}\n", install_path.display(), e));
                 continue;
             }
         }
 
-        let ok = match source.format.as_str() {
-            "zip" => install_zip(&source.url, &install_path, !is_inform, use_colours),
+        let install_path_str = fs::canonicalize(&install_path)
+            .unwrap_or_else(|_| install_path.clone())
+            .to_string_lossy()
+            .into_owned();
+
+        // For non-git installs, skip if the db already has this name+path+version.
+        if source.format != "git" {
+            if let Ok(conn) = get_or_create_table() {
+                if db::is_installed(&conn, &entry.package.name, &install_path_str, &loaded.version) {
+                    println!("Already installed.");
+                    continue;
+                }
+            }
+        }
+
+        // None = failed, Some(true) = installed/updated, Some(false) = already up to date
+        let outcome: Option<bool> = match source.format.as_str() {
+            "zip" => install_zip(&source.url, &install_path, !is_inform, use_colours).then_some(true),
             "git" => install_git(&source.url, source.branch.as_deref(), &install_path, use_colours),
             fmt   => install_raw_file(
                 &source.url, &install_path, fmt,
                 if is_inform { Some(&entry.package.name) } else { None },
                 use_colours,
-            ),
+            ).then_some(true),
         };
 
-        if !ok { continue; }
+        match outcome {
+            None => continue,
+            Some(false) => continue,
+            Some(true) => {}
+        }
 
         record_entry(&entry.package.name, &install_path_str, &loaded.version, use_colours);
         print_success_msg(use_colours, format!(
-            " ==> {} v{} [{}] installed into {}\n", entry.package.name, loaded.version, 
-            entry.system.to_string(),
+            " ==> {} v{} [{}] installed into {}\n", entry.package.name, loaded.version,
+            entry.system,
             install_path_str
         ));
 
@@ -197,17 +216,11 @@ fn install_zip(url: &str, dest: &Path, strip_toplevel: bool, use_colours: bool) 
         .is_ok()
 }
 
-fn install_git(url: &str, branch: Option<&str>, dest: &Path, use_colours: bool) -> bool {
+fn install_git(url: &str, branch: Option<&str>, dest: &Path, use_colours: bool) -> Option<bool> {
     let branch = branch.unwrap_or("master");
-    let dest_str = dest.to_str().unwrap();
-    match get_or_create_repo_dir(dest_str) {
-        Ok(repo_path) => {
-            clone_or_pull_repo(url, branch, &repo_path)
-                .map_err(|e| print_warning_msg(use_colours, format!("Git error: {}\n", e)))
-                .is_ok()
-        }
-        Err(e) => { eprintln!("Could not create directory: {}", e); false }
-    }
+    clone_or_pull_repo(url, branch, &dest.to_path_buf())
+        .map_err(|e| print_warning_msg(use_colours, format!("Git error: {}\n", e)))
+        .ok()
 }
 
 /// Download a single file. GitHub blob URLs are converted to raw.githubusercontent.com.
@@ -282,4 +295,119 @@ fn version_ord(v: &str) -> (u64, u64, u64) {
         parts.get(1).copied().unwrap_or(0),
         parts.get(2).copied().unwrap_or(0),
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::{LoadedRelease, Release};
+
+    fn make_release(version: &str) -> LoadedRelease {
+        LoadedRelease {
+            version: version.to_string(),
+            release: Release {
+                schema_version: 1,
+                maintainer: None, channel: None, date: None, description: None,
+                compatibility: None, dependencies: None, source: None, build: None,
+            },
+        }
+    }
+
+    // ── to_raw_github_url ─────────────────────────────────────────────────────
+
+    #[test]
+    fn raw_url_converts_blob() {
+        let input    = "https://github.com/owner/repo/blob/main/path/to/file.h";
+        let expected = "https://raw.githubusercontent.com/owner/repo/main/path/to/file.h";
+        assert_eq!(to_raw_github_url(input), expected);
+    }
+
+    #[test]
+    fn raw_url_leaves_non_blob_unchanged() {
+        let url = "https://example.com/file.zip";
+        assert_eq!(to_raw_github_url(url), url);
+    }
+
+    #[test]
+    fn raw_url_leaves_raw_url_unchanged() {
+        let url = "https://raw.githubusercontent.com/owner/repo/main/file.h";
+        assert_eq!(to_raw_github_url(url), url);
+    }
+
+    // ── build_entries_to_flags ────────────────────────────────────────────────
+
+    #[test]
+    fn flags_lib_and_source() {
+        let entries = vec![
+            BuildEntry { kind: "lib".into(),    path: Some("adv3/adv3.tl".into()), value: None },
+            BuildEntry { kind: "source".into(), path: Some("src/main.t".into()),   value: None },
+        ];
+        assert_eq!(
+            build_entries_to_flags(&entries),
+            vec!["-lib adv3/adv3.tl", "-source src/main.t"]
+        );
+    }
+
+    #[test]
+    fn flags_define() {
+        let entries = vec![
+            BuildEntry { kind: "define".into(), path: None, value: Some("USE_HTML".into()) },
+        ];
+        assert_eq!(build_entries_to_flags(&entries), vec!["-D USE_HTML"]);
+    }
+
+    #[test]
+    fn flags_unknown_kind_skipped() {
+        let entries = vec![
+            BuildEntry { kind: "unknown".into(), path: Some("x".into()), value: None },
+        ];
+        assert!(build_entries_to_flags(&entries).is_empty());
+    }
+
+    // ── version_ord ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn version_ord_semver() {
+        assert!(version_ord("2.1.0") > version_ord("2.0.9"));
+        assert!(version_ord("1.0.0") < version_ord("1.0.1"));
+        assert_eq!(version_ord("1.2.3"), (1, 2, 3));
+    }
+
+    #[test]
+    fn version_ord_single_integer() {
+        assert_eq!(version_ord("16"), (16, 0, 0));
+        assert!(version_ord("16") > version_ord("9"));
+    }
+
+    #[test]
+    fn version_ord_unparseable_is_zero() {
+        assert_eq!(version_ord(""), (0, 0, 0));
+        assert_eq!(version_ord("abc"), (0, 0, 0));
+    }
+
+    // ── resolve_version ───────────────────────────────────────────────────────
+
+    #[test]
+    fn resolve_latest_picks_highest() {
+        let releases = vec![make_release("1.0.0"), make_release("2.0.0"), make_release("1.5.0")];
+        assert_eq!(resolve_version(&releases, "latest").unwrap().version, "2.0.0");
+    }
+
+    #[test]
+    fn resolve_exact_version() {
+        let releases = vec![make_release("1.0.0"), make_release("2.0.0")];
+        assert_eq!(resolve_version(&releases, "1.0.0").unwrap().version, "1.0.0");
+    }
+
+    #[test]
+    fn resolve_missing_version_returns_none() {
+        let releases = vec![make_release("1.0.0")];
+        assert!(resolve_version(&releases, "9.9.9").is_none());
+    }
+
+    #[test]
+    fn resolve_empty_string_acts_as_latest() {
+        let releases = vec![make_release("1.0.0"), make_release("3.0.0")];
+        assert_eq!(resolve_version(&releases, "").unwrap().version, "3.0.0");
+    }
 }
