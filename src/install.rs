@@ -122,15 +122,19 @@ pub fn install_extensions(
         }
 
         let is_inform = entry.system == "inform";
+
         let library_path = explicit_library_path.clone()
             .or_else(|| if is_inform { inform_extensions_dir() } else { None })
             .unwrap_or_else(|| PathBuf::from("."));
 
-
+        // git clones into its own named dir; zip and raw files go straight to
+        // library_path so they supply their own structure / filename.
         let install_path = if is_inform {
             library_path.join(&entry.package.author)
-        } else {
+        } else if source.format == "git" {
             library_path.join(&entry.package.name)
+        } else {
+            library_path.clone()
         };
 
         if !install_path.exists() {
@@ -157,11 +161,11 @@ pub fn install_extensions(
 
         // None = failed, Some(true) = installed/updated, Some(false) = already up to date
         let outcome: Option<bool> = match source.format.as_str() {
-            "zip" => install_zip(&source.url, &install_path, !is_inform, use_colours).then_some(true),
+            "zip" => install_zip(&source.url, &install_path, false, use_colours).then_some(true),
             "git" => install_git(&source.url, source.branch.as_deref(), &install_path, use_colours),
             fmt   => install_raw_file(
                 &source.url, &install_path, fmt,
-                if is_inform { Some(&entry.package.name) } else { None },
+                Some(&entry.package.name),
                 use_colours,
             ).then_some(true),
         };
