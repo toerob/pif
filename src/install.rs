@@ -144,7 +144,7 @@ pub fn install_extensions(
             }
         }
 
-        let install_path_str = fs::canonicalize(&install_path)
+        let install_path_str = dunce::canonicalize(&install_path)
             .unwrap_or_else(|_| install_path.clone())
             .to_string_lossy()
             .into_owned();
