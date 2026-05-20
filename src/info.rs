@@ -113,13 +113,16 @@ pub fn extensions_info(
         releases.sort_by(|a, b| version_ord(&a.version).cmp(&version_ord(&b.version)));
         let total = releases.len();
 
+        let latest_idx = releases.iter().rposition(|r| r.version.to_uppercase() == "SNAPSHOT")
+            .unwrap_or(total - 1);
+
         for (i, loaded) in releases.iter().enumerate() {
             let ver_str = create_info_message(use_colors, loaded.version.clone());
             let url = loaded.release.source.as_ref()
                 .map(|s| s.url.as_str())
                 .unwrap_or("(no url)");
             let date = loaded.release.date.as_deref().unwrap_or("-");
-            let latest = if i == total - 1 {
+            let latest = if i == latest_idx {
                 Green.paint(" <== LATEST").to_string()
             } else {
                 String::new()

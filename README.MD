@@ -193,6 +193,7 @@ registry/
         package.yaml
         releases/
           v1.0.0.yaml
+          vSNAPSHOT.yaml  ← always treated as latest
   inform/
     {namespace}/
       {package-id}/
@@ -201,6 +202,8 @@ registry/
           v2-i10.1.yaml   ← Inform branch suffix
           v2.3.1.yaml
 ```
+
+A release file named `vSNAPSHOT.yaml` (or `SNAPSHOT.yaml`) is always shown as the latest version, regardless of sort order. Use it for a rolling/development build that tracks the current HEAD of a repository.
 
 **package.yaml** describes the extension:
 
