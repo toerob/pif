@@ -77,7 +77,7 @@ pub fn list_extensions(
 }
 
 fn present(e: &PackageEntry, global_options: &GlobalOptions) -> String {
-    let verbosity  = global_options.verbose.unwrap_or(2);
+    let verbosity  = global_options.verbose;
     let use_colors = global_options.color != Color::Never;
 
     let latest_version = e.releases.iter()

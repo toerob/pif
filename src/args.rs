@@ -68,6 +68,18 @@ pub struct InstallCommand {
 pub struct InfoCommand {
     /// package names to retrieve info about
     pub name: Vec<String>,
+
+    /// Filter by author (fuzzy search)
+    #[clap(long, short, global = false)]
+    pub author: Option<String>,
+
+    /// Filter by keyword (fuzzy search)
+    #[clap(long, short, global = false)]
+    pub keyword: Option<String>,
+
+    /// Filter by tag (exact match)
+    #[clap(long, short = 't', global = false)]
+    pub tag: Option<String>,
 }
 
 
@@ -138,8 +150,8 @@ pub struct GlobalOptions {
     pub color: Color,
 
     /// Verbosity level 1-3
-    #[clap(short, long, global = true, default_value = "2")]
-    pub verbose: Option<usize>,
+    #[clap(short, long, global = true, default_value_t = *crate::settings::VERBOSE_DEFAULT)]
+    pub verbose: usize,
 }
 
 
@@ -207,6 +219,12 @@ pub enum ConfigAction {
 
     /// Reset the installation directory for a system to its default
     ResetDir(ResetDirCommand),
+
+    /// Set the default verbosity level (1-3)
+    SetVerbose(SetVerboseCommand),
+
+    /// Reset verbosity level to the built-in default (2)
+    ResetVerbose,
 }
 
 #[derive(Debug, Args)]
@@ -214,6 +232,12 @@ pub struct ResetDirCommand {
     /// System name (tads3, dialog, inform, inform6). Omit to reset all.
     #[arg(value_name = "SYSTEM")]
     pub sys: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct SetVerboseCommand {
+    /// Verbosity level (1-3)
+    pub level: usize,
 }
 
 #[derive(Debug, Args)]

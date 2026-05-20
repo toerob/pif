@@ -1,8 +1,11 @@
 use ansi_term::Colour::*;
+use std::path::Path;
+use sublime_fuzzy::FuzzySearch;
 
 use crate::{
-    args::{Color, GlobalOptions, InteractiveFictionSystem},
+    args::{Color, GlobalOptions, InfoCommand, InteractiveFictionSystem},
     color::{create_info_message, create_success_msg},
+    db::{get_installations_by_name, get_or_create_table},
     detect::detect_system,
     list::system_to_dir,
     model::{load_registry, PackageEntry},
@@ -10,7 +13,7 @@ use crate::{
 };
 
 pub fn extensions_info(
-    names: &[String],
+    cmd: &InfoCommand,
     global_options: &GlobalOptions,
     update_needed: bool,
 ) {
@@ -18,7 +21,9 @@ pub fn extensions_info(
         update_extensions(global_options);
     }
 
-    if names.is_empty() {
+    let names = &cmd.name;
+
+    if names.is_empty() && cmd.author.is_none() && cmd.keyword.is_none() && cmd.tag.is_none() {
         println!(
             "{}",
             Red.paint("No packages specified. Example: pif info smarter-parser")
@@ -36,7 +41,6 @@ pub fn extensions_info(
 
     let registry_root = get_registry_root();
 
-    // Info always searches all systems — no filter.
     let entries = match load_registry(&registry_root, None) {
         Ok(e) => e,
         Err(e) => { eprintln!("Could not load registry: {}", e); return; }
@@ -44,11 +48,36 @@ pub fn extensions_info(
 
     let lowercase_names: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
 
-    let matches: Vec<&PackageEntry> = entries.iter().filter(|e| {
+    let mut matches: Vec<&PackageEntry> = entries.iter().filter(|e| {
+        if lowercase_names.is_empty() {
+            return true;
+        }
         let id   = e.package.id.to_lowercase();
         let name = e.package.name.to_lowercase();
-        lowercase_names.iter().any(|q| id.starts_with(q) || name.starts_with(q))
+        lowercase_names.iter().any(|q| id == *q || name == *q)
     }).collect();
+
+    if let Some(author) = &cmd.author {
+        let q = author.to_lowercase();
+        matches.retain(|e| {
+            FuzzySearch::new(&q, &e.package.author.to_lowercase())
+                .case_insensitive().best_match().is_some()
+        });
+    }
+    if let Some(keyword) = &cmd.keyword {
+        let q = keyword.to_lowercase();
+        matches.retain(|e| {
+            FuzzySearch::new(&q, &e.package.name.to_lowercase())
+                .case_insensitive().best_match().is_some()
+        });
+    }
+    if let Some(tag) = &cmd.tag {
+        let q = tag.to_lowercase();
+        matches.retain(|e| {
+            e.package.tags.as_deref().unwrap_or(&[])
+                .iter().any(|t| t.to_lowercase() == q)
+        });
+    }
 
     if matches.is_empty() {
         println!("{}", Red.paint(format!("No extension found for: {}", names.join(", "))));
@@ -58,6 +87,8 @@ pub fn extensions_info(
     if detected_system != InteractiveFictionSystem::Unknown {
         println!("{}\n", Yellow.paint(format!("[Detected system: {:?}]", detected_system)));
     }
+
+    let conn = get_or_create_table().ok();
 
     for entry in matches {
         let detected_dir = system_to_dir(&detected_system);
@@ -76,6 +107,7 @@ pub fn extensions_info(
             continue;
         }
 
+        // Versions
         println!("Available versions:");
         let mut releases = entry.releases.clone();
         releases.sort_by(|a, b| version_ord(&a.version).cmp(&version_ord(&b.version)));
@@ -94,6 +126,41 @@ pub fn extensions_info(
             };
             println!("  * {} {}  ({}){}", ver_str, url, date, latest);
         }
+
+        // Dependencies from latest release
+        if let Some(latest) = releases.last() {
+            if let Some(deps) = &latest.release.dependencies {
+                if !deps.is_empty() {
+                    println!("\nDependencies:");
+                    for dep in deps {
+                        match &dep.constraint {
+                            Some(c) => println!("  * {} ({})", dep.id, c),
+                            None    => println!("  * {}", dep.id),
+                        }
+                    }
+                }
+            }
+        }
+
+        // Installation status
+        if let Some(ref conn) = conn {
+            if let Ok(installs) = get_installations_by_name(conn, &entry.package.name) {
+                if !installs.is_empty() {
+                    println!("\nInstalled:");
+                    for inst in &installs {
+                        let missing = if !Path::new(&inst.path).exists() { "  [missing]" } else { "" };
+                        let date = inst.installed_at.as_deref()
+                            .map(|d| format!("  installed {}", d))
+                            .unwrap_or_default();
+                        let ver_prefix = inst.version.as_deref()
+                            .map(|v| format!("{}  ", create_info_message(use_colors, v.to_string())))
+                            .unwrap_or_default();
+                        println!("  {}{}{}{}", ver_prefix, inst.path, date, missing);
+                    }
+                }
+            }
+        }
+
         println!();
     }
 }

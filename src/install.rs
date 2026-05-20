@@ -1,7 +1,5 @@
 use ansi_term::Colour::*;
 use std::{fs::{self, File}, io::{Cursor, Write}, path::Path, process::exit};
-use sublime_fuzzy::FuzzySearch;
-
 use std::path::PathBuf;
 
 use crate::{
@@ -76,12 +74,6 @@ pub fn install_extensions(
         let found = entries.iter().find(|e| {
             e.package.id.to_lowercase() == *req_name
                 || e.package.name.to_lowercase() == *req_name
-        }).or_else(|| {
-            // fuzzy fallback
-            entries.iter().find(|e| {
-                FuzzySearch::new(req_name, &e.package.name.to_lowercase())
-                    .case_insensitive().best_match().is_some()
-            })
         });
 
         let entry = match found {

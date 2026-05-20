@@ -11,6 +11,11 @@ use serde_yaml::{Mapping, Value};
 pub struct PifConfig {
     #[serde(default)]
     pub install_dirs: HashMap<String, String>,
+    pub verbose_level: Option<usize>,
+}
+
+lazy_static::lazy_static! {
+    pub static ref VERBOSE_DEFAULT: usize = load_config().verbose_level.unwrap_or(2);
 }
 
 pub fn load_config() -> PifConfig {
@@ -130,6 +135,40 @@ pub fn reset_install_dir(system: &str) -> Result<(PathBuf, bool), Box<dyn std::e
         .and_then(|m| m.get_mut(&Value::String("install_dirs".into())))
         .and_then(|v| v.as_mapping_mut())
         .map(|dirs| dirs.remove(&Value::String(system.into())).is_some())
+        .unwrap_or(false);
+
+    fs::write(&config_path, serde_yaml::to_string(&root)?)?;
+    Ok((config_path, removed))
+}
+
+pub fn set_verbose_level(level: usize) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    if !(1..=3).contains(&level) {
+        return Err(format!("Invalid verbose level '{}': must be 1, 2, or 3", level).into());
+    }
+    let config_path = get_main_config_file()?;
+    let content = fs::read_to_string(&config_path)?;
+
+    let mut root: Value = serde_yaml::from_str(&content)
+        .unwrap_or(Value::Mapping(Mapping::new()));
+
+    root.as_mapping_mut()
+        .ok_or("config root is not a YAML mapping")?
+        .insert(Value::String("verbose_level".into()), Value::Number(level.into()));
+
+    fs::write(&config_path, serde_yaml::to_string(&root)?)?;
+    Ok(config_path)
+}
+
+pub fn reset_verbose_level() -> Result<(PathBuf, bool), Box<dyn std::error::Error>> {
+    let config_path = get_main_config_file()?;
+    let content = fs::read_to_string(&config_path)?;
+
+    let mut root: Value = serde_yaml::from_str(&content)
+        .unwrap_or(Value::Mapping(Mapping::new()));
+
+    let removed = root
+        .as_mapping_mut()
+        .map(|m| m.remove(&Value::String("verbose_level".into())).is_some())
         .unwrap_or(false);
 
     fs::write(&config_path, serde_yaml::to_string(&root)?)?;

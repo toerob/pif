@@ -14,7 +14,7 @@ mod gitops;
 mod db;
 
 use args::{ConfigAction, InteractiveFictionToolArgs, MenuSubCommand, RegistryAction};
-use settings::{load_config, reset_all_install_dirs, reset_install_dir, set_install_dir};
+use settings::{load_config, reset_all_install_dirs, reset_install_dir, reset_verbose_level, set_install_dir, set_verbose_level};
 use clap::Parser;
 
 use db::{clean_stale_installations, get_or_create_table, print_installations, remove_installation};
@@ -40,7 +40,7 @@ fn main() {
     match choice.menu {
         MenuSubCommand::Update(_) => update_extensions(&choice.global_options),
         MenuSubCommand::Info(cmd_args) => {
-            extensions_info(&cmd_args.name, &choice.global_options, update_needed)
+            extensions_info(&cmd_args, &choice.global_options, update_needed)
         }
         MenuSubCommand::List(cmd_args) => {
             list_extensions(&cmd_args.list_options, &choice.global_options, update_needed)
@@ -79,6 +79,19 @@ fn main() {
                             Ok((path, n)) => println!("Reset {} install dir override{}.\n  Config: {}", n, if n == 1 { "" } else { "s" }, path.display()),
                             Err(e)        => eprintln!("Could not update config: {}", e),
                         },
+                    }
+                }
+                ConfigAction::SetVerbose(args) => {
+                    match set_verbose_level(args.level) {
+                        Ok(path) => println!("Verbose level set to {}.\n  Config: {}", args.level, path.display()),
+                        Err(e)   => eprintln!("{}", e),
+                    }
+                }
+                ConfigAction::ResetVerbose => {
+                    match reset_verbose_level() {
+                        Ok((path, true))  => println!("Verbose level reset to default (2).\n  Config: {}", path.display()),
+                        Ok((_, false))    => println!("No verbose level override was set."),
+                        Err(e)            => eprintln!("Could not update config: {}", e),
                     }
                 }
                 ConfigAction::ListDir => {

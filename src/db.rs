@@ -99,6 +99,26 @@ pub fn list_installations(conn: &Connection) -> Result<Vec<Installation>> {
     Ok(rows)
 }
 
+pub fn get_installations_by_name(conn: &Connection, name: &str) -> Result<Vec<Installation>> {
+    let mut stmt = conn.prepare(
+        "SELECT id, name, path, version, active, installed_at FROM installations WHERE name = ?1 ORDER BY path"
+    )?;
+    let rows = stmt
+        .query_map(params![name], |row| {
+            Ok(Installation {
+                id: row.get(0)?,
+                name: row.get(1)?,
+                path: row.get(2)?,
+                version: row.get(3)?,
+                active: row.get(4)?,
+                installed_at: row.get(5)?,
+            })
+        })?
+        .filter_map(|r| r.ok())
+        .collect();
+    Ok(rows)
+}
+
 pub fn remove_installation(conn: &Connection, name: &str, path_filter: Option<&str>) -> Result<usize> {
     match path_filter {
         Some(path) => conn.execute(
