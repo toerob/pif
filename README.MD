@@ -63,51 +63,76 @@ Update the registry:
 pif update
 ```
 
+#### list
+
 List extensions (auto-detects the IF system from the current directory):
 ```
 pif list
 ```
 
-Filter by extension name (fuzzy):
+| Filter | Flag | Match |
+|--------|------|-------|
+| Name | `-k / --keyword` | fuzzy |
+| Author | `-a / --author` | fuzzy |
+| Tag | `-t / --tag` | exact |
+| System | `-s / --system` | exact |
+
 ```
 pif list -k cartographer
-```
-
-Filter by author (fuzzy):
-```
 pif list -a tomas
-```
-
-Filter by tag:
-```
 pif list -t puzzle
-```
-
-Target a specific system:
-```
-pif list --system tads3
 pif list -s tads3
 ```
 
-Search extensions by name or description:
+Additional options: `--sort-property` (name/author/date), `--ordering-direction` (ascending/descending), `--presentation` (newline/comma).
+
+#### search
+
+Search by name and description (substring match), with the same filters as `list`:
 ```
 pif search map
 pif search "conversation system" -s tads3
 pif search parser -a graham
+pif search puzzle -t puzzle
 ```
+
+| Filter | Flag | Match |
+|--------|------|-------|
+| Author | `-a / --author` | fuzzy |
+| Keyword | `-k / --keyword` | fuzzy |
+| Tag | `-t / --tag` | exact |
+| System | `-s / --system` | exact |
+
+#### info
+
+Show details about one or more extensions, including versions, dependencies and where they are installed:
+```
+pif info t3cartographer
+pif info dice -a "susan davis"
+pif info -a "susan davis"
+pif info -t puzzle
+```
+
+| Filter | Flag | Match |
+|--------|------|-------|
+| Author | `-a / --author` | fuzzy |
+| Keyword | `-k / --keyword` | fuzzy |
+| Tag | `-t / --tag` | exact |
+| System | `-s / --system` | exact |
+
+If no name is given, all extensions matching the filters are shown.
+
+#### tags
 
 List all available tags:
 ```
 pif tags
-pif tags --system inform
+pif tags -s inform
 ```
 
-Show details about an extension:
-```
-pif info t3cartographer
-```
+#### install
 
-Install one or more extensions:
+Install one or more extensions (exact name or id match required):
 ```
 pif install t3cartographer
 pif install t3cartographer conspace
