@@ -152,12 +152,18 @@ pub fn print_installations(conn: &Connection) -> Result<()> {
         println!("No installations recorded in the registry.");
         return Ok(());
     }
-    println!("{:<30} {:<12} {}", "Name", "Version", "Path");
-    println!("{}", "-".repeat(80));
+
+    let name_w = installations.iter().map(|i| i.name.len()).max().unwrap_or(4).max(4);
+    let ver_w  = installations.iter()
+        .map(|i| i.version.as_deref().unwrap_or("-").len())
+        .max().unwrap_or(7).max(7);
+
+    println!("{:<name_w$}  {:<ver_w$}  {}", "Name", "Version", "Path", name_w = name_w, ver_w = ver_w);
+    println!("{}", "-".repeat(name_w + ver_w + 2 + 4 + 40));
     for i in &installations {
         let marker = if Path::new(&i.path).exists() { "" } else { "  [missing]" };
         let ver = i.version.as_deref().unwrap_or("-");
-        println!("{:<30} {:<12} {}{}", i.name, ver, i.path, marker);
+        println!("{:<name_w$}  {:<ver_w$}  {}{}", i.name, ver, i.path, marker, name_w = name_w, ver_w = ver_w);
     }
     Ok(())
 }
