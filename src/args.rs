@@ -130,7 +130,7 @@ pub struct ListOptions {
 #[derive(Debug, Args)]
 pub struct GlobalOptions {
     /// System
-    #[clap(long, value_enum, global = true, default_value_t = InteractiveFictionSystem::Auto)]
+    #[clap(long, short = 's', value_enum, global = true, default_value_t = InteractiveFictionSystem::Auto)]
     pub system: InteractiveFictionSystem,
 
     /// Color
