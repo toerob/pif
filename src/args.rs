@@ -31,6 +31,9 @@ pub enum MenuSubCommand {
     /// List all available tags
     Tags(TagsCommand),
 
+    /// Search extensions by name and description
+    Search(SearchCommand),
+
     /// Manage the local extension registry
     Registry(RegistryCommand),
 }
@@ -72,6 +75,15 @@ pub enum ListSubCommand {
 
 #[derive(Debug, Args)]
 pub struct ListCommand {
+    #[clap(flatten)]
+    pub list_options: ListOptions,
+}
+
+#[derive(Debug, Args)]
+pub struct SearchCommand {
+    /// Search query matched against name and description
+    pub query: String,
+
     #[clap(flatten)]
     pub list_options: ListOptions,
 }

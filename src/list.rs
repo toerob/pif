@@ -115,6 +115,88 @@ fn version_ord(v: &str) -> (u64, u64, u64) {
     )
 }
 
+pub fn search_extensions(
+    query: &str,
+    list_options: &ListOptions,
+    global_options: &GlobalOptions,
+    update_needed: bool,
+) {
+    if update_needed {
+        update_extensions(global_options);
+    }
+
+    let system_type = if global_options.system == InteractiveFictionSystem::Auto {
+        detect_system().0
+    } else {
+        global_options.system.clone()
+    };
+
+    if system_type != InteractiveFictionSystem::Unknown {
+        println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
+    }
+
+    let registry_root = get_registry_root();
+    let system_filter = system_to_dir(&system_type);
+
+    let mut entries = match load_registry(&registry_root, system_filter) {
+        Ok(e) => e,
+        Err(e) => { eprintln!("Could not load registry: {}", e); return; }
+    };
+
+    let q = query.to_lowercase();
+    entries.retain(|e| {
+        let name_match = e.package.name.to_lowercase().contains(&q);
+        let desc_match = e.package.description.as_deref()
+            .map(|d| d.to_lowercase().contains(&q))
+            .unwrap_or(false);
+        name_match || desc_match
+    });
+
+    if let Some(author) = &list_options.author {
+        let aq = author.to_lowercase();
+        entries.retain(|e| {
+            FuzzySearch::new(&aq, &e.package.author.to_lowercase())
+                .case_insensitive().best_match().is_some()
+        });
+    }
+    if let Some(keyword) = &list_options.keyword {
+        let kq = keyword.to_lowercase();
+        entries.retain(|e| {
+            FuzzySearch::new(&kq, &e.package.name.to_lowercase())
+                .case_insensitive().best_match().is_some()
+        });
+    }
+    if let Some(tag) = &list_options.tag {
+        let tq = tag.to_lowercase();
+        entries.retain(|e| {
+            e.package.tags.as_deref().unwrap_or(&[])
+                .iter().any(|t| t.to_lowercase() == tq)
+        });
+    }
+
+    match list_options.sort_property {
+        SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
+        SortProperty::Author => entries.sort_by(|a, b| a.package.author.cmp(&b.package.author)),
+        SortProperty::Date   => entries.sort_by_key(|e| {
+            e.releases.iter()
+                .filter_map(|r| r.release.date.clone())
+                .max()
+                .unwrap_or_default()
+        }),
+    }
+
+    if entries.is_empty() {
+        println!("No extensions found matching '{}'.", query);
+        return;
+    }
+
+    let delimiter = if list_options.presentation == ListPresentation::Comma { "," } else { "\n" };
+    let lines: Vec<_> = entries.iter().map(|e| present(e, global_options)).collect();
+    println!("{}", lines.join(delimiter));
+    println!();
+    println!("[Filter by -a / --author, -k / --keyword, -t / --tag]");
+}
+
 pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
     if update_needed {
         update_extensions(global_options);

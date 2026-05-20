@@ -19,7 +19,7 @@ use clap::Parser;
 use db::{clean_stale_installations, get_or_create_table, print_installations, remove_installation};
 use info::extensions_info;
 use install::install_extensions;
-use list::{list_extensions, list_tags};
+use list::{list_extensions, list_tags, search_extensions};
 use publish::publish_extension;
 use update::update_extensions;
 
@@ -54,6 +54,9 @@ fn main() {
         }
         MenuSubCommand::Publish(cmd_args) => {
             publish_extension(&cmd_args.directory, &choice.global_options)
+        }
+        MenuSubCommand::Search(cmd_args) => {
+            search_extensions(&cmd_args.query, &cmd_args.list_options, &choice.global_options, update_needed)
         }
         MenuSubCommand::Tags(_) => list_tags(&choice.global_options, update_needed),
         MenuSubCommand::Registry(cmd_args) => {
