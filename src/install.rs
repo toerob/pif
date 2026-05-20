@@ -12,6 +12,7 @@ use crate::{
     list::system_to_dir,
     makefile::add_make_file_entry,
     model::{load_registry, BuildEntry, LoadedRelease},
+    settings::{expand_path, load_config},
     update::{get_registry_root, update_extensions},
     db::{self, get_or_create_table, record_installation},
 };
@@ -69,6 +70,8 @@ pub fn install_extensions(
         .as_deref()
         .map(PathBuf::from);
 
+    let config = load_config();
+
     for (req_name, req_version) in &requests {
         let found = entries.iter().find(|e| {
             e.package.id.to_lowercase() == *req_name
@@ -123,9 +126,24 @@ pub fn install_extensions(
 
         let is_inform = entry.system == "inform";
 
-        let library_path = explicit_library_path.clone()
-            .or_else(|| if is_inform { inform_extensions_dir() } else { None })
-            .unwrap_or_else(|| PathBuf::from("."));
+        let library_path = if let Some(ref p) = explicit_library_path {
+            p.clone()
+        } else if let Some(dir) = config.install_dirs.get(&entry.system) {
+            let p = expand_path(dir);
+            if !p.exists() {
+                if let Err(e) = fs::create_dir_all(&p) {
+                    print_warning_msg(use_colours, format!(
+                        "Could not create configured install dir {}: {}\n", p.display(), e
+                    ));
+                    continue;
+                }
+            }
+            p
+        } else if is_inform {
+            inform_extensions_dir().unwrap_or_else(|| PathBuf::from("."))
+        } else {
+            PathBuf::from(".")
+        };
 
         // git clones into its own named dir; zip and raw files go straight to
         // library_path so they supply their own structure / filename.

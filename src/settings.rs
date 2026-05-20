@@ -1,7 +1,37 @@
-use dirs_next::{ config_dir };
+use dirs_next::config_dir;
+use std::collections::HashMap;
 use std::fs;
+use std::io;
 use std::path::PathBuf;
-use std::io::{ self };
+
+use serde::Deserialize;
+use serde_yaml::{Mapping, Value};
+
+#[derive(Deserialize, Default)]
+pub struct PifConfig {
+    #[serde(default)]
+    pub install_dirs: HashMap<String, String>,
+}
+
+pub fn load_config() -> PifConfig {
+    match get_main_config_file() {
+        Ok(path) => fs::read_to_string(&path)
+            .ok()
+            .and_then(|s| serde_yaml::from_str(&s).ok())
+            .unwrap_or_default(),
+        Err(_) => PifConfig::default(),
+    }
+}
+
+/// Expand a leading `~/` to the user's home directory.
+pub fn expand_path(s: &str) -> PathBuf {
+    if let Some(rest) = s.strip_prefix("~/") {
+        if let Some(home) = dirs_next::home_dir() {
+            return home.join(rest);
+        }
+    }
+    PathBuf::from(s)
+}
 
 pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
     let config_dir = config_dir()
@@ -22,6 +52,14 @@ pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
         let default_content =
 r#"main_repository_url: https://github.com/toerob/if-extensions
 main_repository_branch: main
+
+# Override the default installation directory per system.
+# If omitted, inform uses the platform Extensions folder; all others use ".".
+# install_dirs:
+#   tads3: ~/path/to/tads3/extensions
+#   dialog: ~/path/to/dialog/extensions
+#   inform: ~/path/to/inform/extensions
+#   inform6: ~/path/to/inform6/extensions
 "#;
         fs::write(&config_file, default_content)?;
         println!("Default settings written to {:?}", config_file);
@@ -79,6 +117,69 @@ main_repository_branch: master
 
 
 
+
+pub fn reset_install_dir(system: &str) -> Result<(PathBuf, bool), Box<dyn std::error::Error>> {
+    let config_path = get_main_config_file()?;
+    let content = fs::read_to_string(&config_path)?;
+
+    let mut root: Value = serde_yaml::from_str(&content)
+        .unwrap_or(Value::Mapping(Mapping::new()));
+
+    let removed = root
+        .as_mapping_mut()
+        .and_then(|m| m.get_mut(&Value::String("install_dirs".into())))
+        .and_then(|v| v.as_mapping_mut())
+        .map(|dirs| dirs.remove(&Value::String(system.into())).is_some())
+        .unwrap_or(false);
+
+    fs::write(&config_path, serde_yaml::to_string(&root)?)?;
+    Ok((config_path, removed))
+}
+
+pub fn reset_all_install_dirs() -> Result<(PathBuf, usize), Box<dyn std::error::Error>> {
+    let config_path = get_main_config_file()?;
+    let content = fs::read_to_string(&config_path)?;
+
+    let mut root: Value = serde_yaml::from_str(&content)
+        .unwrap_or(Value::Mapping(Mapping::new()));
+
+    let count = root
+        .as_mapping_mut()
+        .and_then(|m| m.get_mut(&Value::String("install_dirs".into())))
+        .and_then(|v| v.as_mapping_mut())
+        .map(|dirs| { let n = dirs.len(); dirs.clear(); n })
+        .unwrap_or(0);
+
+    fs::write(&config_path, serde_yaml::to_string(&root)?)?;
+    Ok((config_path, count))
+}
+
+pub fn set_install_dir(system: &str, directory: &str) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let expanded = expand_path(directory);
+    fs::create_dir_all(&expanded)
+        .map_err(|e| format!("Invalid directory '{}': {}", expanded.display(), e))?;
+
+    let config_path = get_main_config_file()?;
+    let content = fs::read_to_string(&config_path)?;
+
+    let mut root: Value = serde_yaml::from_str(&content)
+        .unwrap_or(Value::Mapping(Mapping::new()));
+
+    let mapping = root.as_mapping_mut()
+        .ok_or("config root is not a YAML mapping")?;
+
+    let install_dirs_key = Value::String("install_dirs".into());
+    let dirs = mapping
+        .entry(install_dirs_key)
+        .or_insert(Value::Mapping(Mapping::new()));
+
+    dirs.as_mapping_mut()
+        .ok_or("install_dirs is not a YAML mapping")?
+        .insert(Value::String(system.into()), Value::String(directory.into()));
+
+    fs::write(&config_path, serde_yaml::to_string(&root)?)?;
+    Ok(config_path)
+}
 
 #[cfg(test)]
 mod tests {

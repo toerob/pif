@@ -34,6 +34,9 @@ pub enum MenuSubCommand {
     /// Search extensions by name and description
     Search(SearchCommand),
 
+    /// Manage pif configuration
+    Config(ConfigCommand),
+
     /// Manage the local extension registry
     Registry(RegistryCommand),
 }
@@ -187,6 +190,41 @@ pub enum SortProperty {
 
 #[derive(Debug, Args)]
 pub struct TagsCommand {}
+
+#[derive(Debug, Args)]
+pub struct ConfigCommand {
+    #[clap(subcommand)]
+    pub action: ConfigAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ConfigAction {
+    /// Set the default installation directory for a system
+    SetDir(SetDirCommand),
+
+    /// Show all configured installation directories
+    ListDir,
+
+    /// Reset the installation directory for a system to its default
+    ResetDir(ResetDirCommand),
+}
+
+#[derive(Debug, Args)]
+pub struct ResetDirCommand {
+    /// System name (tads3, dialog, inform, inform6). Omit to reset all.
+    #[arg(value_name = "SYSTEM")]
+    pub sys: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct SetDirCommand {
+    /// System name (tads3, dialog, inform, inform6)
+    #[arg(value_name = "SYSTEM")]
+    pub sys: String,
+
+    /// Directory path (supports ~/)
+    pub directory: String,
+}
 
 #[derive(Debug, Args)]
 pub struct RegistryCommand {
