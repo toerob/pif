@@ -43,13 +43,15 @@ Commands:
   update    Fetch the latest extension registry
   install   Install an extension
   list      List available extensions
+  search    Search extensions by name and description
   tags      List all available tags
+  config    Manage pif configuration
   publish   Publish an extension to the registry (interactive, opens a PR)
   registry  Manage the local installation registry
   help      Print this message or the help of the given subcommand(s)
 
 Options:
-      --system <SYSTEM>    [default: auto] [possible values: auto, all, tads3, inform, inform6, dialog, unknown]
+  -s, --system <SYSTEM>    [default: auto] [possible values: auto, all, tads3, inform, inform6, dialog, unknown]
       --color <COLOR>      [default: auto] [possible values: always, auto, never]
   -v, --verbose <VERBOSE>  Verbosity level 1-3 [default: 2]
 ```
@@ -84,6 +86,14 @@ pif list -t puzzle
 Target a specific system:
 ```
 pif list --system tads3
+pif list -s tads3
+```
+
+Search extensions by name or description:
+```
+pif search map
+pif search "conversation system" -s tads3
+pif search parser -a graham
 ```
 
 List all available tags:
@@ -127,6 +137,32 @@ Inform extensions follow the Inform IDE's expected structure automatically. For 
 No `--system` flag needed — pif detects the system from the extension's registry entry.
 
 When a TADS 3 makefile (`.t3m`) is detected in the current directory, `pif install` will automatically add the required `-lib` / `-source` entries to it.
+
+### Config
+
+Configure per-system default installation directories so you don't have to pass `-d` every time:
+
+```
+pif config set-dir tads3 ~/projects/tads3/lib
+pif config set-dir inform "~/Library/Application Support/pif"
+```
+
+View configured directories:
+```
+pif config list-dir
+```
+
+Reset a system back to its default:
+```
+pif config reset-dir tads3
+```
+
+Reset all overrides:
+```
+pif config reset-dir
+```
+
+Configured directories are stored in `config.yaml` inside pif's config folder (`~/.config/pif/config/config.yaml` on Linux, `~/Library/Application Support/pif/config/config.yaml` on macOS).
 
 Publish your extension to the registry (interactive, opens a PR):
 ```
