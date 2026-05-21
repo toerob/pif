@@ -241,10 +241,13 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
 
 pub fn system_to_dir(system: &InteractiveFictionSystem) -> Option<&'static str> {
     match system {
-        InteractiveFictionSystem::Tads3    => Some("tads3"),
-        InteractiveFictionSystem::Inform   => Some("inform"),
-        InteractiveFictionSystem::Inform6  => Some("inform6"),
-        InteractiveFictionSystem::Dialog   => Some("dialog"),
-        _                                  => None,
+        InteractiveFictionSystem::Tads3   => Some("tads3"),
+        InteractiveFictionSystem::Tads2   => Some("tads2"),
+        InteractiveFictionSystem::Dialog  => Some("dialog"),
+        InteractiveFictionSystem::Inform  => Some("inform"),
+        InteractiveFictionSystem::Inform6 => Some("inform6"),
+        InteractiveFictionSystem::Hugo    => Some("hugo"),
+        InteractiveFictionSystem::Zil     => Some("zil"),
+        _                                 => None,
     }
 }

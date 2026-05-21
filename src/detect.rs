@@ -15,14 +15,18 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<PathBuf>) {
     let mut has_inform = false;
     let mut has_inf    = false;
     let mut has_dg     = false;
+    let mut has_hug    = false;
+    let mut has_zil    = false;
 
     for entry in entries.filter_map(|e| e.ok()) {
         let path = entry.path();
         match path.extension().and_then(|s| s.to_str()) {
-            Some("inform") if path.is_dir() => { has_inform = true; }
-            Some("t3m") if path.is_file()   => { t3m.get_or_insert(path); }
-            Some("inf") if path.is_file()   => { has_inf = true; }
-            Some("dg")  if path.is_file()   => { has_dg  = true; }
+            Some("inform") if path.is_dir()  => { has_inform = true; }
+            Some("t3m")    if path.is_file() => { t3m.get_or_insert(path); }
+            Some("inf")    if path.is_file() => { has_inf = true; }
+            Some("dg")     if path.is_file() => { has_dg  = true; }
+            Some("hug")    if path.is_file() => { has_hug = true; }
+            Some("zil")    if path.is_file() => { has_zil = true; }
             _ => {}
         }
     }
@@ -31,6 +35,8 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<PathBuf>) {
     if has_inform     { return (InteractiveFictionSystem::Inform,   None); }
     if has_inf        { return (InteractiveFictionSystem::Inform6,  None); }
     if has_dg         { return (InteractiveFictionSystem::Dialog,   None); }
+    if has_hug        { return (InteractiveFictionSystem::Hugo,     None); }
+    if has_zil        { return (InteractiveFictionSystem::Zil,      None); }
 
     (InteractiveFictionSystem::Unknown, None)
 }

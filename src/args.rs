@@ -160,9 +160,12 @@ pub enum InteractiveFictionSystem {
     Auto,
     All,
     Tads3,
+    Tads2,
     Dialog,
     Inform,
     Inform6,
+    Hugo,
+    Zil,
     Unknown,
 }
 
