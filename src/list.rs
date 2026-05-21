@@ -74,6 +74,9 @@ pub fn list_extensions(
     println!("{}", lines.join(delimiter));
     println!();
     println!("[Filter by -a / --author, -k / --keyword, -t / --tag]");
+    if system_filter.is_some() {
+        println!("[Showing {:?} extensions only — use --system all to see all systems]", system_type);
+    }
 }
 
 fn present(e: &PackageEntry, global_options: &GlobalOptions) -> String {
@@ -125,13 +128,17 @@ pub fn search_extensions(
         update_extensions(global_options);
     }
 
+    // When system is auto-detected, search ignores the system filter so results
+    // are not limited to the current project's system.
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
-        detect_system().0
+        InteractiveFictionSystem::All
     } else {
         global_options.system.clone()
     };
 
-    if system_type != InteractiveFictionSystem::Unknown {
+    if system_type != InteractiveFictionSystem::Unknown
+        && system_type != InteractiveFictionSystem::All
+    {
         println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
     }
 
@@ -234,10 +241,10 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
 
 pub fn system_to_dir(system: &InteractiveFictionSystem) -> Option<&'static str> {
     match system {
-        InteractiveFictionSystem::Tads3                                        => Some("tads3"),
+        InteractiveFictionSystem::Tads3    => Some("tads3"),
         InteractiveFictionSystem::Inform   => Some("inform"),
         InteractiveFictionSystem::Inform6  => Some("inform6"),
-        InteractiveFictionSystem::Dialog                                        => Some("dialog"),
-        _                                                                        => None,
+        InteractiveFictionSystem::Dialog   => Some("dialog"),
+        _                                  => None,
     }
 }

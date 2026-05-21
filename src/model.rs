@@ -139,10 +139,24 @@ pub fn load_registry(
                     continue;
                 }
 
-                let package: Package =
-                    serde_yaml::from_str(&fs::read_to_string(&package_path)?)?;
+                let package: Package = match fs::read_to_string(&package_path)
+                    .map_err(|e| e.to_string())
+                    .and_then(|s| serde_yaml::from_str(&s).map_err(|e| e.to_string()))
+                {
+                    Ok(p) => p,
+                    Err(e) => {
+                        eprintln!("Warning: skipping {:?}: {}", package_path, e);
+                        continue;
+                    }
+                };
 
-                let releases = load_releases(&pkg_entry.join("releases"))?;
+                let releases = match load_releases(&pkg_entry.join("releases")) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        eprintln!("Warning: skipping releases for {:?}: {}", pkg_entry, e);
+                        continue;
+                    }
+                };
 
                 entries.push(PackageEntry {
                     system: system.clone(),
