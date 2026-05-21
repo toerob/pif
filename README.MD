@@ -5,9 +5,12 @@
 A CLI tool to find, install, and publish extensions for interactive fiction authoring systems:
 
 - TADS 3
+- TADS 2
 - Inform (7 and later)
 - Inform 6
 - Dialog
+- Hugo
+- ZIL
 
 Written in Rust for platform independence, using [Clap](https://github.com/clap-rs/clap) for the CLI interface.
 
@@ -51,7 +54,7 @@ Commands:
   help      Print this message or the help of the given subcommand(s)
 
 Options:
-  -s, --system <SYSTEM>    [default: auto] [possible values: auto, all, tads3, inform, inform6, dialog, unknown]
+  -s, --system <SYSTEM>    [default: auto] [possible values: auto, all, tads3, tads2, dialog, inform, inform6, hugo, zil, unknown]
       --color <COLOR>      [default: auto] [possible values: always, auto, never]
   -v, --verbose <VERBOSE>  Verbosity level 1-3 [default: 2]
 ```
@@ -150,12 +153,15 @@ pif install t3cartographer -d libs/
 
 **Default installation directories:**
 
-| System | Default |
-|--------|---------|
-| Inform | macOS: `~/Library/Inform/Extensions/{Author}/` · Linux: `~/Inform/Extensions/{Author}/` · Windows: `My Documents\Inform\Extensions\{Author}\` |
-| TADS 3 | Current directory (`./`) |
-| Inform 6 | Current directory (`./`) |
-| Dialog | Current directory (`./`) |
+| System | Default | Auto-detected by |
+|--------|---------|-----------------|
+| Inform | macOS: `~/Library/Inform/Extensions/{Author}/` · Linux: `~/Inform/Extensions/{Author}/` · Windows: `My Documents\Inform\Extensions\{Author}\` | `.inform` directory |
+| TADS 3 | Current directory (`./`) | `.t3m` makefile |
+| TADS 2 | Current directory (`./`) | — (use `--system tads2`) |
+| Inform 6 | Current directory (`./`) | `.inf` file |
+| Dialog | Current directory (`./`) | `.dg` file |
+| Hugo | Current directory (`./`) | `.hug` file |
+| ZIL | Current directory (`./`) | `.zil` file |
 
 Inform extensions follow the Inform IDE's expected structure automatically. For other systems, use `-d` to point at your project's library folder.
 
