@@ -1710,7 +1710,7 @@ dependencies = [
 
 [[package]]
 name = "pif"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "ansi_term",
  "assert_cmd",
