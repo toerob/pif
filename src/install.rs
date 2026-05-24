@@ -10,7 +10,7 @@ use crate::{
     list::system_to_dir,
     makefile::add_make_file_entry,
     model::{load_registry, BuildEntry, LoadedRelease},
-    settings::{expand_path, load_config},
+    config::{expand_path, load_config, version_matches_any, VersionSpec},
     update::{get_registry_root, update_extensions},
     db::{self, get_or_create_table, record_installation},
 };
@@ -84,7 +84,25 @@ pub fn install_extensions(
             }
         };
 
-        let release = resolve_version(&entry.releases, req_version);
+        // When resolving "latest", restrict candidates to configured version specs.
+        // An explicit version pin bypasses the filter.
+        let filtered_releases: Vec<LoadedRelease>;
+        let releases_slice = if req_version == "latest" || req_version.is_empty() {
+            if let Some(specs_raw) = config.system_versions.get(&entry.system) {
+                let specs: Vec<VersionSpec> = specs_raw.iter().map(|s| VersionSpec::parse(s)).collect();
+                filtered_releases = entry.releases.iter()
+                    .filter(|r| version_matches_any(&r.version, &specs))
+                    .cloned()
+                    .collect();
+                &filtered_releases
+            } else {
+                &entry.releases
+            }
+        } else {
+            &entry.releases
+        };
+
+        let release = resolve_version(releases_slice, req_version);
         let loaded = match release {
             Some(r) => r,
             None => {

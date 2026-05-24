@@ -150,7 +150,7 @@ pub struct GlobalOptions {
     pub color: Color,
 
     /// Verbosity level 1-3
-    #[clap(short, long, global = true, default_value_t = *crate::settings::VERBOSE_DEFAULT)]
+    #[clap(short, long, global = true, default_value_t = *crate::config::VERBOSE_DEFAULT)]
     pub verbose: usize,
 }
 
@@ -214,20 +214,100 @@ pub struct ConfigCommand {
 
 #[derive(Debug, Subcommand)]
 pub enum ConfigAction {
-    /// Set the default installation directory for a system
-    SetDir(SetDirCommand),
+    /// Manage per-system installation directories
+    Dir(DirCommand),
 
-    /// Show all configured installation directories
-    ListDir,
+    /// Manage the verbosity level
+    Verbose(VerboseCommand),
 
-    /// Reset the installation directory for a system to its default
-    ResetDir(ResetDirCommand),
+    /// Manage the systems filter (restricts Auto mode to specific systems)
+    Systems(SystemsCommand),
 
-    /// Set the default verbosity level (1-3)
-    SetVerbose(SetVerboseCommand),
+    /// Manage per-system version specs
+    Versions(VersionsCommand),
 
-    /// Reset verbosity level to the built-in default (2)
-    ResetVerbose,
+    /// Display the current config file with syntax highlighting
+    Show,
+}
+
+// ── dir ───────────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Args)]
+pub struct DirCommand {
+    #[clap(subcommand)]
+    pub action: DirAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum DirAction {
+    /// Set the install directory for a system
+    Set(SetDirCommand),
+
+    /// Reset the install directory to default (omit system to reset all)
+    Reset(ResetDirCommand),
+}
+
+// ── verbose ───────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Args)]
+pub struct VerboseCommand {
+    #[clap(subcommand)]
+    pub action: VerboseAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum VerboseAction {
+    /// Set the verbosity level (1-3)
+    Set(SetVerboseCommand),
+
+    /// Reset to the built-in default (2)
+    Reset,
+}
+
+// ── systems ───────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Args)]
+pub struct SystemsCommand {
+    #[clap(subcommand)]
+    pub action: SystemsAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum SystemsAction {
+    /// Replace the systems filter with a new list
+    Set(SetSystemsCommand),
+
+    /// Add one or more systems to the filter
+    Add(SetSystemsCommand),
+
+    /// Remove one or more systems from the filter
+    Remove(SetSystemsCommand),
+
+    /// Remove the entire systems filter
+    Reset,
+}
+
+// ── versions ──────────────────────────────────────────────────────────────────
+
+#[derive(Debug, Args)]
+pub struct VersionsCommand {
+    #[clap(subcommand)]
+    pub action: VersionsAction,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum VersionsAction {
+    /// Replace version specs for a system with a new list
+    Set(SetVersionsCommand),
+
+    /// Add one or more version specs for a system
+    Add(SetVersionsCommand),
+
+    /// Remove one or more version specs for a system
+    Remove(SetVersionsCommand),
+
+    /// Remove all version specs for a system, or all systems if omitted
+    Reset(ResetVersionsCommand),
 }
 
 #[derive(Debug, Args)]
@@ -269,6 +349,31 @@ pub enum RegistryAction {
 
     /// Remove registry entries whose install paths no longer exist
     Clean,
+}
+
+#[derive(Debug, Args)]
+pub struct SetSystemsCommand {
+    /// System names to restrict to (e.g. tads3 inform6 inform)
+    #[arg(value_name = "SYSTEM", required = true)]
+    pub systems: Vec<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct SetVersionsCommand {
+    /// System name (e.g. inform, tads3)
+    #[arg(value_name = "SYSTEM")]
+    pub sys: String,
+
+    /// Version matcher strings, prefix-matched (e.g. i10 i11.0)
+    #[arg(value_name = "VERSION", required = true)]
+    pub versions: Vec<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct ResetVersionsCommand {
+    /// System name. Omit to reset all systems.
+    #[arg(value_name = "SYSTEM")]
+    pub sys: Option<String>,
 }
 
 #[derive(Debug, Args)]

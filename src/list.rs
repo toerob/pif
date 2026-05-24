@@ -5,6 +5,7 @@ use crate::{
     args::{Color, GlobalOptions, InteractiveFictionSystem, ListOptions, ListPresentation, SortProperty},
     detect::detect_system,
     model::{load_registry, PackageEntry},
+    config::{load_config, version_matches_any, VersionSpec},
     update::{get_registry_root, update_extensions},
 };
 
@@ -17,24 +18,39 @@ pub fn list_extensions(
         update_extensions(global_options);
     }
 
+    let config = load_config();
+
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
         detect_system().0
     } else {
         global_options.system.clone()
     };
 
-    if system_type != InteractiveFictionSystem::Unknown {
+    // Config systems filter applies in Auto mode when no project is detected
+    let apply_config_systems = global_options.system == InteractiveFictionSystem::Auto
+        && system_type == InteractiveFictionSystem::Unknown
+        && !config.systems.is_empty();
+
+    if apply_config_systems {
+        println!("{}", Yellow.paint(format!("Systems: [{}]", config.systems.join(", "))));
+    } else if system_type != InteractiveFictionSystem::Unknown {
         println!("{}", Yellow.paint(format!("System: {:?}", system_type)));
     }
 
     let registry_root = get_registry_root();
 
-    let system_filter = system_to_dir(&system_type);
+    let system_filter = if apply_config_systems { None } else { system_to_dir(&system_type) };
 
     let mut entries = match load_registry(&registry_root, system_filter) {
         Ok(e) => e,
         Err(e) => { eprintln!("Could not load registry: {}", e); return; }
     };
+
+    if apply_config_systems {
+        apply_systems_filter(&mut entries, &config.systems);
+    }
+
+    apply_version_filter(&mut entries, &config.system_versions);
 
     if let Some(author) = &list_options.author {
         let q = author.to_lowercase();
@@ -74,7 +90,9 @@ pub fn list_extensions(
     println!("{}", lines.join(delimiter));
     println!();
     println!("[Filter by -a / --author, -k / --keyword, -t / --tag]");
-    if system_filter.is_some() {
+    if apply_config_systems {
+        println!("[Showing [{}] only — use --system all to see all systems]", config.systems.join(", "));
+    } else if system_filter.is_some() {
         println!("[Showing {:?} extensions only — use --system all to see all systems]", system_type);
     }
 }
@@ -128,13 +146,18 @@ pub fn search_extensions(
         update_extensions(global_options);
     }
 
-    // When system is auto-detected, search ignores the system filter so results
-    // are not limited to the current project's system.
+    let config = load_config();
+
+    // Search ignores the auto-detected system so results span all systems,
+    // but the config systems filter still applies when --system is not given.
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
         InteractiveFictionSystem::All
     } else {
         global_options.system.clone()
     };
+
+    let apply_config_systems = global_options.system == InteractiveFictionSystem::Auto
+        && !config.systems.is_empty();
 
     if system_type != InteractiveFictionSystem::Unknown
         && system_type != InteractiveFictionSystem::All
@@ -143,12 +166,18 @@ pub fn search_extensions(
     }
 
     let registry_root = get_registry_root();
-    let system_filter = system_to_dir(&system_type);
+    let system_filter = if apply_config_systems { None } else { system_to_dir(&system_type) };
 
     let mut entries = match load_registry(&registry_root, system_filter) {
         Ok(e) => e,
         Err(e) => { eprintln!("Could not load registry: {}", e); return; }
     };
+
+    if apply_config_systems {
+        apply_systems_filter(&mut entries, &config.systems);
+    }
+
+    apply_version_filter(&mut entries, &config.system_versions);
 
     let q = query.to_lowercase();
     entries.retain(|e| {
@@ -209,19 +238,31 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
         update_extensions(global_options);
     }
 
+    let config = load_config();
+
     let system_type = if global_options.system == InteractiveFictionSystem::Auto {
         detect_system().0
     } else {
         global_options.system.clone()
     };
 
-    let registry_root = get_registry_root();
-    let system_filter = system_to_dir(&system_type);
+    let apply_config_systems = global_options.system == InteractiveFictionSystem::Auto
+        && system_type == InteractiveFictionSystem::Unknown
+        && !config.systems.is_empty();
 
-    let entries = match load_registry(&registry_root, system_filter) {
+    let registry_root = get_registry_root();
+    let system_filter = if apply_config_systems { None } else { system_to_dir(&system_type) };
+
+    let mut entries = match load_registry(&registry_root, system_filter) {
         Ok(e) => e,
         Err(e) => { eprintln!("Could not load registry: {}", e); return; }
     };
+
+    if apply_config_systems {
+        apply_systems_filter(&mut entries, &config.systems);
+    }
+
+    apply_version_filter(&mut entries, &config.system_versions);
 
     let mut tags: Vec<String> = entries.iter()
         .flat_map(|e| e.package.tags.as_deref().unwrap_or(&[]).iter().cloned())
@@ -236,6 +277,195 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
 
     for tag in &tags {
         println!("{}", tag);
+    }
+}
+
+fn apply_systems_filter(entries: &mut Vec<PackageEntry>, systems: &[String]) {
+    if systems.is_empty() { return; }
+    entries.retain(|e| systems.iter().any(|s| s == &e.system));
+}
+
+fn apply_version_filter(
+    entries: &mut Vec<PackageEntry>,
+    system_versions: &std::collections::HashMap<String, Vec<String>>,
+) {
+    for entry in entries.iter_mut() {
+        if let Some(specs_raw) = system_versions.get(&entry.system) {
+            let specs: Vec<VersionSpec> = specs_raw.iter().map(|s| VersionSpec::parse(s)).collect();
+            entry.releases.retain(|r| version_matches_any(&r.version, &specs));
+        }
+    }
+    entries.retain(|e| !e.releases.is_empty());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+    use crate::model::{LoadedRelease, Package, PackageEntry, Release};
+
+    fn make_release(version: &str) -> LoadedRelease {
+        LoadedRelease {
+            version: version.to_string(),
+            release: Release {
+                schema_version: 1,
+                maintainer: None, channel: None, date: None, description: None,
+                compatibility: None, dependencies: None, source: None, build: None,
+            },
+        }
+    }
+
+    fn make_entry(system: &str, versions: &[&str]) -> PackageEntry {
+        PackageEntry {
+            system: system.to_string(),
+            namespace: "test".to_string(),
+            package: Package {
+                schema_version: 1,
+                id: "test-pkg".to_string(),
+                name: "test-pkg".to_string(),
+                author: "Author".to_string(),
+                description: None,
+                tags: None,
+            },
+            releases: versions.iter().map(|v| make_release(v)).collect(),
+        }
+    }
+
+    // ── no config → passthrough ──────────────────────────────────────────────
+
+    #[test]
+    fn no_config_passes_all_releases() {
+        let mut entries = vec![make_entry("inform", &["16-i10.1", "16-i11.0"])];
+        apply_version_filter(&mut entries, &HashMap::new());
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].releases.len(), 2);
+    }
+
+    // ── matching releases kept, non-matching dropped ─────────────────────────
+
+    #[test]
+    fn keeps_only_matching_releases() {
+        let mut entries = vec![make_entry("inform", &["16-i10.1", "17-i10.2", "16-i11.0"])];
+        let config = HashMap::from([("inform".into(), vec!["i10".into()])]);
+        apply_version_filter(&mut entries, &config);
+        assert_eq!(entries[0].releases.len(), 2);
+        assert!(entries[0].releases.iter().all(|r| r.version.contains("i10")));
+    }
+
+    #[test]
+    fn multiple_specs_or_combined() {
+        let mut entries = vec![make_entry("inform", &["16-i10.1", "16-i11.0", "16-i12.0"])];
+        let config = HashMap::from([("inform".into(), vec!["i10".into(), "i11".into()])]);
+        apply_version_filter(&mut entries, &config);
+        let versions: Vec<&str> = entries[0].releases.iter().map(|r| r.version.as_str()).collect();
+        assert_eq!(versions, ["16-i10.1", "16-i11.0"]);
+    }
+
+    #[test]
+    fn plain_version_prefix_match() {
+        let mut entries = vec![make_entry("tads3", &["3.1.0", "3.1.2", "3.2.0"])];
+        let config = HashMap::from([("tads3".into(), vec!["3.1".into()])]);
+        apply_version_filter(&mut entries, &config);
+        assert_eq!(entries[0].releases.len(), 2);
+        assert!(entries[0].releases.iter().all(|r| r.version.starts_with("3.1")));
+    }
+
+    // ── entry removed when no releases survive ───────────────────────────────
+
+    #[test]
+    fn entry_removed_when_no_releases_match() {
+        let mut entries = vec![make_entry("inform", &["16-i11.0", "17-i11.1"])];
+        let config = HashMap::from([("inform".into(), vec!["i10".into()])]);
+        apply_version_filter(&mut entries, &config);
+        assert!(entries.is_empty());
+    }
+
+    // ── only configured system is affected ───────────────────────────────────
+
+    #[test]
+    fn unconfigured_system_passes_through_untouched() {
+        let mut entries = vec![
+            make_entry("inform", &["16-i10.1"]),
+            make_entry("tads3", &["1.0", "2.0"]),
+        ];
+        let config = HashMap::from([("inform".into(), vec!["i10".into()])]);
+        apply_version_filter(&mut entries, &config);
+        assert_eq!(entries.len(), 2);
+        assert_eq!(entries[1].releases.len(), 2);
+    }
+
+    // ── multiple entries, mixed outcomes ─────────────────────────────────────
+
+    #[test]
+    fn mixed_entries_some_survive_some_removed() {
+        let mut entries = vec![
+            make_entry("inform", &["16-i10.1", "16-i11.0"]),
+            make_entry("inform", &["16-i11.0", "17-i11.1"]),
+        ];
+        let config = HashMap::from([("inform".into(), vec!["i10".into()])]);
+        apply_version_filter(&mut entries, &config);
+        // Second entry has no i10 releases → removed
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].releases.len(), 1);
+        assert_eq!(entries[0].releases[0].version, "16-i10.1");
+    }
+
+    // ── apply_systems_filter ─────────────────────────────────────────────────
+
+    #[test]
+    fn empty_systems_passes_all() {
+        let mut entries = vec![
+            make_entry("tads3", &["1.0"]),
+            make_entry("inform", &["16-i10.1"]),
+        ];
+        apply_systems_filter(&mut entries, &[]);
+        assert_eq!(entries.len(), 2);
+    }
+
+    #[test]
+    fn single_system_keeps_matching_drops_others() {
+        let mut entries = vec![
+            make_entry("tads3", &["1.0"]),
+            make_entry("inform", &["16-i10.1"]),
+            make_entry("dialog", &["1.0"]),
+        ];
+        apply_systems_filter(&mut entries, &["tads3".into()]);
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].system, "tads3");
+    }
+
+    #[test]
+    fn multiple_systems_or_combined() {
+        let mut entries = vec![
+            make_entry("tads3", &["1.0"]),
+            make_entry("inform", &["16-i10.1"]),
+            make_entry("dialog", &["1.0"]),
+        ];
+        apply_systems_filter(&mut entries, &["tads3".into(), "inform".into()]);
+        assert_eq!(entries.len(), 2);
+        assert!(entries.iter().all(|e| e.system == "tads3" || e.system == "inform"));
+    }
+
+    #[test]
+    fn no_system_matches_returns_empty() {
+        let mut entries = vec![
+            make_entry("tads3", &["1.0"]),
+            make_entry("inform", &["16-i10.1"]),
+        ];
+        apply_systems_filter(&mut entries, &["hugo".into()]);
+        assert!(entries.is_empty());
+    }
+
+    #[test]
+    fn duplicate_system_entries_all_kept() {
+        let mut entries = vec![
+            make_entry("tads3", &["1.0"]),
+            make_entry("tads3", &["2.0"]),
+            make_entry("inform", &["16-i10.1"]),
+        ];
+        apply_systems_filter(&mut entries, &["tads3".into()]);
+        assert_eq!(entries.len(), 2);
+        assert!(entries.iter().all(|e| e.system == "tads3"));
     }
 }
 

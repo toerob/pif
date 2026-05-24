@@ -9,12 +9,23 @@ mod makefile;
 mod model;
 mod publish;
 mod update;
-pub mod settings;
+pub mod config;
 mod gitops;
 mod db;
 
-use args::{ConfigAction, InteractiveFictionToolArgs, MenuSubCommand, RegistryAction};
-use settings::{load_config, reset_all_install_dirs, reset_install_dir, reset_verbose_level, set_install_dir, set_verbose_level};
+use std::fs;
+use args::{
+    ConfigAction, DirAction, InteractiveFictionToolArgs, MenuSubCommand,
+    RegistryAction, SystemsAction, VerboseAction, VersionsAction,
+};
+use config::{
+    get_main_config_file,
+    reset_all_install_dirs, reset_install_dir,
+    reset_verbose_level, set_verbose_level,
+    set_install_dir,
+    set_systems, add_systems, remove_systems, reset_systems,
+    set_system_versions, add_system_version_specs, remove_system_version_specs, reset_system_versions,
+};
 use clap::Parser;
 
 use db::{clean_stale_installations, get_or_create_table, print_installations, remove_installation};
@@ -50,7 +61,7 @@ fn main() {
                 &cmd_args.names,
                 &cmd_args.install_options,
                 &choice.global_options,
-                update_needed
+                update_needed,
             )
         }
         MenuSubCommand::Publish(cmd_args) => {
@@ -60,17 +71,16 @@ fn main() {
             search_extensions(&cmd_args.query, &cmd_args.list_options, &choice.global_options, update_needed)
         }
         MenuSubCommand::Config(cmd_args) => {
+            let use_color = choice.global_options.color != args::Color::Never;
             match cmd_args.action {
-                ConfigAction::SetDir(args) => {
-                    match set_install_dir(&args.sys, &args.directory) {
-                        Ok(path) => println!("Updated install dir for '{}' to '{}'\n  Config: {}", args.sys, args.directory, path.display()),
-                        Err(e)   => eprintln!("Could not update config: {}", e),
-                    }
-                }
-                ConfigAction::ResetDir(args) => {
-                    match args.sys {
+                ConfigAction::Dir(dir_cmd) => match dir_cmd.action {
+                    DirAction::Set(a) => match set_install_dir(&a.sys, &a.directory) {
+                        Ok(_)  => show_config(use_color, &[a.directory.as_str()]),
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    DirAction::Reset(a) => match a.sys {
                         Some(ref sys) => match reset_install_dir(sys) {
-                            Ok((path, true))  => println!("Reset install dir for '{}' to default.\n  Config: {}", sys, path.display()),
+                            Ok((path, true))  => println!("Install dir for '{}' reset to default.\n  Config: {}", sys, path.display()),
                             Ok((_, false))    => println!("No override was set for '{}'.", sys),
                             Err(e)            => eprintln!("Could not update config: {}", e),
                         },
@@ -79,36 +89,85 @@ fn main() {
                             Ok((path, n)) => println!("Reset {} install dir override{}.\n  Config: {}", n, if n == 1 { "" } else { "s" }, path.display()),
                             Err(e)        => eprintln!("Could not update config: {}", e),
                         },
+                    },
+                },
+                ConfigAction::Verbose(verb_cmd) => match verb_cmd.action {
+                    VerboseAction::Set(a) => {
+                        let level_str = a.level.to_string();
+                        match set_verbose_level(a.level) {
+                            Ok(_)  => show_config(use_color, &[level_str.as_str()]),
+                            Err(e) => eprintln!("{}", e),
+                        }
                     }
-                }
-                ConfigAction::SetVerbose(args) => {
-                    match set_verbose_level(args.level) {
-                        Ok(path) => println!("Verbose level set to {}.\n  Config: {}", args.level, path.display()),
-                        Err(e)   => eprintln!("{}", e),
-                    }
-                }
-                ConfigAction::ResetVerbose => {
-                    match reset_verbose_level() {
+                    VerboseAction::Reset => match reset_verbose_level() {
                         Ok((path, true))  => println!("Verbose level reset to default (2).\n  Config: {}", path.display()),
                         Ok((_, false))    => println!("No verbose level override was set."),
                         Err(e)            => eprintln!("Could not update config: {}", e),
-                    }
-                }
-                ConfigAction::ListDir => {
-                    let dirs = load_config().install_dirs;
-                    if dirs.is_empty() {
-                        println!("No install directories configured.");
-                    } else {
-                        let use_color = choice.global_options.color != args::Color::Never;
-                        for (system, dir) in &dirs {
-                            if use_color {
-                                println!("{}: {}", system, ansi_term::Colour::Yellow.paint(dir));
-                            } else {
-                                println!("{}: {}", system, dir);
-                            }
+                    },
+                },
+                ConfigAction::Systems(sys_cmd) => match sys_cmd.action {
+                    SystemsAction::Set(a) => match set_systems(&a.systems) {
+                        Ok(_) => {
+                            let refs: Vec<&str> = a.systems.iter().map(|s| s.as_str()).collect();
+                            show_config(use_color, &refs);
                         }
-                    }
-                }
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    SystemsAction::Add(a) => match add_systems(&a.systems) {
+                        Ok(_) => {
+                            let refs: Vec<&str> = a.systems.iter().map(|s| s.as_str()).collect();
+                            show_config(use_color, &refs);
+                        }
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    SystemsAction::Remove(a) => match remove_systems(&a.systems) {
+                        Ok((_, removed)) if removed.is_empty() => {
+                            println!("No matching systems found to remove.");
+                        }
+                        Ok(_) => show_config(use_color, &[]),
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    SystemsAction::Reset => match reset_systems() {
+                        Ok((path, true))  => println!("Systems filter removed.\n  Config: {}", path.display()),
+                        Ok((_, false))    => println!("No systems filter was set."),
+                        Err(e)            => eprintln!("Could not update config: {}", e),
+                    },
+                },
+                ConfigAction::Versions(ver_cmd) => match ver_cmd.action {
+                    VersionsAction::Set(a) => match set_system_versions(&a.sys, &a.versions) {
+                        Ok(_) => {
+                            let refs: Vec<&str> = a.versions.iter().map(|s| s.as_str()).collect();
+                            show_config(use_color, &refs);
+                        }
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    VersionsAction::Add(a) => match add_system_version_specs(&a.sys, &a.versions) {
+                        Ok(_) => {
+                            let refs: Vec<&str> = a.versions.iter().map(|s| s.as_str()).collect();
+                            show_config(use_color, &refs);
+                        }
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    VersionsAction::Remove(a) => match remove_system_version_specs(&a.sys, &a.versions) {
+                        Ok((_, removed)) if removed.is_empty() => {
+                            println!("No matching version specs found to remove.");
+                        }
+                        Ok(_) => show_config(use_color, &[]),
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                    VersionsAction::Reset(a) => match reset_system_versions(a.sys.as_deref()) {
+                        Ok((path, true)) => match a.sys {
+                            Some(ref sys) => println!("Version specs for '{}' removed.\n  Config: {}", sys, path.display()),
+                            None          => println!("All version specs removed.\n  Config: {}", path.display()),
+                        },
+                        Ok((_, false)) => match a.sys {
+                            Some(ref sys) => println!("No version specs were set for '{}'.", sys),
+                            None          => println!("No version specs were set."),
+                        },
+                        Err(e) => eprintln!("Could not update config: {}", e),
+                    },
+                },
+                ConfigAction::Show => show_config(use_color, &[]),
             }
         }
         MenuSubCommand::Tags(_) => list_tags(&choice.global_options, update_needed),
@@ -135,5 +194,23 @@ fn main() {
                 }
             }
         }
+    }
+}
+
+fn show_config(use_color: bool, highlight: &[&str]) {
+    match get_main_config_file() {
+        Ok(path) => {
+            if use_color {
+                println!("{}", ansi_term::Colour::Yellow.paint(format!("Config: {}", path.display())));
+            } else {
+                println!("Config: {}", path.display());
+            }
+            println!();
+            match fs::read_to_string(&path) {
+                Ok(content) => color::print_yaml_colored(&content, use_color, highlight),
+                Err(e)      => eprintln!("Could not read config: {}", e),
+            }
+        }
+        Err(e) => eprintln!("Could not locate config file: {}", e),
     }
 }

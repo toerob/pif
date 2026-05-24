@@ -171,29 +171,29 @@ When a TADS 3 makefile (`.t3m`) is detected in the current directory, `pif insta
 
 ### Config
 
-Configure per-system default installation directories so you don't have to pass `-d` every time:
+PIF stores its configuration in a YAML file (auto-created on first run). See **[CONFIG.md](CONFIG.md)** for the full reference.
 
-```
-pif config set-dir tads3 ~/projects/tads3/lib
-pif config set-dir inform "~/Library/Application Support/pif"
-```
+Quick examples:
 
-View configured directories:
-```
-pif config list-dir
-```
+```sh
+# Display the full config file with syntax highlighting
+pif config show
 
-Reset a system back to its default:
-```
-pif config reset-dir tads3
-```
+# Override where extensions are installed
+pif config dir set tads3 ~/projects/tads3/lib
+pif config dir reset tads3
 
-Reset all overrides:
-```
-pif config reset-dir
-```
+# Restrict the default view to specific systems
+pif config systems set tads3 inform inform6
+pif config systems add hugo        # add to existing list
+pif config systems remove inform6  # remove one entry
 
-Configured directories are stored in `config.yaml` inside pif's config folder (`~/.config/pif/config/config.yaml` on Linux, `~/Library/Application Support/pif/config/config.yaml` on macOS).
+# Pin which versions are shown/installed for a system (prefix match)
+pif config versions set inform i10 i11.0
+pif config versions add inform i12
+pif config versions remove inform i10
+pif config versions reset inform
+```
 
 Publish your extension to the registry (interactive, opens a PR):
 ```
