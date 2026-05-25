@@ -126,11 +126,11 @@ pub struct ListOptions {
     pub tag: Option<String>,
 
     /// List order direction
-    #[clap(long, value_enum, global = true, default_value_t = OrderingDirection::Descending)]
+    #[clap(long, short = 'o', value_enum, global = true, default_value_t = OrderingDirection::Descending)]
     pub ordering_direction: OrderingDirection,
 
-    /// Sort 
-    #[clap(long, value_enum, global = true, default_value_t = SortProperty::Name)]
+    /// Sort property
+    #[clap(long, short = 'p', value_enum, global = true, default_value_t = SortProperty::Name)]
     pub sort_property: SortProperty,
 
 
