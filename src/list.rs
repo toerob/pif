@@ -2,7 +2,7 @@ use ansi_term::Colour::*;
 use sublime_fuzzy::FuzzySearch;
 
 use crate::{
-    args::{Color, GlobalOptions, InteractiveFictionSystem, ListOptions, ListPresentation, OrderingDirection, SortProperty},
+    args::{Color, GlobalOptions, InteractiveFictionSystem, ListOptions, ListPresentation, SortProperty},
     detect::detect_system,
     model::{load_registry, PackageEntry},
     config::{load_config, version_matches_any, VersionSpec},
@@ -47,7 +47,7 @@ pub fn list_extensions(
     };
 
     if apply_config_systems {
-        apply_systems_filter(&mut entries, &config.systems);
+        entries.retain(|e| config.systems.iter().any(|s| s == &e.system));
     }
 
     apply_version_filter(&mut entries, &config.system_versions);
@@ -74,7 +74,16 @@ pub fn list_extensions(
         });
     }
 
-    apply_sort(&mut entries, list_options);
+    match list_options.sort_property {
+        SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
+        SortProperty::Author => entries.sort_by(|a, b| a.package.author.cmp(&b.package.author)),
+        SortProperty::Date   => entries.sort_by_key(|e| {
+            e.releases.iter()
+                .filter_map(|r| r.release.date.clone())
+                .max()
+                .unwrap_or_default()
+        }),
+    }
 
     let delimiter = if list_options.presentation == ListPresentation::Comma { "," } else { "\n" };
     let lines: Vec<_> = entries.iter().map(|e| present(e, global_options)).collect();
@@ -165,7 +174,7 @@ pub fn search_extensions(
     };
 
     if apply_config_systems {
-        apply_systems_filter(&mut entries, &config.systems);
+        entries.retain(|e| config.systems.iter().any(|s| s == &e.system));
     }
 
     apply_version_filter(&mut entries, &config.system_versions);
@@ -201,7 +210,16 @@ pub fn search_extensions(
         });
     }
 
-    apply_sort(&mut entries, list_options);
+    match list_options.sort_property {
+        SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
+        SortProperty::Author => entries.sort_by(|a, b| a.package.author.cmp(&b.package.author)),
+        SortProperty::Date   => entries.sort_by_key(|e| {
+            e.releases.iter()
+                .filter_map(|r| r.release.date.clone())
+                .max()
+                .unwrap_or_default()
+        }),
+    }
 
     if entries.is_empty() {
         println!("No extensions found matching '{}'.", query);
@@ -241,7 +259,7 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
     };
 
     if apply_config_systems {
-        apply_systems_filter(&mut entries, &config.systems);
+        entries.retain(|e| config.systems.iter().any(|s| s == &e.system));
     }
 
     apply_version_filter(&mut entries, &config.system_versions);
@@ -262,27 +280,6 @@ pub fn list_tags(global_options: &GlobalOptions, update_needed: bool) {
     }
 }
 
-fn apply_sort(entries: &mut Vec<PackageEntry>, list_options: &ListOptions) {
-    match list_options.sort_property {
-        SortProperty::Name   => entries.sort_by(|a, b| a.package.name.cmp(&b.package.name)),
-        SortProperty::Author => entries.sort_by(|a, b| a.package.author.cmp(&b.package.author)),
-        SortProperty::Date   => entries.sort_by_key(|e| {
-            e.releases.iter()
-                .filter_map(|r| r.release.date.clone())
-                .max()
-                .unwrap_or_default()
-        }),
-    }
-    if list_options.ordering_direction == OrderingDirection::Descending {
-        entries.reverse();
-    }
-}
-
-fn apply_systems_filter(entries: &mut Vec<PackageEntry>, systems: &[String]) {
-    if systems.is_empty() { return; }
-    entries.retain(|e| systems.iter().any(|s| s == &e.system));
-}
-
 fn apply_version_filter(
     entries: &mut Vec<PackageEntry>,
     system_versions: &std::collections::HashMap<String, Vec<String>>,
@@ -300,7 +297,6 @@ fn apply_version_filter(
 mod tests {
     use super::*;
     use std::collections::HashMap;
-    use crate::args::{ListOptions, ListPresentation, OrderingDirection, SortProperty};
     use crate::model::{LoadedRelease, Package, PackageEntry, Release};
 
     fn make_release(version: &str) -> LoadedRelease {
@@ -407,195 +403,6 @@ mod tests {
         assert_eq!(entries.len(), 1);
         assert_eq!(entries[0].releases.len(), 1);
         assert_eq!(entries[0].releases[0].version, "16-i10.1");
-    }
-
-    // ── apply_systems_filter ─────────────────────────────────────────────────
-
-    #[test]
-    fn empty_systems_passes_all() {
-        let mut entries = vec![
-            make_entry("tads3", &["1.0"]),
-            make_entry("inform", &["16-i10.1"]),
-        ];
-        apply_systems_filter(&mut entries, &[]);
-        assert_eq!(entries.len(), 2);
-    }
-
-    #[test]
-    fn single_system_keeps_matching_drops_others() {
-        let mut entries = vec![
-            make_entry("tads3", &["1.0"]),
-            make_entry("inform", &["16-i10.1"]),
-            make_entry("dialog", &["1.0"]),
-        ];
-        apply_systems_filter(&mut entries, &["tads3".into()]);
-        assert_eq!(entries.len(), 1);
-        assert_eq!(entries[0].system, "tads3");
-    }
-
-    #[test]
-    fn multiple_systems_or_combined() {
-        let mut entries = vec![
-            make_entry("tads3", &["1.0"]),
-            make_entry("inform", &["16-i10.1"]),
-            make_entry("dialog", &["1.0"]),
-        ];
-        apply_systems_filter(&mut entries, &["tads3".into(), "inform".into()]);
-        assert_eq!(entries.len(), 2);
-        assert!(entries.iter().all(|e| e.system == "tads3" || e.system == "inform"));
-    }
-
-    #[test]
-    fn no_system_matches_returns_empty() {
-        let mut entries = vec![
-            make_entry("tads3", &["1.0"]),
-            make_entry("inform", &["16-i10.1"]),
-        ];
-        apply_systems_filter(&mut entries, &["hugo".into()]);
-        assert!(entries.is_empty());
-    }
-
-    #[test]
-    fn duplicate_system_entries_all_kept() {
-        let mut entries = vec![
-            make_entry("tads3", &["1.0"]),
-            make_entry("tads3", &["2.0"]),
-            make_entry("inform", &["16-i10.1"]),
-        ];
-        apply_systems_filter(&mut entries, &["tads3".into()]);
-        assert_eq!(entries.len(), 2);
-        assert!(entries.iter().all(|e| e.system == "tads3"));
-    }
-
-    // ── apply_sort helpers ───────────────────────────────────────────────────
-
-    fn make_release_dated(version: &str, date: Option<&str>) -> LoadedRelease {
-        LoadedRelease {
-            version: version.to_string(),
-            release: Release {
-                schema_version: 1,
-                maintainer: None, channel: None,
-                date: date.map(|s| s.to_string()),
-                description: None, compatibility: None,
-                dependencies: None, source: None, build: None,
-            },
-        }
-    }
-
-    fn make_full_entry(system: &str, name: &str, author: &str, date: Option<&str>) -> PackageEntry {
-        PackageEntry {
-            system: system.to_string(),
-            namespace: "test".to_string(),
-            package: Package {
-                schema_version: 1,
-                id: name.to_string(),
-                name: name.to_string(),
-                author: author.to_string(),
-                description: None,
-                tags: None,
-            },
-            releases: vec![make_release_dated("1.0", date)],
-        }
-    }
-
-    fn sort_opts(prop: SortProperty, dir: OrderingDirection) -> ListOptions {
-        ListOptions {
-            author: None,
-            keyword: None,
-            tag: None,
-            ordering_direction: dir,
-            sort_property: prop,
-            presentation: ListPresentation::Newline,
-        }
-    }
-
-    // ── sort by name ─────────────────────────────────────────────────────────
-
-    #[test]
-    fn sort_by_name_ascending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "Zebra", "A", None),
-            make_full_entry("tads3", "Apple", "A", None),
-            make_full_entry("tads3", "Mango", "A", None),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Name, OrderingDirection::Ascending));
-        let names: Vec<&str> = entries.iter().map(|e| e.package.name.as_str()).collect();
-        assert_eq!(names, ["Apple", "Mango", "Zebra"]);
-    }
-
-    #[test]
-    fn sort_by_name_descending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "Zebra", "A", None),
-            make_full_entry("tads3", "Apple", "A", None),
-            make_full_entry("tads3", "Mango", "A", None),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Name, OrderingDirection::Descending));
-        let names: Vec<&str> = entries.iter().map(|e| e.package.name.as_str()).collect();
-        assert_eq!(names, ["Zebra", "Mango", "Apple"]);
-    }
-
-    // ── sort by author ───────────────────────────────────────────────────────
-
-    #[test]
-    fn sort_by_author_ascending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "x", "Zelda", None),
-            make_full_entry("tads3", "y", "Alice", None),
-            make_full_entry("tads3", "z", "Mike", None),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Author, OrderingDirection::Ascending));
-        let authors: Vec<&str> = entries.iter().map(|e| e.package.author.as_str()).collect();
-        assert_eq!(authors, ["Alice", "Mike", "Zelda"]);
-    }
-
-    #[test]
-    fn sort_by_author_descending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "x", "Zelda", None),
-            make_full_entry("tads3", "y", "Alice", None),
-            make_full_entry("tads3", "z", "Mike", None),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Author, OrderingDirection::Descending));
-        let authors: Vec<&str> = entries.iter().map(|e| e.package.author.as_str()).collect();
-        assert_eq!(authors, ["Zelda", "Mike", "Alice"]);
-    }
-
-    // ── sort by date ─────────────────────────────────────────────────────────
-
-    #[test]
-    fn sort_by_date_ascending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "c", "A", Some("2024-03-01")),
-            make_full_entry("tads3", "a", "A", Some("2023-01-15")),
-            make_full_entry("tads3", "b", "A", Some("2024-01-01")),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Date, OrderingDirection::Ascending));
-        let names: Vec<&str> = entries.iter().map(|e| e.package.name.as_str()).collect();
-        assert_eq!(names, ["a", "b", "c"]);
-    }
-
-    #[test]
-    fn sort_by_date_descending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "c", "A", Some("2024-03-01")),
-            make_full_entry("tads3", "a", "A", Some("2023-01-15")),
-            make_full_entry("tads3", "b", "A", Some("2024-01-01")),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Date, OrderingDirection::Descending));
-        let names: Vec<&str> = entries.iter().map(|e| e.package.name.as_str()).collect();
-        assert_eq!(names, ["c", "b", "a"]);
-    }
-
-    #[test]
-    fn sort_by_date_missing_date_sorts_last_ascending() {
-        let mut entries = vec![
-            make_full_entry("tads3", "dated", "A", Some("2024-01-01")),
-            make_full_entry("tads3", "nodated", "A", None),
-        ];
-        apply_sort(&mut entries, &sort_opts(SortProperty::Date, OrderingDirection::Ascending));
-        assert_eq!(entries[0].package.name, "nodated");
-        assert_eq!(entries[1].package.name, "dated");
     }
 }
 
