@@ -176,3 +176,40 @@ fn version_ord(v: &str) -> (u64, u64, u64) {
         parts.get(2).copied().unwrap_or(0),
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn version_ord_full_semver() {
+        assert_eq!(version_ord("1.2.3"), (1, 2, 3));
+    }
+
+    #[test]
+    fn version_ord_missing_patch() {
+        assert_eq!(version_ord("1.2"), (1, 2, 0));
+    }
+
+    #[test]
+    fn version_ord_major_only() {
+        assert_eq!(version_ord("3"), (3, 0, 0));
+    }
+
+    #[test]
+    fn version_ord_empty_string() {
+        assert_eq!(version_ord(""), (0, 0, 0));
+    }
+
+    #[test]
+    fn version_ord_non_numeric_parts_treated_as_zero() {
+        assert_eq!(version_ord("SNAPSHOT"), (0, 0, 0));
+    }
+
+    #[test]
+    fn version_ord_ordering() {
+        assert!(version_ord("1.10.0") > version_ord("1.9.0"));
+        assert!(version_ord("2.0.0") > version_ord("1.99.99"));
+        assert!(version_ord("1.2.3") < version_ord("1.2.4"));
+    }
+}

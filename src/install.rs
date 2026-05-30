@@ -9,9 +9,9 @@ use crate::{
     gitops::clone_or_pull_repo,
     list::system_to_dir,
     makefile::add_make_file_entry,
-    model::{load_registry, BuildEntry, LoadedRelease},
+    model::{load_registry, validate_release_schema, BuildEntry, LoadedRelease},
     config::{expand_path, load_config, version_matches_any, VersionSpec},
-    update::{get_registry_root, update_extensions},
+    update::{get_registry_root, get_repo_dir, update_extensions},
     db::{self, get_or_create_table, record_installation},
 };
 
@@ -112,6 +112,16 @@ pub fn install_extensions(
                 exit(0);
             }
         };
+
+        let schema_errors = validate_release_schema(&loaded.release, &get_repo_dir());
+        if !schema_errors.is_empty() {
+            print_warning_msg(use_colours, format!(
+                "Release '{}' v{} failed schema validation — skipping:\n{}\n",
+                entry.package.name, loaded.version,
+                schema_errors.iter().map(|e| format!("  - {}", e)).collect::<Vec<_>>().join("\n"),
+            ));
+            continue;
+        }
 
         let source = match &loaded.release.source {
             Some(s) => s,

@@ -98,6 +98,98 @@ fn slugify(s: &str) -> String {
         .join("-")
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // parse_build_entries
+    #[test]
+    fn parse_build_entries_all_three_kinds() {
+        let entries = parse_build_entries("-lib foo.tl; -source bar.t; -D MYFLAG=1");
+        assert_eq!(entries.len(), 3);
+        assert_eq!(entries[0].kind, "lib");
+        assert_eq!(entries[0].path, Some("foo.tl".into()));
+        assert_eq!(entries[1].kind, "source");
+        assert_eq!(entries[1].path, Some("bar.t".into()));
+        assert_eq!(entries[2].kind, "define");
+        assert_eq!(entries[2].value, Some("MYFLAG=1".into()));
+    }
+
+    #[test]
+    fn parse_build_entries_empty_string() {
+        assert!(parse_build_entries("").is_empty());
+    }
+
+    #[test]
+    fn parse_build_entries_whitespace_only_segments() {
+        assert!(parse_build_entries("  ;  ; ").is_empty());
+    }
+
+    #[test]
+    fn parse_build_entries_unknown_flag_skipped() {
+        let entries = parse_build_entries("-other foo; -lib bar.tl");
+        assert_eq!(entries.len(), 1);
+        assert_eq!(entries[0].kind, "lib");
+    }
+
+    // slugify
+    #[test]
+    fn slugify_unicode_normalization() {
+        assert_eq!(slugify("Héllo Wörld"), "hello-world");
+    }
+
+    #[test]
+    fn slugify_consecutive_separators_collapsed() {
+        assert_eq!(slugify("foo  bar"), "foo-bar");
+    }
+
+    #[test]
+    fn slugify_leading_trailing_dashes_removed() {
+        assert_eq!(slugify("!foo!"), "foo");
+    }
+
+    #[test]
+    fn slugify_already_clean() {
+        assert_eq!(slugify("my-extension"), "my-extension");
+    }
+
+    // to_ssh_url
+    #[test]
+    fn to_ssh_url_converts_github_https() {
+        assert_eq!(to_ssh_url("https://github.com/user/repo"), "git@github.com:user/repo");
+    }
+
+    #[test]
+    fn to_ssh_url_strips_trailing_slash() {
+        assert_eq!(to_ssh_url("https://github.com/user/repo/"), "git@github.com:user/repo");
+    }
+
+    #[test]
+    fn to_ssh_url_non_github_passthrough() {
+        let url = "https://gitlab.com/user/repo";
+        assert_eq!(to_ssh_url(url), url);
+    }
+
+    // pr_compare_url
+    #[test]
+    fn pr_compare_url_simple_branch() {
+        let url = pr_compare_url("https://github.com/user/repo", "main", "feature");
+        assert_eq!(url, "https://github.com/user/repo/compare/main...feature?expand=1");
+    }
+
+    #[test]
+    fn pr_compare_url_branch_with_slashes_encoded() {
+        let url = pr_compare_url("https://github.com/user/repo", "main", "pif/add-foo-1.0.0");
+        assert!(url.contains("pif%2Fadd-foo-1.0.0"));
+    }
+
+    #[test]
+    fn pr_compare_url_strips_git_suffix() {
+        let url = pr_compare_url("https://github.com/user/repo.git", "main", "feature");
+        assert_eq!(url, "https://github.com/user/repo/compare/main...feature?expand=1");
+    }
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 pub fn publish_extension(dir: &str, global_options: &GlobalOptions) {

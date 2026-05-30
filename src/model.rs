@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 
 // ── Registry location (pif-index bootstrap) ───────────────────────────────
 
@@ -110,6 +111,55 @@ pub struct PackageEntry {
     pub namespace: String,
     pub package: Package,
     pub releases: Vec<LoadedRelease>,
+}
+
+// ── Schema validation ──────────────────────────────────────────────────────
+
+/// Validates `release` against the `release.schema.yaml` bundled with the registry.
+/// Returns a list of human-readable error strings.
+/// Returns an empty vec if the schema file is absent (e.g. before first `pif update`).
+pub fn validate_release_schema(release: &Release, repo_dir: &Path) -> Vec<String> {
+    let schema_path = repo_dir.join("schemas").join("release.schema.yaml");
+    validate_against_schema(release, &schema_path)
+}
+
+fn validate_against_schema<T: Serialize>(value: &T, schema_path: &Path) -> Vec<String> {
+    let schema_str = match fs::read_to_string(schema_path) {
+        Ok(s) => s,
+        Err(_) => return vec![],
+    };
+
+    let schema_yaml: serde_yaml::Value = match serde_yaml::from_str(&schema_str) {
+        Ok(v) => v,
+        Err(e) => return vec![format!("could not parse schema file: {}", e)],
+    };
+
+    let schema_json: JsonValue = match serde_json::to_value(&schema_yaml) {
+        Ok(v) => v,
+        Err(e) => return vec![format!("could not convert schema to JSON: {}", e)],
+    };
+
+    let instance: JsonValue = match serde_json::to_value(value) {
+        Ok(v) => v,
+        Err(e) => return vec![format!("could not serialize release for validation: {}", e)],
+    };
+
+    let validator = match jsonschema::options()
+        .with_draft(jsonschema::Draft::Draft202012)
+        .build(&schema_json)
+    {
+        Ok(v) => v,
+        Err(e) => return vec![format!("could not compile schema: {}", e)],
+    };
+
+    validator.iter_errors(&instance).map(|e| {
+        let path = e.instance_path.to_string();
+        if path.is_empty() {
+            e.to_string()
+        } else {
+            format!("{}: {}", path, e)
+        }
+    }).collect()
 }
 
 // ── Registry loader ────────────────────────────────────────────────────────

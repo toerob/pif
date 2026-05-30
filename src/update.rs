@@ -167,6 +167,14 @@ fn prompt_fresh_clone(repo_path: &Path, url: &str, branch: &str, use_colour: boo
     }
 }
 
+/// Returns the local path to the cloned registry repo (parent of the registry root).
+pub fn get_repo_dir() -> PathBuf {
+    dirs_next::data_dir()
+        .expect("Could not determine data directory")
+        .join("pif")
+        .join("repo")
+}
+
 /// Returns the local path to the registry directory, reading the cached root from
 /// the fetched registry-location.yaml. Falls back to "registry" if not available.
 pub fn get_registry_root() -> PathBuf {

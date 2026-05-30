@@ -56,6 +56,112 @@ fn last_source_line(lines: &[String]) -> usize {
         .unwrap_or(0)
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn s(v: &[&str]) -> Vec<String> {
+        v.iter().map(|s| s.to_string()).collect()
+    }
+
+    // classify
+    #[test]
+    fn classify_lib() {
+        assert!(matches!(classify("-lib foo.a"), EntryKind::Lib(_)));
+    }
+
+    #[test]
+    fn classify_source() {
+        assert!(matches!(classify("-source bar.c"), EntryKind::Source(_)));
+    }
+
+    #[test]
+    fn classify_define() {
+        let EntryKind::Define { key, directive } = classify("-D FOO=1") else { panic!() };
+        assert_eq!(key, "FOO");
+        assert_eq!(directive, "-D FOO=1");
+    }
+
+    #[test]
+    fn classify_unknown() {
+        assert!(matches!(classify("-other thing"), EntryKind::Unknown(_)));
+    }
+
+    // last_define_line
+    #[test]
+    fn last_define_line_empty() {
+        assert_eq!(last_define_line(&[]), None);
+    }
+
+    #[test]
+    fn last_define_line_no_match() {
+        assert_eq!(last_define_line(&s(&["-lib foo", "-source bar"])), None);
+    }
+
+    #[test]
+    fn last_define_line_single() {
+        assert_eq!(last_define_line(&s(&["-D A=1"])), Some(0));
+    }
+
+    #[test]
+    fn last_define_line_multiple() {
+        assert_eq!(last_define_line(&s(&["-D A=1", "-lib x", "-D B=2"])), Some(2));
+    }
+
+    // first_lib_or_source_line
+    #[test]
+    fn first_lib_or_source_first_lib() {
+        assert_eq!(first_lib_or_source_line(&s(&["-lib a", "-source b"])), Some(0));
+    }
+
+    #[test]
+    fn first_lib_or_source_first_source() {
+        assert_eq!(first_lib_or_source_line(&s(&["-D X=1", "-source b"])), Some(1));
+    }
+
+    #[test]
+    fn first_lib_or_source_mixed_ordering() {
+        assert_eq!(first_lib_or_source_line(&s(&["-D A=1", "-D B=2", "-source first", "-lib later"])), Some(2));
+    }
+
+    #[test]
+    fn first_lib_or_source_none() {
+        assert_eq!(first_lib_or_source_line(&s(&["-D X=1"])), None);
+    }
+
+    // last_lib_line
+    #[test]
+    fn last_lib_line_absent() {
+        assert_eq!(last_lib_line(&s(&["-source a"])), 0);
+    }
+
+    #[test]
+    fn last_lib_line_single() {
+        assert_eq!(last_lib_line(&s(&["-lib a"])), 0);
+    }
+
+    #[test]
+    fn last_lib_line_multiple() {
+        assert_eq!(last_lib_line(&s(&["-lib a", "-D X=1", "-lib b"])), 2);
+    }
+
+    // last_source_line
+    #[test]
+    fn last_source_line_absent() {
+        assert_eq!(last_source_line(&s(&["-lib a"])), 0);
+    }
+
+    #[test]
+    fn last_source_line_single() {
+        assert_eq!(last_source_line(&s(&["-source a"])), 0);
+    }
+
+    #[test]
+    fn last_source_line_multiple() {
+        assert_eq!(last_source_line(&s(&["-source a", "-lib x", "-source b"])), 2);
+    }
+}
+
 pub fn add_make_file_entry(_name: String, makefile: &Path, build_entries: Vec<String>) {
     let contents = fs::read_to_string(makefile).expect("Could not read the makefile");
 

@@ -75,6 +75,11 @@ pub fn expand_path(s: &str) -> PathBuf {
 }
 
 pub fn get_main_config_file() -> Result<PathBuf, io::Error> {
+    // Test hook: lets tests redirect the config file to a temp path.
+    if let Ok(p) = std::env::var("PIF_TEST_CONFIG") {
+        return Ok(PathBuf::from(p));
+    }
+
     let config_dir = config_dir()
         .expect("Could not determine config directory")
         .join("pif")
@@ -122,7 +127,92 @@ main_repository_branch: main
 
 #[cfg(test)]
 mod tests {
+    // Why tests live here rather than in tests/
+    // ─────────────────────────────────────────
+    // `pif` is a binary crate (main.rs, no lib.rs). Rust's tests/ directory
+    // only links against library crates, so `use pif::config::...` from there
+    // simply doesn't compile. Inline tests are compiled as part of the binary
+    // and can see everything, including pub(super) helpers like load_yaml.
+
     use super::*;
+    use std::sync::Mutex;
+
+    // Why the lock
+    // ────────────
+    // Rust runs tests in parallel across threads. PIF_TEST_CONFIG is a
+    // process-level env var shared by all threads. Without the lock, two tests
+    // could race: one sets the var to path A, another to path B, and both end
+    // up operating on the wrong file. Every test that touches TestConfig must
+    // hold this lock for its entire duration.
+    static LOCK: Mutex<()> = Mutex::new(());
+
+    // Why _g and not just LOCK.lock()
+    // ────────────────────────────────
+    // A temporary with no binding is dropped at the end of its statement.
+    // `let _g = LOCK.lock()` keeps the guard alive until end of scope.
+    // `let _ = LOCK.lock()` would release it immediately — never use that form.
+
+    struct TestConfig {
+        // TempDir deletes the directory when dropped. Named _dir (not _) so
+        // Rust keeps it alive for the struct's lifetime rather than dropping
+        // it immediately at the end of new().
+        _dir: tempfile::TempDir,
+        path: PathBuf,
+    }
+
+    impl TestConfig {
+        // Writes `yaml` into a temp file, then sets PIF_TEST_CONFIG to that
+        // path. Every config function in this process now reads/writes that
+        // file instead of the real ~/.config/pif/config/config.yaml.
+        fn new(yaml: &str) -> Self {
+            let dir = tempfile::tempdir().unwrap();
+            let path = dir.path().join("config.yaml");
+            fs::write(&path, yaml).unwrap();
+            std::env::set_var("PIF_TEST_CONFIG", &path);
+            TestConfig { _dir: dir, path }
+        }
+
+        // Re-reads the file from disk so tests can inspect what was actually
+        // written by the function under test.
+        fn read_yaml(&self) -> serde_yaml::Value {
+            let s = fs::read_to_string(&self.path).unwrap();
+            serde_yaml::from_str(&s).unwrap()
+        }
+
+        // Convenience wrapper for reading a top-level YAML sequence as strings.
+        fn seq(&self, key: &str) -> Vec<String> {
+            self.read_yaml()[key]
+                .as_sequence()
+                .unwrap_or(&vec![])
+                .iter()
+                .filter_map(|v| v.as_str().map(String::from))
+                .collect()
+        }
+    }
+
+    impl Drop for TestConfig {
+        // Clears PIF_TEST_CONFIG whether the test passed, panicked, or returned
+        // early. Without this, a panic would leave the var pointing at a deleted
+        // temp path and corrupt the next test to acquire the lock.
+        fn drop(&mut self) {
+            std::env::remove_var("PIF_TEST_CONFIG");
+        }
+    }
+
+    fn system_versions(yaml: &serde_yaml::Value, system: &str) -> Vec<String> {
+        yaml["system_versions"][system]
+            .as_sequence()
+            .unwrap_or(&vec![])
+            .iter()
+            .filter_map(|v| v.as_str().map(String::from))
+            .collect()
+    }
+
+    fn install_dir(yaml: &serde_yaml::Value, system: &str) -> Option<String> {
+        yaml["install_dirs"][system].as_str().map(String::from)
+    }
+
+    const EMPTY: &str = "{}\n";
 
     // ── VersionSpec::matches ─────────────────────────────────────────────────
 
@@ -197,6 +287,193 @@ mod tests {
     fn all_specs_failing_returns_false() {
         let specs = [VersionSpec::parse("i10"), VersionSpec::parse("i11")];
         assert!(!version_matches_any("16-i9.0", &specs));
+    }
+
+    // ── systems.rs ───────────────────────────────────────────────────────────
+
+    #[test]
+    fn systems_set_replaces_existing() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("systems:\n  - tads3\n");
+        set_systems(&["inform".into(), "dialog".into()]).unwrap();
+        assert_eq!(cfg.seq("systems"), ["inform", "dialog"]);
+    }
+
+    #[test]
+    fn systems_add_appends_without_duplicates() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("systems:\n  - tads3\n");
+        add_systems(&["tads3".into(), "inform".into()]).unwrap();
+        assert_eq!(cfg.seq("systems"), ["tads3", "inform"]);
+    }
+
+    #[test]
+    fn systems_add_to_empty_config() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        add_systems(&["dialog".into()]).unwrap();
+        assert_eq!(cfg.seq("systems"), ["dialog"]);
+    }
+
+    #[test]
+    fn systems_remove_listed_entries() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("systems:\n  - tads3\n  - inform\n  - dialog\n");
+        let (_, removed) = remove_systems(&["tads3".into(), "dialog".into()]).unwrap();
+        assert_eq!(removed, ["tads3", "dialog"]);
+        assert_eq!(cfg.seq("systems"), ["inform"]);
+    }
+
+    #[test]
+    fn systems_remove_absent_entry_returns_empty() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("systems:\n  - tads3\n");
+        let (_, removed) = remove_systems(&["inform".into()]).unwrap();
+        assert!(removed.is_empty());
+        assert_eq!(cfg.seq("systems"), ["tads3"]);
+    }
+
+    #[test]
+    fn systems_reset_removes_key() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("systems:\n  - tads3\n");
+        let (_, was_present) = reset_systems().unwrap();
+        assert!(was_present);
+        assert!(cfg.read_yaml().get("systems").is_none());
+    }
+
+    #[test]
+    fn systems_reset_on_empty_config_returns_false() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        let (_, was_present) = reset_systems().unwrap();
+        assert!(!was_present);
+        let _ = cfg;
+    }
+
+    // ── versions.rs ──────────────────────────────────────────────────────────
+
+    // Why version strings must be quoted in hand-written YAML
+    // ────────────────────────────────────────────────────────
+    // Bare "3.1" in YAML is parsed as a float, not a string. The config
+    // functions store versions as Value::String, so a lookup for "3.1"
+    // against a float 3.1 finds nothing and silently does the wrong thing.
+    // Always quote numeric-looking version strings in test fixtures: "3.1".
+
+    #[test]
+    fn versions_set_replaces_for_system() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("system_versions:\n  tads3:\n    - \"3.1\"\n");
+        set_system_versions("tads3", &["3.2".into(), "3.3".into()]).unwrap();
+        assert_eq!(system_versions(&cfg.read_yaml(), "tads3"), ["3.2", "3.3"]);
+    }
+
+    #[test]
+    fn versions_add_appends_without_duplicates() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new("system_versions:\n  tads3:\n    - \"3.1\"\n");
+        add_system_version_specs("tads3", &["3.1".into(), "3.2".into()]).unwrap();
+        assert_eq!(system_versions(&cfg.read_yaml(), "tads3"), ["3.1", "3.2"]);
+    }
+
+    #[test]
+    fn versions_add_creates_system_entry() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        add_system_version_specs("inform", &["i10".into()]).unwrap();
+        assert_eq!(system_versions(&cfg.read_yaml(), "inform"), ["i10"]);
+    }
+
+    #[test]
+    fn versions_remove_listed_entries() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(
+            "system_versions:\n  tads3:\n    - \"3.1\"\n    - \"3.2\"\n    - \"3.3\"\n",
+        );
+        let (_, removed) =
+            remove_system_version_specs("tads3", &["3.1".into(), "3.3".into()]).unwrap();
+        assert_eq!(removed, ["3.1", "3.3"]);
+        assert_eq!(system_versions(&cfg.read_yaml(), "tads3"), ["3.2"]);
+    }
+
+    #[test]
+    fn versions_reset_one_system() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(
+            "system_versions:\n  tads3:\n    - \"3.1\"\n  inform:\n    - i10\n",
+        );
+        let (_, removed) = reset_system_versions(Some("tads3")).unwrap();
+        assert!(removed);
+        let yaml = cfg.read_yaml();
+        assert!(yaml["system_versions"].get("tads3").is_none());
+        assert_eq!(system_versions(&yaml, "inform"), ["i10"]);
+    }
+
+    #[test]
+    fn versions_reset_all() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(
+            "system_versions:\n  tads3:\n    - \"3.1\"\n  inform:\n    - i10\n",
+        );
+        let (_, removed) = reset_system_versions(None).unwrap();
+        assert!(removed);
+        assert!(cfg.read_yaml().get("system_versions").is_none());
+    }
+
+    // ── dir.rs ───────────────────────────────────────────────────────────────
+
+    #[test]
+    fn dir_set_writes_directory() {
+        let _g = LOCK.lock().unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let install_path = tmp.path().join("tads3-ext");
+        fs::create_dir_all(&install_path).unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        set_install_dir("tads3", install_path.to_str().unwrap()).unwrap();
+        assert_eq!(
+            install_dir(&cfg.read_yaml(), "tads3").as_deref(),
+            Some(install_path.to_str().unwrap()),
+        );
+    }
+
+    #[test]
+    fn dir_reset_removes_entry() {
+        let _g = LOCK.lock().unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let install_path = tmp.path().join("ext");
+        fs::create_dir_all(&install_path).unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        set_install_dir("dialog", install_path.to_str().unwrap()).unwrap();
+        let (_, removed) = reset_install_dir("dialog").unwrap();
+        assert!(removed);
+        assert!(install_dir(&cfg.read_yaml(), "dialog").is_none());
+    }
+
+    #[test]
+    fn dir_reset_absent_entry_returns_false() {
+        let _g = LOCK.lock().unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        let (_, removed) = reset_install_dir("tads3").unwrap();
+        assert!(!removed);
+        let _ = cfg;
+    }
+
+    #[test]
+    fn dir_reset_all_clears_everything() {
+        let _g = LOCK.lock().unwrap();
+        let tmp = tempfile::tempdir().unwrap();
+        let p1 = tmp.path().join("a");
+        let p2 = tmp.path().join("b");
+        fs::create_dir_all(&p1).unwrap();
+        fs::create_dir_all(&p2).unwrap();
+        let cfg = TestConfig::new(EMPTY);
+        set_install_dir("tads3", p1.to_str().unwrap()).unwrap();
+        set_install_dir("dialog", p2.to_str().unwrap()).unwrap();
+        let (_, count) = reset_all_install_dirs().unwrap();
+        assert_eq!(count, 2);
+        assert!(cfg.read_yaml().get("install_dirs").map_or(true, |v| {
+            v.as_mapping().map_or(true, |m| m.is_empty())
+        }));
     }
 }
 

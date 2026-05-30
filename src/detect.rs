@@ -6,7 +6,11 @@ use crate::args::InteractiveFictionSystem;
 /// Detects the IF system from files in the current directory only (not recursive).
 /// Returns the detected system and, for TADS3, the path to the first .t3m makefile found.
 pub fn detect_system() -> (InteractiveFictionSystem, Option<PathBuf>) {
-    let entries = match fs::read_dir(".") {
+    detect_system_in(std::path::Path::new("."))
+}
+
+fn detect_system_in(dir: &std::path::Path) -> (InteractiveFictionSystem, Option<PathBuf>) {
+    let entries = match fs::read_dir(dir) {
         Ok(e) => e,
         Err(_) => return (InteractiveFictionSystem::Unknown, None),
     };
@@ -44,9 +48,95 @@ pub fn detect_system() -> (InteractiveFictionSystem, Option<PathBuf>) {
 
 #[cfg(test)]
 mod tests {
-    
+    use super::*;
+    use tempfile::TempDir;
+
+    fn tmp() -> TempDir {
+        tempfile::tempdir().unwrap()
+    }
+
+    fn touch(dir: &TempDir, name: &str) {
+        fs::write(dir.path().join(name), "").unwrap();
+    }
+
+    fn mkdir(dir: &TempDir, name: &str) {
+        fs::create_dir(dir.path().join(name)).unwrap();
+    }
 
     #[test]
-    fn get_extension_path_works() {
+    fn detect_t3m() {
+        let d = tmp();
+        touch(&d, "game.t3m");
+        let (sys, path) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Tads3);
+        assert!(path.is_some());
+    }
+
+    #[test]
+    fn detect_inform_dir() {
+        let d = tmp();
+        mkdir(&d, "game.inform");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Inform);
+    }
+
+    #[test]
+    fn detect_inf_file() {
+        let d = tmp();
+        touch(&d, "game.inf");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Inform6);
+    }
+
+    #[test]
+    fn detect_dg_file() {
+        let d = tmp();
+        touch(&d, "game.dg");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Dialog);
+    }
+
+    #[test]
+    fn detect_hug_file() {
+        let d = tmp();
+        touch(&d, "game.hug");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Hugo);
+    }
+
+    #[test]
+    fn detect_zil_file() {
+        let d = tmp();
+        touch(&d, "game.zil");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Zil);
+    }
+
+    #[test]
+    fn detect_unknown_empty_dir() {
+        let d = tmp();
+        let (sys, path) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Unknown);
+        assert!(path.is_none());
+    }
+
+    #[test]
+    fn detect_unknown_unrecognised_files() {
+        let d = tmp();
+        touch(&d, "readme.txt");
+        touch(&d, "game.z5");
+        let (sys, _) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Unknown);
+    }
+
+    #[test]
+    fn t3m_takes_priority_over_other_extensions() {
+        let d = tmp();
+        touch(&d, "game.t3m");
+        touch(&d, "game.inf");
+        touch(&d, "game.dg");
+        let (sys, path) = detect_system_in(d.path());
+        assert_eq!(sys, InteractiveFictionSystem::Tads3);
+        assert!(path.is_some());
     }
 }
