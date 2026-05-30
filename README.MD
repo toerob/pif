@@ -1,5 +1,13 @@
 # PIF - The (P)ackage Manager for (I)nteractive (F)iction
 
+[![codecov](https://codecov.io/github/toerob/pif/graph/badge.svg?token=I8IJPWKVB0)](https://codecov.io/github/toerob/pif)
+
+<div align="center">
+  <a href="https://codecov.io/github/toerob/pif">
+    <img src="https://codecov.io/github/toerob/pif/graphs/sunburst.svg?token=I8IJPWKVB0" alt="Coverage sunburst" width="200" />
+  </a>
+</div>
+
 ## What is it?
 
 A CLI tool to find, install, and publish extensions for interactive fiction authoring systems:
