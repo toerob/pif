@@ -1,0 +1,22 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-publish 1  "pif-publish " 
+.SH NAME
+pif\-publish \- Publish an extension to the pif index
+.SH SYNOPSIS
+\fBpif\-publish\fR [\fB\-h\fR|\fB\-\-help\fR] [\fIDIRECTORY\fR] 
+.SH DESCRIPTION
+Publish an extension to the pif index
+.PP
+Prepares a contribution for the upstream registry. Reads release metadata from release.yaml in DIRECTORY (defaults to the current directory), validates it against the registry schema, and opens the draft pull\-request workflow.
+.PP
+You need a fork of the registry repository and GitHub credentials configured before running this command.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fIDIRECTORY\fR] [default: .]
+Path to the extension directory (default: current directory)
+
+The directory must contain a valid release.yaml describing the extension. pif validates the file against the registry schema before opening the contribution workflow.

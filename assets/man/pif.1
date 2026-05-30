@@ -1,0 +1,140 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif 1  "pif 0.2.8" 
+.SH NAME
+pif \- PIF \- A CLI package manager for interactive fiction languages
+.SH SYNOPSIS
+\fBpif\fR [\fB\-s\fR|\fB\-\-system\fR] [\fB\-\-color\fR] [\fB\-v\fR|\fB\-\-verbose\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+pif is a package manager for interactive fiction extension libraries.
+.PP
+It maintains a local copy of the IF extensions registry (refreshed with `pif update`) and lets you browse, install, and manage libraries for TADS 3, Inform 7, Inform 6, Dialog, Hugo, ZIL, and other IF authoring systems.
+.PP
+WORKFLOW
+.PP
+  1. pif update          — download the latest registry index
+  2. pif list            — browse available extensions
+  3. pif install <name>  — install an extension into the system\*(Aqs directory
+  4. pif info <name>     — view full metadata and version history
+.PP
+SYSTEMS
+.PP
+Extensions are tagged with the IF system they target. pif auto\-detects the system from files in the current directory:
+.PP
+  Makefile / .t3m   → tads3
+  .inf              → inform6
+  .i7x / .materials → inform
+  .dg               → dialog
+  .hug              → hugo
+.PP
+Override detection with \-\-system, or use \-\-system=all to work across every known system at once.
+.PP
+CONFIGURATION
+.PP
+Per\-system install directories, verbosity, and version constraints are stored in the pif config file:
+.PP
+  Linux/macOS  $XDG_CONFIG_HOME/pif/config.yaml  (usually ~/.config/pif/)
+  Windows      %APPDATA%\\pif\\config.yaml
+.PP
+Manage the config with the `pif config` subcommand.
+.SH OPTIONS
+.TP
+\fB\-s\fR, \fB\-\-system\fR \fI<SYSTEM>\fR [default: auto]
+IF system to target (default: auto\-detect from current directory)
+
+pif inspects the current directory for recognised file extensions and picks the most likely system:
+
+Makefile / .t3m   → tads3 .inf              → inform6 .i7x / .materials → inform .dg               → dialog .hug              → hugo .zil              → zil
+
+Use \-\-system=all to list or install across every known system at once.
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+auto
+.IP \(bu 2
+all
+.IP \(bu 2
+tads3
+.IP \(bu 2
+tads2
+.IP \(bu 2
+dialog
+.IP \(bu 2
+inform
+.IP \(bu 2
+inform6
+.IP \(bu 2
+hugo
+.IP \(bu 2
+zil
+.IP \(bu 2
+unknown
+.RE
+.TP
+\fB\-\-color\fR \fI<COLOR>\fR [default: auto]
+Colour output control
+
+auto   — use colour when stdout is a terminal (default) always — force colour even when piped never  — disable colour entirely
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+always
+.IP \(bu 2
+auto
+.IP \(bu 2
+never
+.RE
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR \fI<VERBOSE>\fR [default: 2]
+Verbosity level (1–3)
+
+1 — errors and warnings only 2 — normal output (default) 3 — detailed / debug output
+
+The default can be changed permanently with `pif config verbose set`.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.SH SUBCOMMANDS
+.TP
+pif\-info(1)
+Show information about an extension
+.TP
+pif\-update(1)
+Fetch the latest extension registry from upstream
+.TP
+pif\-install(1)
+Install one or more extensions
+.TP
+pif\-list(1)
+List available extensions
+.TP
+pif\-publish(1)
+Publish an extension to the pif index
+.TP
+pif\-tags(1)
+List all available tags
+.TP
+pif\-search(1)
+Search extensions by name and description
+.TP
+pif\-config(1)
+Manage pif configuration
+.TP
+pif\-registry(1)
+Manage the local extension registry
+.TP
+pif\-help(1)
+Print this message or the help of the given subcommand(s)
+.SH VERSION
+v0.2.8
+.SH AUTHORS
+Tomas Öberg <tomaserikoberg@gmail.com>

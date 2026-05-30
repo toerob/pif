@@ -1,0 +1,15 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-registry-clean 1  "pif-registry-clean " 
+.SH NAME
+pif\-registry\-clean \- Remove registry entries whose install paths no longer exist on disk
+.SH SYNOPSIS
+\fBpif\-registry\-clean\fR [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+Remove registry entries whose install paths no longer exist on disk
+.PP
+Scans every recorded installation path and removes entries whose directory or file is gone. Useful after manually deleting extensions.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)

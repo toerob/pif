@@ -1,0 +1,23 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-versions-set 1  "pif-config-versions-set " 
+.SH NAME
+pif\-config\-versions\-set \- Replace version specs for a system with a new list
+.SH SYNOPSIS
+\fBpif\-config\-versions\-set\fR [\fB\-h\fR|\fB\-\-help\fR] <\fISYSTEM\fR> <\fIVERSION\fR> 
+.SH DESCRIPTION
+Replace version specs for a system with a new list
+.PP
+Discards any previously configured version specs for SYSTEM and stores the given list instead.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fISYSTEM\fR>
+IF system name (e.g. inform, tads3)
+.TP
+<\fIVERSION\fR>
+Version prefix strings to match (e.g. i10 i11.0)
+
+Each string is matched as a prefix against version entries in the registry. For example, "i10" matches "i10.1" and "i10.2.3" but not "i11.0".

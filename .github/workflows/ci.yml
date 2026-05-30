@@ -26,6 +26,13 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
+      - name: Check man pages are up to date
+        run: |
+          cargo build
+          git diff --exit-code assets/man/ \
+            && test -z "$(git ls-files --others --exclude-standard assets/man/)" \
+            || (echo "assets/man/ is out of date — run cargo build locally and commit the result" && exit 1)
+
       - name: Run tests with coverage
         run: cargo llvm-cov --lcov --output-path lcov.info
 

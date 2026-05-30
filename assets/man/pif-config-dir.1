@@ -1,0 +1,25 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-dir 1  "pif-config-dir " 
+.SH NAME
+pif\-config\-dir \- Manage per\-system installation directories
+.SH SYNOPSIS
+\fBpif\-config\-dir\fR [\fB\-h\fR|\fB\-\-help\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+Manage per\-system installation directories
+.PP
+Sets or resets the directory where pif installs extensions for a given IF system. The configured path is stored in the pif config file and used as the default target for every subsequent `pif install`.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.SH SUBCOMMANDS
+.TP
+pif\-config\-dir\-set(1)
+Set the install directory for a system
+.TP
+pif\-config\-dir\-reset(1)
+Reset the install directory to the built\-in default
+.TP
+pif\-config\-dir\-help(1)
+Print this message or the help of the given subcommand(s)

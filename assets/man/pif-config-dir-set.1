@@ -1,0 +1,25 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-dir-set 1  "pif-config-dir-set " 
+.SH NAME
+pif\-config\-dir\-set \- Set the install directory for a system
+.SH SYNOPSIS
+\fBpif\-config\-dir\-set\fR [\fB\-h\fR|\fB\-\-help\fR] <\fISYSTEM\fR> <\fIDIRECTORY\fR> 
+.SH DESCRIPTION
+Set the install directory for a system
+.PP
+Writes the given path to the pif config file as the default install location for SYSTEM. Paths starting with ~/ are expanded to your home directory.
+.PP
+Example: pif config dir set tads3 ~/MyGame/extensions
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fISYSTEM\fR>
+IF system name (e.g. tads3, dialog, inform, inform6)
+.TP
+<\fIDIRECTORY\fR>
+Directory path where extensions for this system will be installed
+
+Supports ~/ prefix for home directory expansion.

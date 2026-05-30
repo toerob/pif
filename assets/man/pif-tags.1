@@ -1,0 +1,17 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-tags 1  "pif-tags " 
+.SH NAME
+pif\-tags \- List all available tags
+.SH SYNOPSIS
+\fBpif\-tags\fR [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+List all available tags
+.PP
+Prints every tag that appears across the registry. Tags are short category labels (e.g. "library", "parser", "graphics") attached to individual extensions.
+.PP
+Use a tag as a filter with \-\-tag in the list, search, or info commands to narrow results to a specific category.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)

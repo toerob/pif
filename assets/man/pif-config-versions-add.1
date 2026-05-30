@@ -1,0 +1,23 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-versions-add 1  "pif-config-versions-add " 
+.SH NAME
+pif\-config\-versions\-add \- Add one or more version specs for a system
+.SH SYNOPSIS
+\fBpif\-config\-versions\-add\fR [\fB\-h\fR|\fB\-\-help\fR] <\fISYSTEM\fR> <\fIVERSION\fR> 
+.SH DESCRIPTION
+Add one or more version specs for a system
+.PP
+Appends to the current version spec list for SYSTEM without removing existing entries.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fISYSTEM\fR>
+IF system name (e.g. inform, tads3)
+.TP
+<\fIVERSION\fR>
+Version prefix strings to match (e.g. i10 i11.0)
+
+Each string is matched as a prefix against version entries in the registry. For example, "i10" matches "i10.1" and "i10.2.3" but not "i11.0".

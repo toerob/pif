@@ -1,0 +1,33 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-versions 1  "pif-config-versions " 
+.SH NAME
+pif\-config\-versions \- Manage per\-system version constraints
+.SH SYNOPSIS
+\fBpif\-config\-versions\fR [\fB\-h\fR|\fB\-\-help\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+Manage per\-system version constraints
+.PP
+Version specs are prefix strings (e.g. "i10", "i11.0") that restrict which extension versions are considered compatible for a given system. Matching is done as a string prefix against each version string in the registry.
+.PP
+Example: adding "i10" for inform means only versions starting with "i10" (like "i10.1", "i10.2") will be offered when installing.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.SH SUBCOMMANDS
+.TP
+pif\-config\-versions\-set(1)
+Replace version specs for a system with a new list
+.TP
+pif\-config\-versions\-add(1)
+Add one or more version specs for a system
+.TP
+pif\-config\-versions\-remove(1)
+Remove one or more version specs for a system
+.TP
+pif\-config\-versions\-reset(1)
+Remove all version specs for a system, or all systems if omitted
+.TP
+pif\-config\-versions\-help(1)
+Print this message or the help of the given subcommand(s)

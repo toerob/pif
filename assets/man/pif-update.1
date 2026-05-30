@@ -1,0 +1,15 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-update 1  "pif-update " 
+.SH NAME
+pif\-update \- Fetch the latest extension registry from upstream
+.SH SYNOPSIS
+\fBpif\-update\fR [\fB\-h\fR|\fB\-\-help\fR] 
+.SH DESCRIPTION
+Fetch the latest extension registry from upstream
+.PP
+Downloads the master index from the pif registry repository and stores it in the local application data directory. Run this periodically to pick up newly published extensions and updated version lists.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)

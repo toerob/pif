@@ -1,0 +1,18 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-dir-reset 1  "pif-config-dir-reset " 
+.SH NAME
+pif\-config\-dir\-reset \- Reset the install directory to the built\-in default
+.SH SYNOPSIS
+\fBpif\-config\-dir\-reset\fR [\fB\-h\fR|\fB\-\-help\fR] [\fISYSTEM\fR] 
+.SH DESCRIPTION
+Reset the install directory to the built\-in default
+.PP
+Removes the configured path for SYSTEM from the config file so that pif falls back to prompting on the next install. Omit SYSTEM to remove all custom directory entries at once.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fISYSTEM\fR]
+IF system name (e.g. tads3, dialog, inform, inform6). Omit to reset all

@@ -1,0 +1,37 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-info 1  "pif-info " 
+.SH NAME
+pif\-info \- Show information about an extension
+.SH SYNOPSIS
+\fBpif\-info\fR [\fB\-a\fR|\fB\-\-author\fR] [\fB\-k\fR|\fB\-\-keyword\fR] [\fB\-t\fR|\fB\-\-tag\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fINAME\fR] 
+.SH DESCRIPTION
+Show information about an extension
+.PP
+Displays the full metadata record for one or more extensions: name, description, author, supported IF system, available versions, homepage, and associated tags.
+.PP
+When called without a name the filter flags (\-\-author, \-\-keyword, \-\-tag) narrow the set of all known extensions. Combine filters freely; results must satisfy every filter given.
+.SH OPTIONS
+.TP
+\fB\-a\fR, \fB\-\-author\fR \fI<AUTHOR>\fR
+Filter by author (fuzzy search)
+
+Case\-insensitive substring match against the author field. Can be combined with \-\-keyword and \-\-tag.
+.TP
+\fB\-k\fR, \fB\-\-keyword\fR \fI<KEYWORD>\fR
+Filter by keyword (fuzzy search)
+
+Case\-insensitive substring match against the extension description and keyword fields.
+.TP
+\fB\-t\fR, \fB\-\-tag\fR \fI<TAG>\fR
+Filter by tag (exact match)
+
+Only extensions that carry this exact tag are shown. Use `pif tags` to see all available tag names.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fINAME\fR]
+Extension names to look up (omit to match all extensions)
+
+When no names are given, the filter flags (\-\-author, \-\-keyword, \-\-tag) determine which extensions are shown. Leaving both names and filters empty prints info for every extension in the registry.

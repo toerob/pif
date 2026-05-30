@@ -1,0 +1,18 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-systems-set 1  "pif-config-systems-set " 
+.SH NAME
+pif\-config\-systems\-set \- Replace the entire systems filter with a new list
+.SH SYNOPSIS
+\fBpif\-config\-systems\-set\fR [\fB\-h\fR|\fB\-\-help\fR] <\fISYSTEM\fR> 
+.SH DESCRIPTION
+Replace the entire systems filter with a new list
+.PP
+Auto mode will only consider the systems listed here. Any previously configured systems are discarded.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fISYSTEM\fR>
+System names to include (e.g. tads3 inform6 inform)

@@ -321,6 +321,13 @@ jobs:
             name=$(echo "$filename" | sed "s/\.rb$//")
             version=$(echo "$release" | jq .app_version --raw-output)
 
+            # Install man pages into the correct Homebrew location.
+            # cargo-dist bundles the man/ directory as a misc file, which would
+            # otherwise land in pkgshare via the leftover handler. This injects
+            # an explicit man1.install before that block, then removes the
+            # directory so it doesn't also end up in pkgshare.
+            sed -i 's|^    install_binary_aliases!$|    install_binary_aliases!\n\n    man1.install Dir["man/pif*.1"]\n    FileUtils.rm_rf "man"|' "Formula/${filename}"
+
             export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
             brew update
             # We avoid reformatting user-provided data such as the app description and homepage.

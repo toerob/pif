@@ -1,0 +1,18 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-versions-reset 1  "pif-config-versions-reset " 
+.SH NAME
+pif\-config\-versions\-reset \- Remove all version specs for a system, or all systems if omitted
+.SH SYNOPSIS
+\fBpif\-config\-versions\-reset\fR [\fB\-h\fR|\fB\-\-help\fR] [\fISYSTEM\fR] 
+.SH DESCRIPTION
+Remove all version specs for a system, or all systems if omitted
+.PP
+After reset, no version filtering is applied when installing extensions for the affected system(s).
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fISYSTEM\fR]
+IF system name. Omit to reset version specs for all systems

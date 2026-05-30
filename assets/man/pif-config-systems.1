@@ -1,0 +1,31 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-config-systems 1  "pif-config-systems " 
+.SH NAME
+pif\-config\-systems \- Manage the systems filter (restricts Auto mode to specific systems)
+.SH SYNOPSIS
+\fBpif\-config\-systems\fR [\fB\-h\fR|\fB\-\-help\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+Manage the systems filter (restricts Auto mode to specific systems)
+.PP
+When \-\-system=auto (the default), pif normally considers all known systems. Adding a systems filter tells Auto mode to behave as if only the listed systems exist — useful when you work with multiple IF systems but want installs scoped to a subset.
+.SH OPTIONS
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.SH SUBCOMMANDS
+.TP
+pif\-config\-systems\-set(1)
+Replace the entire systems filter with a new list
+.TP
+pif\-config\-systems\-add(1)
+Add one or more systems to the existing filter
+.TP
+pif\-config\-systems\-remove(1)
+Remove one or more systems from the filter
+.TP
+pif\-config\-systems\-reset(1)
+Remove the entire systems filter
+.TP
+pif\-config\-systems\-help(1)
+Print this message or the help of the given subcommand(s)

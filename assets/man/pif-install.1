@@ -1,0 +1,41 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-install 1  "pif-install " 
+.SH NAME
+pif\-install \- Install one or more extensions
+.SH SYNOPSIS
+\fBpif\-install\fR [\fB\-d\fR|\fB\-\-directory\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fINAMES\fR] 
+.SH DESCRIPTION
+Install one or more extensions
+.PP
+Downloads and installs the requested extensions into the configured system\-specific directory. Specify a version with a colon suffix (e.g. t3cartographer:1.0); omit the version to install LATEST.
+.PP
+Version strings are prefix\-matched against the registry\*(Aqs version list, so "1" matches "1.0", "1.1", etc. — the latest matching entry is used.
+.PP
+The target directory defaults to the path configured for the active system (see `pif config dir`). Override it for a single run with \-\-directory.
+.SH OPTIONS
+.TP
+\fB\-d\fR, \fB\-\-directory\fR \fI<FOLDER>\fR
+Override the install directory for this invocation
+
+By default, extensions are installed to the directory configured for the target system (see `pif config dir`). If no directory is configured for a system, pif will prompt on first install.
+
+Common defaults:
+
+tads3    ~/tads3/extensions/  (or as set in your TADS3 Makefile) inform   ~/Inform/Extensions/ inform6  ~/inform/lib/ dialog   ~/dialog/lib/
+
+Paths starting with ~/ are expanded to your home directory.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+[\fINAMES\fR]
+Extensions to install, each optionally pinned to a version
+
+Each argument is a bare extension name or name:version.
+
+Examples:
+
+pif install t3cartographer           # install LATEST pif install t3cartographer:1.0       # install exactly 1.0 pif install conspace:2.1 t3cart:1.0  # multiple at once
+
+Version strings are prefix\-matched, so "1" matches "1.0", "1.1", etc. When multiple versions match, the latest is chosen.

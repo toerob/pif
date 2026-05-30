@@ -1,0 +1,78 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-search 1  "pif-search " 
+.SH NAME
+pif\-search \- Search extensions by name and description
+.SH SYNOPSIS
+\fBpif\-search\fR [\fB\-a\fR|\fB\-\-author\fR] [\fB\-k\fR|\fB\-\-keyword\fR] [\fB\-t\fR|\fB\-\-tag\fR] [\fB\-o\fR|\fB\-\-ordering\-direction\fR] [\fB\-p\fR|\fB\-\-sort\-property\fR] [\fB\-\-presentation\fR] [\fB\-h\fR|\fB\-\-help\fR] <\fIQUERY\fR> 
+.SH DESCRIPTION
+Search extensions by name and description
+.PP
+Performs a case\-insensitive substring match of QUERY against the extension name and description fields. Combine with \-\-author, \-\-keyword, or \-\-tag to narrow results further.
+.SH OPTIONS
+.TP
+\fB\-a\fR, \fB\-\-author\fR \fI<AUTHOR>\fR
+Filter by author (fuzzy search)
+
+Case\-insensitive substring match against the author field.
+.TP
+\fB\-k\fR, \fB\-\-keyword\fR \fI<KEYWORD>\fR
+Filter by keyword (fuzzy search)
+
+Case\-insensitive substring match against the description and keyword fields.
+.TP
+\fB\-t\fR, \fB\-\-tag\fR \fI<TAG>\fR
+Filter by tag (exact match)
+
+Only extensions carrying this exact tag are included. Use `pif tags` to see all available tag names.
+.TP
+\fB\-o\fR, \fB\-\-ordering\-direction\fR \fI<ORDERING_DIRECTION>\fR [default: descending]
+Result ordering direction (ascending or descending)
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+ascending
+.IP \(bu 2
+descending
+.RE
+.TP
+\fB\-p\fR, \fB\-\-sort\-property\fR \fI<SORT_PROPERTY>\fR [default: name]
+Property to sort results by
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+name
+.IP \(bu 2
+author
+.IP \(bu 2
+date
+.RE
+.TP
+\fB\-\-presentation\fR \fI<PRESENTATION>\fR [default: newline]
+Output format for the extension list
+
+newline — one extension per line (default, human\-readable) comma   — comma\-separated list (useful for scripting)
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+newline
+.IP \(bu 2
+comma
+.RE
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fIQUERY\fR>
+Text to search for in extension names and descriptions
+
+The search is case\-insensitive and matches any substring. Combine with \-\-author, \-\-keyword, or \-\-tag for more targeted results, or use `pif list` when you want to browse without a search term.

@@ -1,0 +1,23 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH pif-registry-remove 1  "pif-registry-remove " 
+.SH NAME
+pif\-registry\-remove \- Remove a registry entry by extension name
+.SH SYNOPSIS
+\fBpif\-registry\-remove\fR [\fB\-p\fR|\fB\-\-path\fR] [\fB\-h\fR|\fB\-\-help\fR] <\fINAME\fR> 
+.SH DESCRIPTION
+Remove a registry entry by extension name
+.PP
+Deletes the record from the pif registry without touching the files on disk. Use this to tell pif to forget an installation (e.g. before reinstalling to a different path).
+.SH OPTIONS
+.TP
+\fB\-p\fR, \fB\-\-path\fR \fI<PATH>\fR
+Restrict removal to a specific install path (optional)
+
+When an extension has been installed to multiple paths, this narrows the removal to the matching entry only.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+<\fINAME\fR>
+Name of the extension to remove from the registry
